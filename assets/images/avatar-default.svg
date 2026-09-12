@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#003c71"/>
+      <stop offset="100%" stop-color="#0b589c"/>
+    </linearGradient>
+    <linearGradient id="shirtGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cf2e2e"/>
+      <stop offset="100%" stop-color="#e53935"/>
+    </linearGradient>
+    <linearGradient id="skinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffdfc4"/>
+      <stop offset="100%" stop-color="#f5cba7"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="120" cy="120" r="115" fill="url(#bgGrad)" stroke="#ffffff" stroke-width="6"/>
+
+  <!-- Decorative Ring -->
+  <circle cx="120" cy="120" r="105" fill="none" stroke="#60a5fa" stroke-width="2" stroke-dasharray="8 6" opacity="0.6"/>
+
+  <!-- Student Character -->
+  <g filter="url(#shadow)">
+    <!-- Shoulders / Jacket -->
+    <path d="M45,215 C55,160 80,150 120,150 C160,150 185,160 195,215 Z" fill="url(#shirtGrad)"/>
+    <!-- Collar / Inner Shirt -->
+    <path d="M100,152 L120,180 L140,152 Z" fill="#ffffff"/>
+    <path d="M112,168 L120,180 L128,168 Z" fill="#003c71"/>
+
+    <!-- Neck -->
+    <rect x="106" y="125" width="28" height="28" rx="6" fill="#f0c29c"/>
+
+    <!-- Head / Face -->
+    <ellipse cx="120" cy="100" rx="36" ry="42" fill="url(#skinGrad)"/>
+
+    <!-- Ears -->
+    <circle cx="83" cy="102" r="8" fill="#f0c29c"/>
+    <circle cx="157" cy="102" r="8" fill="#f0c29c"/>
+
+    <!-- Hair -->
+    <path d="M80,92 C78,65 95,50 120,50 C148,50 162,65 160,92 C155,75 142,68 120,68 C98,68 85,75 80,92 Z" fill="#1e293b"/>
+    <path d="M86,65 C98,54 116,52 135,55 C146,57 155,64 158,74 C148,68 135,66 122,66 C105,66 94,70 86,65 Z" fill="#334155"/>
+
+    <!-- Glasses Frame -->
+    <rect x="91" y="92" width="23" height="17" rx="5" fill="none" stroke="#003c71" stroke-width="3.5"/>
+    <rect x="126" y="92" width="23" height="17" rx="5" fill="none" stroke="#003c71" stroke-width="3.5"/>
+    <line x1="114" y1="99" x2="126" y2="99" stroke="#003c71" stroke-width="3.5"/>
+    <line x1="84" y1="96" x2="91" y2="97" stroke="#003c71" stroke-width="2.5"/>
+    <line x1="149" y1="97" x2="156" y2="96" stroke="#003c71" stroke-width="2.5"/>
+
+    <!-- Eyes -->
+    <ellipse cx="102.5" cy="100" rx="3" ry="3.5" fill="#1e293b"/>
+    <ellipse cx="137.5" cy="100" rx="3" ry="3.5" fill="#1e293b"/>
+    <circle cx="101.5" cy="98.5" r="1" fill="#ffffff"/>
+    <circle cx="136.5" cy="98.5" r="1" fill="#ffffff"/>
+
+    <!-- Eyebrows -->
+    <path d="M92,86 Q103,83 113,87" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <path d="M127,87 Q137,83 148,86" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+
+    <!-- Smile -->
+    <path d="M109,122 Q120,132 131,122" stroke="#b91c1c" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+    <!-- Cheeks -->
+    <ellipse cx="94" cy="114" rx="5" ry="3" fill="#f87171" opacity="0.4"/>
+    <ellipse cx="146" cy="114" rx="5" ry="3" fill="#f87171" opacity="0.4"/>
+  </g>
+
+  <!-- Student Graduation Cap Badge Mini Icon -->
+  <g transform="translate(162, 162) scale(0.9)">
+    <circle cx="20" cy="20" r="20" fill="#ffffff" stroke="#cf2e2e" stroke-width="3"/>
+    <path d="M10,18 L20,13 L30,18 L20,23 Z" fill="#003c71"/>
+    <path d="M14,20 L14,26 C14,28 26,28 26,26 L26,20" fill="#003c71"/>
+    <line x1="28" y1="18" x2="31" y2="24" stroke="#cf2e2e" stroke-width="1.8"/>
+  </g>
+</svg>

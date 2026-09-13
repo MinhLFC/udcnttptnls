@@ -151,3 +151,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 4500);
   }
 });
+
+// --- Avatar Lightbox Functions ---
+function openAvatarLightbox() {
+  const lightbox = document.getElementById('avatarLightbox');
+  if (lightbox) {
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+  }
+}
+
+function closeAvatarLightbox(event) {
+  const lightbox = document.getElementById('avatarLightbox');
+  if (!lightbox) return;
+
+  // If called from clicking the overlay (not the content), or the close button
+  if (!event || event.target === lightbox || event.currentTarget !== lightbox) {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = ''; // Restore scroll
+  }
+}
+
+// Close lightbox with ESC key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeAvatarLightbox();
+  }
+});

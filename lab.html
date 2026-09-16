@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phòng Thí Nghiệm Hóa Học Ảo | Đỗ Văn Nhật Minh - HCMUE</title>
+  <meta name="description" content="Phòng thí nghiệm Hóa học ảo - Thực hành thí nghiệm tương tác trực tiếp trên trình duyệt. Đỗ Văn Nhật Minh - Trường ĐH Sư phạm TP.HCM.">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/images/logo-hcmue.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/lab.css">
+</head>
+<body>
+
+  <!-- ==================== SITE HEADER & NAVBAR ==================== -->
+  <header class="site-header">
+    <div class="container navbar">
+      <!-- Brand & School Logo -->
+      <a href="index.html" class="nav-brand" title="Trường Đại học Sư phạm TP. Hồ Chí Minh">
+        <img src="assets/images/logo-hcmue.png" alt="Logo Trường Đại học Sư phạm TP.HCM" class="brand-logo-img">
+        <div class="brand-text">
+          <span class="brand-title">ĐH Sư Phạm TP.HCM</span>
+          <span class="brand-sub">HCMUE</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html" class="nav-link">Trang Chủ</a></li>
+        <li><a href="index.html#about" class="nav-link">Giới Thiệu</a></li>
+        <li><a href="skills.html" class="nav-link">Kỹ Năng</a></li>
+        <li><a href="lab.html" class="nav-link active">Thí Nghiệm</a></li>
+        <li><a href="contact.html" class="nav-link">Liên Hệ</a></li>
+      </ul>
+
+      <!-- Actions -->
+      <div class="nav-actions">
+        <button class="theme-toggle-btn" id="themeToggle" title="Chuyển đổi chế độ Sáng / Tối" aria-label="Đổi giao diện">
+          <svg class="theme-icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg class="theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+        <a href="contact.html" class="nav-contact-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          Liên Hệ
+        </a>
+        <!-- Mobile Toggle -->
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== LAB HERO BANNER ==================== -->
+  <section class="lab-hero">
+    <div class="container lab-hero-content">
+      <div class="lab-hero-badge">🧪 Phòng Thí Nghiệm Ảo — HCMUE</div>
+      <h1>Thí Nghiệm Hóa Học Tương Tác</h1>
+      <p>Khám phá và thực hành các thí nghiệm hóa học trực tiếp trên trình duyệt. Được thiết kế cho sinh viên Khoa Hóa học — ĐHSP TP.HCM.</p>
+    </div>
+  </section>
+
+  <!-- ==================== EXPERIMENT TABS ==================== -->
+  <section class="section">
+    <div class="container">
+      <!-- Tab Navigation -->
+      <div class="lab-tabs">
+        <button class="lab-tab-btn active" data-tab="acid-base" onclick="switchTab('acid-base')">
+          <span class="tab-icon">🧪</span> Acid - Base & pH
+        </button>
+        <button class="lab-tab-btn" data-tab="balance" onclick="switchTab('balance')">
+          <span class="tab-icon">⚖️</span> Cân Bằng PTHH
+        </button>
+        <button class="lab-tab-btn" data-tab="molecule" onclick="switchTab('molecule')">
+          <span class="tab-icon">🔬</span> Phân Tử 3D
+        </button>
+      </div>
+
+      <!-- Experiment 1: Acid-Base & pH -->
+      <div class="experiment-panel active" id="panel-acid-base">
+        <div class="experiment-container">
+          <div class="experiment-header">
+            <h2>🧪 Thí Nghiệm Pha Trộn Acid - Base & Đo pH</h2>
+            <p>Chọn dung dịch acid và base, điều chỉnh nồng độ & thể tích, sau đó nhấn "Pha trộn" để xem kết quả phản ứng.</p>
+          </div>
+          <div id="experiment-acid-base">
+            <!-- Nội dung sẽ được tạo bởi lab-acid-base.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Experiment 2: Equation Balancing -->
+      <div class="experiment-panel" id="panel-balance">
+        <div class="experiment-container">
+          <div class="experiment-header">
+            <h2>⚖️ Game: Cân Bằng Phương Trình Hóa Học</h2>
+            <p>Điền hệ số phù hợp để cân bằng phương trình. Có 3 cấp độ từ dễ đến khó — bạn sẵn sàng chưa?</p>
+          </div>
+          <div id="experiment-balance">
+            <!-- Nội dung sẽ được tạo bởi lab-balance.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Experiment 3: 3D Molecule Viewer -->
+      <div class="experiment-panel" id="panel-molecule">
+        <div class="experiment-container">
+          <div class="experiment-header">
+            <h2>🔬 Mô Hình Cấu Trúc Phân Tử 3D</h2>
+            <p>Chọn phân tử để xem cấu trúc 3D. Kéo chuột để xoay, cuộn để phóng to/thu nhỏ mô hình.</p>
+          </div>
+          <div id="experiment-molecule">
+            <!-- Nội dung sẽ được tạo bởi lab-molecule.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">
+            <img src="assets/images/logo-hcmue.png" alt="Logo HCMUE" class="footer-logo-img">
+            <div>
+              <div class="footer-brand-name">Đỗ Văn Nhật Minh</div>
+              <div class="footer-brand-sub">Sinh viên Khóa 50 — Khoa Hóa học</div>
+            </div>
+          </div>
+          <p class="footer-desc">
+            Phòng Thí Nghiệm Hóa Học Ảo — nơi thực hành và khám phá thế giới hóa học qua các mô hình tương tác trực quan.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Liên kết nhanh</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link">Trang Chủ</a></li>
+            <li><a href="skills.html" class="footer-link">Kỹ Năng</a></li>
+            <li><a href="lab.html" class="footer-link">Thí Nghiệm Hóa Học</a></li>
+            <li><a href="contact.html" class="footer-link">Liên Hệ</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading">Thông tin trường</h4>
+          <ul class="footer-links">
+            <li><a href="https://hcmue.edu.vn" target="_blank" rel="noopener noreferrer" class="footer-link">Trang Chủ HCMUE</a></li>
+            <li><span class="footer-link" style="color: var(--text-light);">280 An Dương Vương, Phường Chợ Quán, TP.HCM</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Đỗ Văn Nhật Minh. Bản quyền thuộc về tác giả.</div>
+        <div>Trường Đại Học Sư Phạm Thành Phố Hồ Chí Minh (HCMUE)</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/lab-acid-base.js"></script>
+  <script src="assets/js/lab-balance.js"></script>
+  <script src="assets/js/lab-molecule.js"></script>
+  
+  <script>
+    // Tab switching logic
+    function switchTab(tabName) {
+      // Deactivate all tabs and panels
+      document.querySelectorAll('.lab-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.experiment-panel').forEach(panel => panel.classList.remove('active'));
+      
+      // Activate selected
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      document.getElementById(`panel-${tabName}`).classList.add('active');
+    }
+  </script>
+
+</body>
+</html>

@@ -199,6 +199,9 @@
       // Activate selected
       document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
       document.getElementById(`panel-${tabName}`).classList.add('active');
+
+      // Kích hoạt tính toán lại kích thước canvas mô hình 3D
+      window.dispatchEvent(new Event('resize'));
     }
   </script>
 

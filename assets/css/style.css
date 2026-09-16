@@ -133,39 +133,57 @@ button, input, textarea {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  text-decoration: none;
 }
 
 .brand-logo-img {
-  height: 46px;
+  height: 50px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+  flex-shrink: 0;
 }
 
 .brand-text {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
-.brand-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.15rem;
+.brand-title-vn {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Times New Roman', Times, 'Be Vietnam Pro', Georgia, serif;
+  font-size: 0.88rem;
   font-weight: 800;
   color: var(--primary);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-[data-theme="dark"] .brand-title {
-  color: #60a5fa;
-}
-
-.brand-sub {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent);
+  line-height: 1.18;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+}
+
+[data-theme="dark"] .brand-title-vn {
+  color: #93c5fd;
+}
+
+.brand-divider {
+  height: 1.5px;
+  background: linear-gradient(to right, #38bdf8 0%, #60a5fa 60%, transparent 100%);
+  margin: 3px 0 2px 0;
+  width: 100%;
+}
+
+.brand-sub-en {
+  font-family: 'Times New Roman', Times, 'Be Vietnam Pro', Georgia, serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+[data-theme="dark"] .brand-sub-en {
+  color: #f87171;
 }
 
 .nav-menu {
@@ -1685,13 +1703,29 @@ textarea.form-control {
   }
 }
 
-@media (max-width: 480px) {
-  .brand-title {
-    font-size: 1rem;
+@media (max-width: 540px) {
+  .brand-title-vn {
+    font-size: 0.75rem;
+  }
+  .brand-sub-en {
+    font-size: 0.6rem;
   }
   .brand-logo-img {
-    height: 38px;
+    height: 40px;
   }
+}
+
+@media (max-width: 420px) {
+  .brand-title-vn {
+    font-size: 0.68rem;
+  }
+  .brand-sub-en {
+    display: none;
+  }
+  .brand-logo-img {
+    height: 36px;
+  }
+}
   .hero-title {
     font-size: 1.85rem;
   }

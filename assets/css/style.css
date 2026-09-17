@@ -235,38 +235,48 @@ button, input, textarea {
 }
 
 .theme-toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-color);
-  background: var(--bg-surface);
-  color: var(--text-main);
-  cursor: pointer;
-  transition: var(--transition);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  border-radius: var(--radius-full) !important;
+  border: 1px solid var(--border-color) !important;
+  background: var(--bg-surface) !important;
+  color: var(--text-main) !important;
+  cursor: pointer !important;
+  transition: var(--transition) !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .theme-toggle-btn:hover {
-  background: var(--bg-surface-soft);
+  background: var(--bg-surface-soft) !important;
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
 
+.theme-toggle-btn svg {
+  display: block;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 .theme-icon-sun {
-  display: none;
+  display: none !important;
 }
 .theme-icon-moon {
-  display: block;
+  display: block !important;
 }
 
 [data-theme="dark"] .theme-icon-sun {
-  display: block;
-  color: #f59e0b;
+  display: block !important;
+  color: #f59e0b !important;
+  stroke: #f59e0b !important;
 }
 [data-theme="dark"] .theme-icon-moon {
-  display: none;
+  display: none !important;
 }
 
 .btn-contact-nav {

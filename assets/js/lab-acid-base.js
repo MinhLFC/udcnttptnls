@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 justify-content: center;
                 gap: 15px;
             }
-            button {
+            .lab-container .buttons button {
                 padding: 10px 25px;
                 border: none;
                 border-radius: 6px;
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 font-size: 16px;
                 transition: opacity 0.2s;
             }
-            button:hover {
+            .lab-container .buttons button:hover {
                 opacity: 0.8;
             }
             .btn-mix {

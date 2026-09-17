@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const toastMessage = document.getElementById('toastMessage');
 
   if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const nameInput = document.getElementById('fullName');
@@ -97,14 +97,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const messageInput = document.getElementById('message');
       const submitBtn = contactForm.querySelector('button[type="submit"]');
 
-      if (!nameInput.value.trim() || !emailInput.value.trim() || !messageInput.value.trim()) {
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const subject = subjectInput ? (subjectInput.value.trim() || 'Tin nhắn từ Website cá nhân') : 'Tin nhắn từ Website cá nhân';
+      const message = messageInput.value.trim();
+
+      if (!name || !email || !message) {
         showToast('Vui lòng điền đầy đủ các thông tin bắt buộc!', 'error');
         return;
       }
 
       // Simple email validation
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(emailInput.value.trim())) {
+      if (!emailPattern.test(email)) {
         showToast('Địa chỉ email không hợp lệ!', 'error');
         return;
       }
@@ -119,13 +124,41 @@ document.addEventListener('DOMContentLoaded', () => {
         </svg> Đang gửi tin nhắn...
       `;
 
-      // Simulate sending
-      setTimeout(() => {
+      try {
+        const response = await fetch('https://formsubmit.co/ajax/fcminh831@gmail.com', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            'Họ và tên': name,
+            'Email người gửi': email,
+            'Chủ đề': subject,
+            'Nội dung tin nhắn': message,
+            _subject: `[Website HCMUE] Tin nhắn mới từ ${name}: ${subject}`,
+            _template: 'table',
+            _captcha: 'false'
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok || data.success === 'true' || data.success === true) {
+          contactForm.reset();
+          showToast('Cảm ơn bạn! Tin nhắn đã được gửi thành công đến email của Nhật Minh.');
+        } else {
+          showToast('Không thể gửi tin nhắn lúc này. Vui lòng thử lại sau hoặc gửi email trực tiếp!', 'error');
+        }
+      } catch (error) {
+        console.error('Contact form error:', error);
+        // Fallback: submit natively if fetch is blocked
+        showToast('Cảm ơn bạn! Đang chuyển tiếp tin nhắn đến Nhật Minh...');
+        contactForm.submit();
+      } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnText;
-        contactForm.reset();
-        showToast('Cảm ơn bạn! Tin nhắn của bạn đã được gửi thành công đến Nhật Minh.');
-      }, 900);
+      }
     });
   }
 

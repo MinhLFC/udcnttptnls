@@ -170,25 +170,29 @@
         <h3>Gửi Lời Nhắn Trực Tiếp</h3>
         <p>Vui lòng điền thông tin bên dưới để gửi tin nhắn trực tiếp đến Đỗ Văn Nhật Minh.</p>
 
-        <form id="contactForm">
+        <form id="contactForm" action="https://formsubmit.co/fcminh831@gmail.com" method="POST">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_subject" value="[Website HCMUE] Tin nhắn liên hệ mới từ Website">
+          
           <div class="form-group">
             <label for="fullName" class="form-label">Họ và Tên của bạn <span class="req">*</span></label>
-            <input type="text" id="fullName" class="form-control" placeholder="Ví dụ: Nguyễn Văn A" required>
+            <input type="text" id="fullName" name="name" class="form-control" placeholder="Ví dụ: Nguyễn Văn A" required>
           </div>
 
           <div class="form-group">
             <label for="email" class="form-label">Địa chỉ Email của bạn <span class="req">*</span></label>
-            <input type="email" id="email" class="form-control" placeholder="Ví dụ: ban@gmail.com" required>
+            <input type="email" id="email" name="email" class="form-control" placeholder="Ví dụ: ban@gmail.com" required>
           </div>
 
           <div class="form-group">
             <label for="subject" class="form-label">Chủ đề trao đổi</label>
-            <input type="text" id="subject" class="form-control" placeholder="Ví dụ: Trao đổi bài giảng / Dự án học tập">
+            <input type="text" id="subject" name="subject" class="form-control" placeholder="Ví dụ: Trao đổi bài giảng / Dự án học tập">
           </div>
 
           <div class="form-group">
             <label for="message" class="form-label">Nội dung tin nhắn <span class="req">*</span></label>
-            <textarea id="message" class="form-control" placeholder="Hãy viết nội dung bạn muốn gửi gắm tại đây..." required></textarea>
+            <textarea id="message" name="message" class="form-control" placeholder="Hãy viết nội dung bạn muốn gửi gắm tại đây..." required></textarea>
           </div>
 
           <button type="submit" class="btn-submit-form">

@@ -1512,3 +1512,515 @@ input[type="range"]::-webkit-slider-thumb {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================================================
+   PLICKERS CAMERA SCANNER (TRÊN ĐIỆN THOẠI & MÁY TÍNH)
+   ========================================================================== */
+
+/* --- Nút bấm Quét Thẻ trên thanh công cụ --- */
+.plk-btn-scanner {
+  border-color: #8b5cf6 !important;
+  color: #8b5cf6 !important;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.plk-btn-scanner:hover {
+  background: rgba(139, 92, 246, 0.1) !important;
+  color: #7c3aed !important;
+}
+
+.plk-btn-scanner.active {
+  background: linear-gradient(135deg, #7c3aed, #6366f1) !important;
+  color: #ffffff !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 3px 12px rgba(124, 58, 237, 0.35) !important;
+}
+
+.plk-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  animation: livePulse 1.2s infinite;
+}
+
+@keyframes livePulse {
+  0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* --- Nút bấm nổi quét trên di động (Mobile FAB) --- */
+.plk-mobile-scan-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  font-weight: 700;
+  font-size: 0.92rem;
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.45);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  animation: fabFloat 3s ease-in-out infinite alternate;
+}
+
+.plk-mobile-scan-fab:active {
+  transform: scale(0.92);
+}
+
+@keyframes fabFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-6px); }
+}
+
+@media (max-width: 768px) {
+  .plk-mobile-scan-fab {
+    display: flex;
+  }
+}
+
+/* --- Nút mở Scanner trong chế độ Trình chiếu & Luyện tập --- */
+.btn-open-cam-scanner {
+  background: linear-gradient(135deg, #7c3aed, #6366f1) !important;
+  color: #ffffff !important;
+  border-color: #7c3aed !important;
+}
+
+.btn-open-cam-scanner:hover {
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+  transform: translateY(-2px);
+}
+
+.plk-teacher-hint-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px dashed rgba(124, 58, 237, 0.3);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .plk-teacher-hint-bar {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.plk-hint-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: #7c3aed;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.plk-hint-btn:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+}
+
+/* --- Giao diện Khung Scanner chính --- */
+.plk-scanner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.scanner-question-banner {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.sq-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.sq-index {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.sq-correct-tag {
+  font-size: 0.85rem;
+  background: #ecfdf5;
+  color: #059669;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .sq-correct-tag {
+  background: rgba(5, 150, 105, 0.2);
+  color: #34d399;
+}
+
+.sq-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.45;
+}
+
+/* --- Kính ngắm Camera Viewport --- */
+.scanner-viewport-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  background: #0f172a;
+  border: 2px solid #334155;
+}
+
+.scanner-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  min-height: 300px;
+  max-height: 440px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #090d16;
+}
+
+#plk-camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 4 góc kính ngắm */
+.scanner-corners {
+  position: absolute;
+  inset: 22px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sc-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 3.5px solid #10b981;
+}
+
+.sc-corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
+.sc-corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
+.sc-corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+.sc-corner.br { bottom: 0; right: 0; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
+
+/* Tia laser quét */
+.scanner-laser {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0) 0%, #10b981 50%, rgba(16, 185, 129, 0) 100%);
+  box-shadow: 0 0 14px 3px #10b981;
+  animation: scanSweep 2.2s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 6;
+}
+
+@keyframes scanSweep {
+  0% { top: 26px; }
+  100% { top: calc(100% - 26px); }
+}
+
+/* Thẻ học sinh nhận diện động */
+.scanner-detected-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.detected-chip {
+  position: absolute;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(4px);
+  border: 1.5px solid #10b981;
+  color: #34d399;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  animation: popInAndFade 2.4s forwards;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+.detected-chip.chip-other {
+  border-color: #60a5fa;
+  color: #93c5fd;
+}
+
+@keyframes popInAndFade {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  80% { opacity: 1; transform: translate(-50%, -60%); }
+  100% { opacity: 0; transform: translate(-50%, -75%); }
+}
+
+/* Thanh trạng thái và nút overlay */
+.scanner-status-chip {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(6px);
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 15;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.pulse-green {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.pulse-yellow {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
+.scanner-overlay-controls {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 15;
+}
+
+.soc-btn {
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  color: #f1f5f9;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.soc-btn:hover {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: #ffffff;
+}
+
+.soc-btn.active {
+  background: #f59e0b;
+  color: #000;
+}
+
+/* --- Thẻ thông số quét (Metrics Card) --- */
+.scanner-metrics-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.smc-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.smc-count {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.smc-progress {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-surface-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.smc-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.scanner-live-tally {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.slt-item {
+  border-radius: 12px;
+  padding: 8px 6px;
+  text-align: center;
+  background: var(--bg-surface-soft);
+  border: 1.5px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: transform 0.2s;
+}
+
+.slt-item.is-correct {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.slt-letter {
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.slt-votes {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.slt-pct {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* --- Thanh hành động (Action Toolbar) --- */
+.scanner-action-toolbar {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .scanner-action-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.scanner-act-btn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: 0.2s;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.scanner-act-btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-batch-scan {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.btn-batch-scan:hover {
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+}
+
+.btn-view-present {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* --- Hướng dẫn di động --- */
+.scanner-mobile-guide {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+}
+
+.smg-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+[data-theme="dark"] .smg-title {
+  color: #93c5fd;
+}
+
+.smg-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+

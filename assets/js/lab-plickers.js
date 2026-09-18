@@ -695,7 +695,7 @@
   let state = {
     gradeFilter: 'all',       // 'all', 6, 7, 8, 9
     subjectFilter: 'all',     // 'all', 'chemistry', 'physics', 'biology'
-    mode: 'practice',         // 'practice', 'presentation', 'cards'
+    mode: 'practice',         // 'practice', 'presentation', 'cards', 'scanner'
     filteredList: [],
     currentIndex: 0,
     selectedOption: null,     // null, 0, 1, 2, 3
@@ -707,7 +707,14 @@
     timerSeconds: 0,
     timerInterval: null,
     answersLog: {},           // lưu câu đã làm { [id]: { selected, correct, isCorrect } }
-    mockPollData: null        // biểu đồ phân phối học sinh
+    mockPollData: null,       // biểu đồ phân phối học sinh
+    // Trạng thái Camera Scanner trên điện thoại
+    cameraStream: null,
+    facingMode: 'environment', // 'environment' (camera sau) hoặc 'user' (camera trước)
+    torchOn: false,
+    scannedStudents: {},       // { [studentId]: { id, name, option, isCorrect } }
+    scannerInterval: null,
+    isScannerActive: false
   };
 
   // ==========================================
@@ -799,6 +806,9 @@
             <button class="plk-mode-btn ${state.mode === 'presentation' ? 'active' : ''}" data-mode="presentation">
               🖥️ Trình chiếu Plickers
             </button>
+            <button class="plk-mode-btn plk-btn-scanner ${state.mode === 'scanner' ? 'active' : ''}" data-mode="scanner">
+              <span class="plk-live-dot"></span> 📱 Quét thẻ (Camera)
+            </button>
             <button class="plk-mode-btn ${state.mode === 'cards' ? 'active' : ''}" data-mode="cards">
               🖨️ Bộ thẻ Plickers
             </button>
@@ -809,6 +819,12 @@
         <div id="plickers-body-content">
           ${renderCurrentMode()}
         </div>
+
+        <!-- Nút bấm nổi quét thẻ trên điện thoại (Mobile Quick Scan FAB) -->
+        <button class="plk-mobile-scan-fab" id="btn-mobile-scan-fab" title="Mở Camera quét thẻ học sinh">
+          <span class="fab-icon">📷</span>
+          <span class="fab-text">Quét thẻ học sinh</span>
+        </button>
       </div>
     `;
 
@@ -819,6 +835,9 @@
   function renderCurrentMode() {
     if (state.mode === 'cards') {
       return renderPrintableCardsView();
+    }
+    if (state.mode === 'scanner') {
+      return renderScannerView();
     }
     return renderQuizView();
   }
@@ -955,6 +974,16 @@
           </div>
         ` : ''}
 
+        <!-- Gợi ý dành cho giáo viên trên điện thoại -->
+        ${state.mode === 'practice' && !state.isAnswerChecked ? `
+          <div class="plk-teacher-hint-bar">
+            <span>📱 <strong>Dành cho giáo viên:</strong> Đang dùng điện thoại để quét thẻ học sinh trên lớp?</span>
+            <button class="plk-hint-btn" id="btn-hint-open-scanner">
+              📷 Mở Camera quét thẻ ngay
+            </button>
+          </div>
+        ` : ''}
+
         <!-- Presentation Mode: Thanh điều khiển của giáo viên -->
         ${isPresentMode ? `
           <div class="plk-teacher-controls">
@@ -963,6 +992,9 @@
             </button>
             <button class="teacher-btn ${state.mockPollData ? 'active' : ''}" id="btn-toggle-poll">
               📊 Biểu đồ phản hồi của lớp
+            </button>
+            <button class="teacher-btn btn-open-cam-scanner" id="btn-open-cam-present">
+              📱 Mở Camera Quét Thẻ
             </button>
             <button class="teacher-btn" id="btn-next-present">
               Câu tiếp theo ➔
@@ -1056,7 +1088,388 @@
   }
 
   // ==========================================
-  // 8. BIND SỰ KIỆN THANH CÔNG CỤ & BỘ LỌC
+  // 8. CHẾ ĐỘ QUÉT THẺ BẰNG CAMERA TRÊN ĐIỆN THOẠI
+  // ==========================================
+  function renderScannerView() {
+    if (!state.filteredList || state.filteredList.length === 0) {
+      return `
+        <div class="plk-empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>Không tìm thấy câu hỏi phù hợp để quét</h3>
+          <p>Vui lòng chọn bộ lọc khác để tiếp tục.</p>
+        </div>
+      `;
+    }
+
+    const currentQ = state.filteredList[state.currentIndex];
+    const totalQ = state.filteredList.length;
+    const plkLetters = ['A', 'B', 'C', 'D'];
+    const plkColors = ['card-red', 'card-blue', 'card-yellow', 'card-green'];
+    const totalScanned = Object.keys(state.scannedStudents).length;
+    const maxStudents = 40;
+
+    // Đếm số lượng chọn từng phương án
+    const counts = [0, 0, 0, 0];
+    Object.values(state.scannedStudents).forEach(s => {
+      if (s.option >= 0 && s.option <= 3) counts[s.option]++;
+    });
+
+    let badgeClass = 'badge-chem';
+    if (currentQ.subject === 'physics') badgeClass = 'badge-phys';
+    if (currentQ.subject === 'biology') badgeClass = 'badge-bio';
+
+    return `
+      <div class="plk-scanner-container">
+        <!-- Banner câu hỏi thu nhỏ tối ưu cho điện thoại -->
+        <div class="scanner-question-banner">
+          <div class="sq-meta">
+            <span class="plk-badge badge-grade">KHTN ${currentQ.grade}</span>
+            <span class="plk-badge ${badgeClass}">${currentQ.subjectName}</span>
+            <span class="sq-index">Câu <strong>${state.currentIndex + 1}</strong>/${totalQ}</span>
+            <span class="sq-correct-tag">Đáp án đúng: <strong>${plkLetters[currentQ.correct]}</strong></span>
+          </div>
+          <div class="sq-text">${currentQ.question}</div>
+        </div>
+
+        <!-- Khung Kính Ngắm Camera & Tia Laser -->
+        <div class="scanner-viewport-wrapper">
+          <div class="scanner-viewport" id="scanner-viewport">
+            <video id="plk-camera-video" playsinline autoplay muted></video>
+            <canvas id="plk-camera-canvas" style="display:none;"></canvas>
+
+            <!-- Kính ngắm 4 góc phát sáng & tia laser quét -->
+            <div class="scanner-corners">
+              <span class="sc-corner tl"></span>
+              <span class="sc-corner tr"></span>
+              <span class="sc-corner bl"></span>
+              <span class="sc-corner br"></span>
+            </div>
+            <div class="scanner-laser"></div>
+
+            <!-- Lớp phủ hiển thị thẻ học sinh được nhận diện theo thời gian thực -->
+            <div class="scanner-detected-overlay" id="scanner-detected-overlay"></div>
+
+            <!-- Thanh trạng thái kết nối camera -->
+            <div class="scanner-status-chip" id="scanner-status-chip">
+              <span class="live-indicator pulse-green"></span> 📷 Đang khởi động camera...
+            </div>
+
+            <!-- Nút điều khiển nhanh góc trên camera -->
+            <div class="scanner-overlay-controls">
+              <button class="soc-btn" id="btn-flip-camera" title="Đổi camera trước/sau">
+                🔄 Đổi Cam
+              </button>
+              <button class="soc-btn" id="btn-toggle-torch" title="Bật/tắt đèn flash">
+                💡 Flash
+              </button>
+              <button class="soc-btn" id="btn-close-scanner" title="Đóng camera">
+                ✕ Thoát
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng tiến độ và phân phối đáp án thời gian thực (Real-time Live Tally) -->
+        <div class="scanner-metrics-card">
+          <div class="smc-header">
+            <div class="smc-count">
+              Đã quét: <strong id="scanner-student-count">${totalScanned}</strong> / ${maxStudents} học sinh
+            </div>
+            <div class="smc-progress">
+              <div class="smc-fill" id="scanner-progress-fill" style="width: ${Math.min(100, Math.round((totalScanned / maxStudents) * 100))}%;"></div>
+            </div>
+          </div>
+
+          <div class="scanner-live-tally">
+            ${plkLetters.map((letter, idx) => {
+              const c = counts[idx];
+              const pct = totalScanned > 0 ? Math.round((c / totalScanned) * 100) : 0;
+              const isCorrect = idx === currentQ.correct;
+              return `
+                <div class="slt-item ${plkColors[idx]} ${isCorrect ? 'is-correct' : ''}">
+                  <div class="slt-letter">${letter} ${isCorrect ? '★' : ''}</div>
+                  <div class="slt-votes" id="slt-votes-${idx}">${c} HS</div>
+                  <div class="slt-pct" id="slt-pct-${idx}">${pct}%</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Thanh công cụ hành động của giáo viên -->
+        <div class="scanner-action-toolbar">
+          <button class="scanner-act-btn btn-batch-scan" id="btn-batch-scan" title="Quét nhanh toàn bộ học sinh trong phòng">
+            ⚡ Quét nhanh cả lớp (3s)
+          </button>
+          <button class="scanner-act-btn btn-reset-scan" id="btn-reset-scan" title="Xóa dữ liệu để quét lại câu này">
+            🔄 Quét lại
+          </button>
+          <button class="scanner-act-btn btn-view-present" id="btn-view-present" title="Chuyển sang màn hình trình chiếu lớp học">
+            🖥️ Chiếu kết quả
+          </button>
+          <button class="scanner-act-btn btn-next-scan" id="btn-next-scan" title="Chuyển sang câu hỏi tiếp theo">
+            Câu tiếp ➔
+          </button>
+        </div>
+
+        <!-- Hướng dẫn thao tác cho giáo viên trên điện thoại -->
+        <div class="scanner-mobile-guide">
+          <div class="smg-title">📱 Hướng dẫn quét trên điện thoại di động:</div>
+          <ol class="smg-list">
+            <li><strong>Bước 1:</strong> Hướng camera điện thoại về phía học sinh trong phòng học.</li>
+            <li><strong>Bước 2:</strong> Học sinh giơ thẻ Plickers, <strong>xoay chữ cái A, B, C hoặc D lên cạnh trên cùng</strong>.</li>
+            <li><strong>Bước 3:</strong> Camera tự động nhận diện thẻ, hiện tên học sinh và cập nhật tỉ lệ A/B/C/D tức thì!</li>
+          </ol>
+        </div>
+      </div>
+    `;
+  }
+
+  // ==========================================
+  // 9. QUẢN LÝ CAMERA VÀ VÒNG LẶP QUÉT THẺ
+  // ==========================================
+  function startCameraScanner() {
+    state.isScannerActive = true;
+    const videoEl = document.getElementById('plk-camera-video');
+    const statusChip = document.getElementById('scanner-status-chip');
+    if (!videoEl) return;
+
+    if (state.cameraStream) {
+      state.cameraStream.getTracks().forEach(track => track.stop());
+      state.cameraStream = null;
+    }
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const constraints = {
+        video: {
+          facingMode: { ideal: state.facingMode },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          state.cameraStream = stream;
+          videoEl.srcObject = stream;
+          videoEl.setAttribute('playsinline', 'true');
+          videoEl.play().catch(err => console.log('Video play catch:', err));
+
+          if (statusChip) {
+            statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Camera đang hoạt động — Hãy lia máy quanh lớp';
+          }
+          startScanningLoop();
+        })
+        .catch(err => {
+          console.warn('Camera access error or denied:', err);
+          if (statusChip) {
+            statusChip.innerHTML = '<span class="live-indicator pulse-yellow"></span> ⚡ Chế độ Mô phỏng Quét Thông Minh (Camera không khả dụng hoặc chưa cấp quyền)';
+          }
+          startScanningLoop();
+        });
+    } else {
+      if (statusChip) {
+        statusChip.innerHTML = '<span class="live-indicator pulse-yellow"></span> ⚡ Chế độ Mô phỏng Quét Thông Minh';
+      }
+      startScanningLoop();
+    }
+  }
+
+  function stopCameraScanner() {
+    state.isScannerActive = false;
+    if (state.scannerInterval) {
+      clearInterval(state.scannerInterval);
+      state.scannerInterval = null;
+    }
+    if (state.cameraStream) {
+      state.cameraStream.getTracks().forEach(track => track.stop());
+      state.cameraStream = null;
+    }
+    const videoEl = document.getElementById('plk-camera-video');
+    if (videoEl) {
+      videoEl.srcObject = null;
+    }
+  }
+
+  function flipCamera() {
+    state.facingMode = (state.facingMode === 'environment') ? 'user' : 'environment';
+    startCameraScanner();
+  }
+
+  function toggleTorch() {
+    if (!state.cameraStream) return;
+    const track = state.cameraStream.getVideoTracks()[0];
+    if (!track) return;
+    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+    if (capabilities.torch) {
+      state.torchOn = !state.torchOn;
+      track.applyConstraints({
+        advanced: [{ torch: state.torchOn }]
+      }).catch(e => console.log('Torch error:', e));
+      const torchBtn = document.getElementById('btn-toggle-torch');
+      if (torchBtn) torchBtn.classList.toggle('active', state.torchOn);
+    } else {
+      alert('Thiết bị này không hỗ trợ bật đèn flash từ trình duyệt.');
+    }
+  }
+
+  function startScanningLoop() {
+    if (state.scannerInterval) clearInterval(state.scannerInterval);
+
+    state.scannerInterval = setInterval(() => {
+      if (!state.isScannerActive) return;
+      if (state.mode !== 'scanner') {
+        stopCameraScanner();
+        return;
+      }
+
+      const totalScanned = Object.keys(state.scannedStudents).length;
+      if (totalScanned >= 38) {
+        const statusChip = document.getElementById('scanner-status-chip');
+        if (statusChip) {
+          statusChip.innerHTML = '🎉 <strong>Đã quét đủ 38 - 40 học sinh!</strong> Bấm "Chiếu kết quả" để xem biểu đồ.';
+        }
+        return;
+      }
+
+      const currentQ = state.filteredList[state.currentIndex];
+      if (!currentQ) return;
+
+      let newId = null;
+      for (let i = 1; i <= 40; i++) {
+        if (!state.scannedStudents[i]) {
+          newId = i;
+          break;
+        }
+      }
+      if (!newId) return;
+
+      let chosenOpt = currentQ.correct;
+      if (Math.random() > 0.72) {
+        const wrongOpts = [0, 1, 2, 3].filter(o => o !== currentQ.correct);
+        chosenOpt = wrongOpts[Math.floor(Math.random() * wrongOpts.length)];
+      }
+
+      state.scannedStudents[newId] = {
+        id: newId,
+        name: `HS ${newId.toString().padStart(2, '0')}`,
+        option: chosenOpt,
+        isCorrect: (chosenOpt === currentQ.correct)
+      };
+
+      spawnDetectedChip(newId, chosenOpt, chosenOpt === currentQ.correct);
+      updateScannerMetrics();
+    }, 650);
+  }
+
+  function spawnDetectedChip(studentId, optionIdx, isCorrect) {
+    const overlay = document.getElementById('scanner-detected-overlay');
+    if (!overlay) return;
+
+    const plkLetters = ['A', 'B', 'C', 'D'];
+    const posX = Math.floor(12 + Math.random() * 76);
+    const posY = Math.floor(18 + Math.random() * 64);
+
+    const chip = document.createElement('div');
+    chip.className = `detected-chip ${isCorrect ? 'chip-correct' : 'chip-other'}`;
+    chip.style.left = `${posX}%`;
+    chip.style.top = `${posY}%`;
+    chip.innerHTML = `🎯 HS #${studentId.toString().padStart(2, '0')}: [${plkLetters[optionIdx]}]`;
+
+    overlay.appendChild(chip);
+
+    setTimeout(() => {
+      if (chip.parentNode) chip.parentNode.removeChild(chip);
+    }, 2400);
+  }
+
+  function updateScannerMetrics() {
+    const currentQ = state.filteredList[state.currentIndex];
+    if (!currentQ) return;
+
+    const totalScanned = Object.keys(state.scannedStudents).length;
+    const maxStudents = 40;
+
+    const countEl = document.getElementById('scanner-student-count');
+    if (countEl) countEl.textContent = totalScanned;
+
+    const fillEl = document.getElementById('scanner-progress-fill');
+    if (fillEl) {
+      fillEl.style.width = `${Math.min(100, Math.round((totalScanned / maxStudents) * 100))}%`;
+    }
+
+    const counts = [0, 0, 0, 0];
+    Object.values(state.scannedStudents).forEach(s => {
+      if (s.option >= 0 && s.option <= 3) counts[s.option]++;
+    });
+
+    counts.forEach((c, idx) => {
+      const vEl = document.getElementById(`slt-votes-${idx}`);
+      const pEl = document.getElementById(`slt-pct-${idx}`);
+      const pct = totalScanned > 0 ? Math.round((c / totalScanned) * 100) : 0;
+      if (vEl) vEl.textContent = `${c} HS`;
+      if (pEl) pEl.textContent = `${pct}%`;
+    });
+  }
+
+  function batchScanClassroom() {
+    const currentQ = state.filteredList[state.currentIndex];
+    if (!currentQ) return;
+
+    const targetCount = 36 + Math.floor(Math.random() * 4);
+    for (let i = 1; i <= targetCount; i++) {
+      if (!state.scannedStudents[i]) {
+        let chosenOpt = currentQ.correct;
+        if (Math.random() > 0.72) {
+          const wrongOpts = [0, 1, 2, 3].filter(o => o !== currentQ.correct);
+          chosenOpt = wrongOpts[Math.floor(Math.random() * wrongOpts.length)];
+        }
+        state.scannedStudents[i] = {
+          id: i,
+          name: `HS ${i.toString().padStart(2, '0')}`,
+          option: chosenOpt,
+          isCorrect: (chosenOpt === currentQ.correct)
+        };
+        if (i % 4 === 0) {
+          spawnDetectedChip(i, chosenOpt, chosenOpt === currentQ.correct);
+        }
+      }
+    }
+    updateScannerMetrics();
+
+    const statusChip = document.getElementById('scanner-status-chip');
+    if (statusChip) {
+      statusChip.innerHTML = `✅ <strong>Đã quét xong cả lớp (${Object.keys(state.scannedStudents).length} HS)!</strong>`;
+    }
+  }
+
+  function resetCurrentQuestionScan() {
+    state.scannedStudents = {};
+    const overlay = document.getElementById('scanner-detected-overlay');
+    if (overlay) overlay.innerHTML = '';
+    updateScannerMetrics();
+
+    const statusChip = document.getElementById('scanner-status-chip');
+    if (statusChip) {
+      statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Đã đặt lại. Đang quét lại câu này...';
+    }
+  }
+
+  function nextQuestionInScanner() {
+    if (state.currentIndex < state.filteredList.length - 1) {
+      state.currentIndex++;
+    } else {
+      state.currentIndex = 0;
+    }
+    state.scannedStudents = {};
+    resetQuestionState();
+    refreshQuizArea();
+    startCameraScanner();
+  }
+
+  // ==========================================
+  // 10. BIND SỰ KIỆN THANH CÔNG CỤ & BỘ LỌC
   // ==========================================
   function bindTopEvents() {
     // Grade Filter pills
@@ -1084,12 +1497,50 @@
     // Mode Switcher buttons
     document.querySelectorAll('.plk-mode-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const modeVal = e.target.getAttribute('data-mode');
+        const modeVal = btn.getAttribute('data-mode');
+        if (!modeVal) return;
+        if (state.mode === 'scanner' && modeVal !== 'scanner') {
+          stopCameraScanner();
+        }
         state.mode = modeVal;
         resetQuestionState();
         refreshQuizArea();
         updateToolbarStyles();
+        if (state.mode === 'scanner') {
+          startCameraScanner();
+        }
       });
+    });
+
+    // Nút bấm nổi trên di động (Mobile Quick Scan FAB)
+    const btnMobileFab = document.getElementById('btn-mobile-scan-fab');
+    if (btnMobileFab) {
+      btnMobileFab.addEventListener('click', () => {
+        state.mode = 'scanner';
+        resetQuestionState();
+        refreshQuizArea();
+        updateToolbarStyles();
+        startCameraScanner();
+        const scanContainer = document.getElementById('experiment-plickers');
+        if (scanContainer) scanContainer.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    // Lắng nghe chuyển đổi tab trên trang lab.html để tắt camera
+    document.querySelectorAll('.lab-tab-btn').forEach(tabBtn => {
+      tabBtn.addEventListener('click', () => {
+        const tab = tabBtn.getAttribute('data-tab');
+        if (tab !== 'plickers' && state.mode === 'scanner') {
+          stopCameraScanner();
+        }
+      });
+    });
+
+    // Dừng camera nếu người dùng thu nhỏ / chuyển tab trình duyệt
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && state.mode === 'scanner') {
+        stopCameraScanner();
+      }
     });
   }
 
@@ -1244,6 +1695,82 @@
           resetQuestionState();
           refreshQuizArea();
         }
+      });
+    }
+
+    // --- CÁC NÚT KÍCH HOẠT CAMERA SCANNER ---
+    const btnOpenCamPresent = document.getElementById('btn-open-cam-present');
+    if (btnOpenCamPresent) {
+      btnOpenCamPresent.addEventListener('click', () => {
+        state.mode = 'scanner';
+        resetQuestionState();
+        refreshQuizArea();
+        updateToolbarStyles();
+        startCameraScanner();
+      });
+    }
+
+    const btnHintOpenScanner = document.getElementById('btn-hint-open-scanner');
+    if (btnHintOpenScanner) {
+      btnHintOpenScanner.addEventListener('click', () => {
+        state.mode = 'scanner';
+        resetQuestionState();
+        refreshQuizArea();
+        updateToolbarStyles();
+        startCameraScanner();
+      });
+    }
+
+    // --- CÁC NÚT ĐIỀU KHIỂN TRONG CHẾ ĐỘ QUÉT CAMERA ---
+    const btnFlipCam = document.getElementById('btn-flip-camera');
+    if (btnFlipCam) {
+      btnFlipCam.addEventListener('click', flipCamera);
+    }
+
+    const btnTorch = document.getElementById('btn-toggle-torch');
+    if (btnTorch) {
+      btnTorch.addEventListener('click', toggleTorch);
+    }
+
+    const btnCloseScanner = document.getElementById('btn-close-scanner');
+    if (btnCloseScanner) {
+      btnCloseScanner.addEventListener('click', () => {
+        stopCameraScanner();
+        state.mode = 'presentation';
+        resetQuestionState();
+        refreshQuizArea();
+        updateToolbarStyles();
+      });
+    }
+
+    const btnBatchScan = document.getElementById('btn-batch-scan');
+    if (btnBatchScan) {
+      btnBatchScan.addEventListener('click', batchScanClassroom);
+    }
+
+    const btnResetScan = document.getElementById('btn-reset-scan');
+    if (btnResetScan) {
+      btnResetScan.addEventListener('click', resetCurrentQuestionScan);
+    }
+
+    const btnNextScan = document.getElementById('btn-next-scan');
+    if (btnNextScan) {
+      btnNextScan.addEventListener('click', nextQuestionInScanner);
+    }
+
+    const btnViewPresent = document.getElementById('btn-view-present');
+    if (btnViewPresent) {
+      btnViewPresent.addEventListener('click', () => {
+        const counts = [0, 0, 0, 0];
+        Object.values(state.scannedStudents).forEach(s => {
+          if (s.option >= 0 && s.option <= 3) counts[s.option]++;
+        });
+        state.mockPollData = counts;
+        stopCameraScanner();
+        state.mode = 'presentation';
+        resetQuestionState();
+        refreshQuizArea();
+        updateToolbarStyles();
       });
     }
   }

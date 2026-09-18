@@ -106,6 +106,9 @@
         <button class="lab-tab-btn" data-tab="molecule" onclick="switchTab('molecule')">
           <span class="tab-icon">🔬</span> Phân Tử 3D
         </button>
+        <button class="lab-tab-btn" data-tab="plickers" onclick="switchTab('plickers')">
+          <span class="tab-icon">🎯</span> Plickers KHTN
+        </button>
       </div>
 
       <!-- Experiment 1: Acid-Base & pH -->
@@ -143,6 +146,19 @@
           </div>
           <div id="experiment-molecule">
             <!-- Nội dung sẽ được tạo bởi lab-molecule.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Experiment 4: Plickers KHTN 6, 7, 8, 9 -->
+      <div class="experiment-panel" id="panel-plickers">
+        <div class="experiment-container">
+          <div class="experiment-header">
+            <h2>🎯 Trắc Nghiệm Tương Tác Plickers — KHTN 6, 7, 8, 9</h2>
+            <p>Bộ câu hỏi trắc nghiệm chuẩn GDPT 2018 (Hóa học, Vật lí, Sinh học). Hỗ trợ chế độ Luyện tập cá nhân, Trình chiếu lớp học & In bộ thẻ mã Plickers.</p>
+          </div>
+          <div id="experiment-plickers">
+            <!-- Nội dung sẽ được tạo bởi lab-plickers.js -->
           </div>
         </div>
       </div>
@@ -197,6 +213,7 @@
   <script src="assets/js/lab-acid-base.js"></script>
   <script src="assets/js/lab-balance.js"></script>
   <script src="assets/js/lab-molecule.js"></script>
+  <script src="assets/js/lab-plickers.js"></script>
   
   <script>
     // Tab switching logic

@@ -1503,14 +1503,38 @@ input[type="range"]::-webkit-slider-thumb {
 .edge-label {
   position: absolute;
   font-weight: 900;
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   color: #000000;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-.label-top { top: 6px; left: 50%; transform: translateX(-50%); }
-.label-right { right: 8px; top: 50%; transform: translateY(-50%); }
-.label-bottom { bottom: 6px; left: 50%; transform: translateX(-50%); }
-.label-left { left: 8px; top: 50%; transform: translateY(-50%); }
+/* Khi quay cạnh nào lên phía trên, chữ cái đó luôn thẳng đứng theo chiều đọc */
+.label-top { 
+  top: 8px; 
+  left: 50%; 
+  transform: translateX(-50%) rotate(0deg); 
+}
+.label-right { 
+  right: 8px; 
+  top: 50%; 
+  transform: translateY(-50%) rotate(90deg); 
+}
+.label-bottom { 
+  bottom: 8px; 
+  left: 50%; 
+  transform: translateX(-50%) rotate(180deg); 
+}
+.label-left { 
+  left: 8px; 
+  top: 50%; 
+  transform: translateY(-50%) rotate(-90deg); 
+}
 
 .plk-qr-matrix {
   width: 100%;
@@ -1532,6 +1556,34 @@ input[type="range"]::-webkit-slider-thumb {
   max-width: 180px;
   max-height: 180px;
   display: block;
+}
+
+/* Tối ưu trang in A4 cho bộ thẻ Plickers */
+@media print {
+  header, footer, nav, .navbar, .lab-hero, .lab-tabs, .cards-intro-banner, .plickers-top-bar, .plk-mobile-scan-fab {
+    display: none !important;
+  }
+
+  body, .lab-container, .experiment-panel, #experiment-plickers, .plickers-app, .plk-cards-container {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .plickers-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12mm !important;
+    padding: 10mm !important;
+  }
+
+  .plk-card-printable {
+    page-break-inside: avoid !important;
+    border: 2.5px solid #000000 !important;
+    box-shadow: none !important;
+    border-radius: 8px !important;
+    padding: 30px !important;
+  }
 }
 
 @keyframes bounce {

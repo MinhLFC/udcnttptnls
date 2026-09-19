@@ -1100,8 +1100,8 @@
       <div class="plk-cards-container">
         <div class="cards-intro-banner">
           <div class="intro-text">
-            <h3>🖨️ Bộ 35 Thẻ Mã Plickers In Sẵn Họ Tên Học Sinh</h3>
-            <p>Hệ thống đã tạo sẵn 35 thẻ mã ma trận chuẩn riêng biệt cho 35 học sinh của lớp. Mỗi học sinh giữ một thẻ tương ứng với số thứ tự và họ tên của mình. Khi trả lời, học sinh <strong>xoay chữ cái A, B, C hoặc D lên phía trên</strong>.</p>
+            <h3>🖨️ Bộ 35 Thẻ Mã QR Plickers Chuẩn Dùng Chung Cả Lớp</h3>
+            <p>Hệ thống đã tạo sẵn 35 thẻ mã QR riêng biệt đánh số từ <strong>#01 đến #35</strong> (thẻ không ghi tên học sinh để tái sử dụng cho nhiều lớp học). Khi trả lời, học sinh <strong>xoay chữ cái A, B, C hoặc D lên phía trên cùng</strong>. Thẻ được thiết kế chuẩn: khi quay đầu nào lên trên thì chữ cái đó luôn thẳng đứng theo chiều đọc.</p>
           </div>
           <button class="plk-btn-print" onclick="window.print()">
             🖨️ In bộ 35 thẻ ngay
@@ -1112,14 +1112,14 @@
           ${CLASS_ROSTER.map(student => `
             <div class="plk-card-printable">
               <div class="card-num-badge">Thẻ #${student.id.toString().padStart(2, '0')}</div>
-              <div class="card-student-name">${student.name}</div>
-              <!-- 4 Labels ở 4 cạnh của thẻ Plickers xoay 4 hướng -->
+              
+              <!-- 4 Labels ở 4 cạnh của thẻ: khi quay đầu nào lên trên thì chữ cái đó thẳng đứng -->
               <div class="edge-label label-top">A</div>
               <div class="edge-label label-right">B</div>
               <div class="edge-label label-bottom">C</div>
               <div class="edge-label label-left">D</div>
 
-              <!-- SVG Mã QR Thật Cá Nhân Hóa Chuẩn Plickers -->
+              <!-- SVG Mã QR Thật Chuẩn Plickers -->
               <div class="plk-qr-real-wrapper">
                 ${generateStudentQrSvg(student.id)}
               </div>

@@ -756,6 +756,9 @@
     torchOn: false,
     scannedStudents: {},       // { [studentId]: { id, name, option, isCorrect } }
     scannerInterval: null,
+    scanFrameTimeout: null,
+    barcodeDetector: null,
+    lastScannedTime: {},       // { [studentId]: { time, optionIdx } } chống quét lặp
     isScannerActive: false
   };
 
@@ -1116,20 +1119,10 @@
               <div class="edge-label label-bottom">C</div>
               <div class="edge-label label-left">D</div>
 
-              <!-- SVG Mã Ma Trận Plickers chuẩn cá nhân hóa -->
-              <svg class="plk-qr-matrix" viewBox="0 0 100 100" width="100%" height="100%">
-                <rect x="0" y="0" width="100" height="100" fill="#ffffff" stroke="#000" stroke-width="3"/>
-                <!-- Ma trận giả lập các ô Plickers độc nhất theo ID học sinh -->
-                <rect x="15" y="15" width="20" height="20" fill="#000"/>
-                <rect x="65" y="15" width="20" height="20" fill="#000"/>
-                <rect x="15" y="65" width="20" height="20" fill="#000"/>
-                <rect x="40" y="40" width="20" height="20" fill="#000"/>
-                ${(student.id % 2 === 0) ? '<rect x="40" y="15" width="20" height="20" fill="#000"/>' : ''}
-                ${(student.id % 3 === 0) ? '<rect x="65" y="65" width="20" height="20" fill="#000"/>' : ''}
-                ${(student.id % 4 === 0) ? '<rect x="15" y="40" width="20" height="20" fill="#000"/>' : ''}
-                ${(student.id % 5 === 0) ? '<rect x="65" y="40" width="20" height="20" fill="#000"/>' : ''}
-                ${(student.id % 7 === 0) ? '<rect x="40" y="65" width="20" height="20" fill="#000"/>' : ''}
-              </svg>
+              <!-- SVG Mã QR Thật Cá Nhân Hóa Chuẩn Plickers -->
+              <div class="plk-qr-real-wrapper">
+                ${generateStudentQrSvg(student.id)}
+              </div>
             </div>
           `).join('')}
         </div>
@@ -1344,8 +1337,8 @@
 
         <!-- Thanh công cụ hành động của giáo viên -->
         <div class="scanner-action-toolbar">
-          <button class="scanner-act-btn btn-batch-scan" id="btn-batch-scan" title="Quét nhanh toàn bộ học sinh trong phòng">
-            ⚡ Quét nhanh cả lớp (3s)
+          <button class="scanner-act-btn btn-batch-scan" id="btn-batch-scan" title="Chế độ mô phỏng thử nghiệm khi không có thẻ in thực tế">
+            ⚡ Thử nghiệm cả lớp (Demo)
           </button>
           <button class="scanner-act-btn btn-reset-scan" id="btn-reset-scan" title="Xóa dữ liệu để quét lại câu này">
             🔄 Quét lại
@@ -1372,8 +1365,38 @@
   }
 
   // ==========================================
-  // 9. QUẢN LÝ CAMERA VÀ VÒNG LẶP QUÉT THẺ
+  // 9. QUẢN LÝ CAMERA VÀ VÒNG LẶP QUÉT THẺ QR THẬT (NO AUTO-SCAN)
   // ==========================================
+
+  // Tạo mã QR SVG chuẩn có thể quét cho từng học sinh
+  function generateStudentQrSvg(studentId, letter = 'A') {
+    const payload = `PLK:${studentId}`;
+
+    if (typeof qrcode !== 'undefined') {
+      try {
+        const qr = qrcode(0, 'M');
+        qr.addData(payload);
+        qr.make();
+        return qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+      } catch (err) {
+        console.warn('QR Code generation error:', err);
+      }
+    }
+
+    // Fallback SVG nếu thư viện CDN chưa sẵn sàng
+    return `
+      <svg class="plk-qr-matrix" viewBox="0 0 100 100" width="100%" height="100%">
+        <rect x="0" y="0" width="100" height="100" fill="#ffffff" stroke="#000" stroke-width="3"/>
+        <rect x="15" y="15" width="20" height="20" fill="#000"/>
+        <rect x="65" y="15" width="20" height="20" fill="#000"/>
+        <rect x="15" y="65" width="20" height="20" fill="#000"/>
+        <rect x="40" y="40" width="20" height="20" fill="#000"/>
+        <text x="50" y="55" font-size="12" text-anchor="middle" font-weight="bold">#${studentId}</text>
+      </svg>
+    `;
+  }
+
+  // Bắt đầu mở Camera và kích hoạt quét mã QR quang học thật
   function startCameraScanner() {
     state.isScannerActive = true;
     const videoEl = document.getElementById('plk-camera-video');
@@ -1403,27 +1426,31 @@
           videoEl.play().catch(err => console.log('Video play catch:', err));
 
           if (statusChip) {
-            statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Camera đang hoạt động — Hãy lia máy quanh lớp';
+            statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Camera đang hoạt động — Hãy giơ thẻ QR học sinh vào khung hình';
           }
-          startScanningLoop();
+          // Bắt đầu vòng lặp quét nhận diện mã QR thật
+          startRealQrCameraLoop();
         })
         .catch(err => {
           console.warn('Camera access error or denied:', err);
           if (statusChip) {
-            statusChip.innerHTML = '<span class="live-indicator pulse-yellow"></span> ⚡ Chế độ Mô phỏng Quét Thông Minh (Camera không khả dụng hoặc chưa cấp quyền)';
+            statusChip.innerHTML = '<span class="live-indicator pulse-yellow"></span> ⚠️ Chưa cấp quyền Camera. Bạn có thể điểm danh thủ công trên danh sách bên dưới.';
           }
-          startScanningLoop();
         });
     } else {
       if (statusChip) {
-        statusChip.innerHTML = '<span class="live-indicator pulse-yellow"></span> ⚡ Chế độ Mô phỏng Quét Thông Minh';
+        statusChip.innerHTML = '<span class="live-indicator pulse-yellow"></span> ⚠️ Trình duyệt không hỗ trợ Camera. Hãy điểm danh thủ công trên danh sách bên dưới.';
       }
-      startScanningLoop();
     }
   }
 
+  // Dừng Camera và hủy toàn bộ tiến trình quét hình ảnh
   function stopCameraScanner() {
     state.isScannerActive = false;
+    if (state.scanFrameTimeout) {
+      clearTimeout(state.scanFrameTimeout);
+      state.scanFrameTimeout = null;
+    }
     if (state.scannerInterval) {
       clearInterval(state.scannerInterval);
       state.scannerInterval = null;
@@ -1460,50 +1487,297 @@
     }
   }
 
-  function startScanningLoop() {
-    if (state.scannerInterval) clearInterval(state.scannerInterval);
+  // Vòng lặp phân tích khung hình video thời gian thực (CHỈ DUYỆT KHI CÓ THẺ QR THẬT)
+  function startRealQrCameraLoop() {
+    if (state.scanFrameTimeout) {
+      clearTimeout(state.scanFrameTimeout);
+      state.scanFrameTimeout = null;
+    }
 
-    state.scannerInterval = setInterval(() => {
-      if (!state.isScannerActive) return;
-      if (state.mode !== 'scanner') {
+    let isProcessing = false;
+
+    function processFrame() {
+      if (!state.isScannerActive || state.mode !== 'scanner') {
         stopCameraScanner();
         return;
       }
 
-      const totalScanned = Object.keys(state.scannedStudents).length;
-      if (totalScanned >= CLASS_ROSTER.length) {
-        const statusChip = document.getElementById('scanner-status-chip');
-        if (statusChip) {
-          statusChip.innerHTML = '🎉 <strong>Đã điểm danh đủ 35/35 học sinh!</strong> Bấm "Chiếu kết quả" để xem biểu đồ.';
-        }
+      const videoEl = document.getElementById('plk-camera-video');
+      if (!videoEl || videoEl.readyState < 2) {
+        state.scanFrameTimeout = setTimeout(processFrame, 150);
         return;
       }
 
-      const currentQ = state.filteredList[state.currentIndex];
-      if (!currentQ) return;
-
-      // Tìm ngẫu nhiên một học sinh trong danh sách 35 HS chưa quét
-      const unscannedList = CLASS_ROSTER.filter(s => !state.scannedStudents[s.id]);
-      if (unscannedList.length === 0) return;
-
-      const student = unscannedList[Math.floor(Math.random() * unscannedList.length)];
-
-      let chosenOpt = currentQ.correct;
-      if (Math.random() > 0.72) {
-        const wrongOpts = [0, 1, 2, 3].filter(o => o !== currentQ.correct);
-        chosenOpt = wrongOpts[Math.floor(Math.random() * wrongOpts.length)];
+      if (isProcessing) {
+        state.scanFrameTimeout = setTimeout(processFrame, 100);
+        return;
       }
 
-      state.scannedStudents[student.id] = {
-        id: student.id,
-        name: student.name,
-        option: chosenOpt,
-        isCorrect: (chosenOpt === currentQ.correct)
-      };
+      isProcessing = true;
 
-      spawnDetectedChip(student.id, chosenOpt, chosenOpt === currentQ.correct);
-      updateScannerMetrics();
-    }, 650);
+      // Ưu tiên 1: Native BarcodeDetector (Hỗ trợ phần cứng cực nhanh trên Chrome/Edge/Android)
+      if ('BarcodeDetector' in window) {
+        if (!state.barcodeDetector) {
+          try {
+            state.barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+          } catch (e) {
+            state.barcodeDetector = null;
+          }
+        }
+      }
+
+      if (state.barcodeDetector) {
+        state.barcodeDetector.detect(videoEl)
+          .then(barcodes => {
+            if (barcodes && barcodes.length > 0) {
+              barcodes.forEach(b => {
+                if (b.rawValue) {
+                  handleRealQrScanned(b.rawValue, b.cornerPoints);
+                }
+              });
+            }
+          })
+          .catch(() => {
+            // Fallback jsQR qua canvas nếu API gặp trục trặc
+            scanFrameWithJsQr(videoEl);
+          })
+          .finally(() => {
+            isProcessing = false;
+            if (state.isScannerActive && state.mode === 'scanner') {
+              state.scanFrameTimeout = setTimeout(processFrame, 160);
+            }
+          });
+        return;
+      }
+
+      // Ưu tiên 2: Sử dụng jsQR xử lý canvas (Tương thích mọi nền tảng kể cả Safari / iOS)
+      try {
+        scanFrameWithJsQr(videoEl);
+      } catch (err) {
+        console.warn('Frame scan error:', err);
+      }
+
+      isProcessing = false;
+      if (state.isScannerActive && state.mode === 'scanner') {
+        state.scanFrameTimeout = setTimeout(processFrame, 160);
+      }
+    }
+
+    state.scanFrameTimeout = setTimeout(processFrame, 150);
+  }
+
+  // Quét khung hình video bằng canvas và thư viện jsQR
+  function scanFrameWithJsQr(videoEl) {
+    if (typeof jsQR === 'undefined') return;
+
+    let canvas = document.getElementById('plk-camera-canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'plk-camera-canvas';
+      canvas.style.display = 'none';
+      document.body.appendChild(canvas);
+    }
+
+    const vw = videoEl.videoWidth;
+    const vh = videoEl.videoHeight;
+    if (!vw || !vh) return;
+
+    // Giới hạn độ phân giải xử lý tối đa 640px để quét mượt mà, không nóng máy
+    const scale = Math.min(1, 640 / Math.max(vw, vh));
+    const width = Math.floor(vw * scale);
+    const height = Math.floor(vh * scale);
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    ctx.drawImage(videoEl, 0, 0, width, height);
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+      inversionAttempts: 'dontInvert'
+    });
+
+    if (code && code.data) {
+      let cornerPoints = null;
+      if (code.location) {
+        cornerPoints = [
+          code.location.topLeftCorner,
+          code.location.topRightCorner,
+          code.location.bottomRightCorner,
+          code.location.bottomLeftCorner
+        ];
+      }
+      handleRealQrScanned(code.data, cornerPoints);
+    }
+  }
+
+  // Tính toán góc xoay thẻ Plickers từ tọa độ góc QR (A = đỉnh trên, B = xoay 90°, C = 180°, D = 270°)
+  function detectRotationOption(p0, p1) {
+    if (!p0 || !p1) return 0; // Mặc định A
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const deg = Math.atan2(dy, dx) * 180 / Math.PI;
+    const normDeg = (deg + 360) % 360;
+
+    if (normDeg >= 315 || normDeg < 45) {
+      return 0; // A (Thẻ đứng thẳng, cạnh A ở trên)
+    } else if (normDeg >= 225 && normDeg < 315) {
+      return 1; // B (Học sinh xoay cạnh B lên trên)
+    } else if (normDeg >= 135 && normDeg < 225) {
+      return 2; // C (Học sinh xoay cạnh C lên trên)
+    } else {
+      return 3; // D (Học sinh xoay cạnh D lên trên)
+    }
+  }
+
+  // Phân tích dữ liệu chuỗi quét được từ mã QR
+  function parseStudentQrData(rawText, cornerPoints) {
+    if (!rawText || typeof rawText !== 'string') return null;
+    const cleanText = rawText.trim();
+
+    // 1. Phân tích cú pháp JSON nếu mã QR chứa JSON
+    if (cleanText.startsWith('{') && cleanText.endsWith('}')) {
+      try {
+        const obj = JSON.parse(cleanText);
+        const id = Number(obj.id || obj.studentId || obj.stt);
+        if (id >= 1 && id <= CLASS_ROSTER.length) {
+          const letter = (obj.ans || obj.option || obj.dapan || 'A').toString().toUpperCase();
+          const optionIdx = ['A', 'B', 'C', 'D'].indexOf(letter);
+          return {
+            studentId: id,
+            optionIdx: optionIdx !== -1 ? optionIdx : 0
+          };
+        }
+      } catch (e) {}
+    }
+
+    // 2. Định dạng có chữ cái đáp án: PLK:17:A, KHTN:17:B, HS:17:C, hoặc 17:D
+    const matchWithLetter = cleanText.match(/(?:PLK|KHTN|HS|ID)?[:\-\s]?(\d{1,2})[:\-\s]?([ABCDabcd])\b/i);
+    if (matchWithLetter) {
+      const id = Number(matchWithLetter[1]);
+      const letter = matchWithLetter[2].toUpperCase();
+      const optionIdx = ['A', 'B', 'C', 'D'].indexOf(letter);
+      if (id >= 1 && id <= CLASS_ROSTER.length) {
+        return {
+          studentId: id,
+          optionIdx: optionIdx !== -1 ? optionIdx : 0
+        };
+      }
+    }
+
+    // 3. Định dạng mã thẻ chuẩn Plickers xoay hướng: PLK:17 hoặc 17
+    const matchIdOnly = cleanText.match(/(?:PLK|KHTN|HS|ID|Thẻ\s*#?)?[:\-\s]?(\d{1,2})$/i);
+    if (matchIdOnly) {
+      const id = Number(matchIdOnly[1]);
+      if (id >= 1 && id <= CLASS_ROSTER.length) {
+        // Nhận diện góc xoay của thẻ nếu có dữ liệu góc
+        let optIdx = 0;
+        if (cornerPoints && cornerPoints.length >= 2) {
+          optIdx = detectRotationOption(cornerPoints[0], cornerPoints[1]);
+        }
+        return {
+          studentId: id,
+          optionIdx: optIdx
+        };
+      }
+    }
+
+    // 4. Tìm kiếm theo họ tên học sinh có trong danh sách 35 em
+    const lowerText = cleanText.toLowerCase();
+    for (const student of CLASS_ROSTER) {
+      if (lowerText.includes(student.name.toLowerCase())) {
+        let optIdx = 0;
+        const letterMatch = cleanText.match(/\b([ABCD])\b/i);
+        if (letterMatch) {
+          optIdx = ['A', 'B', 'C', 'D'].indexOf(letterMatch[1].toUpperCase());
+          if (optIdx === -1) optIdx = 0;
+        } else if (cornerPoints && cornerPoints.length >= 2) {
+          optIdx = detectRotationOption(cornerPoints[0], cornerPoints[1]);
+        }
+        return {
+          studentId: student.id,
+          optionIdx: optIdx
+        };
+      }
+    }
+
+    return null;
+  }
+
+  // Âm thanh 'bíp' nhẹ khi camera quét trúng một thẻ học sinh
+  function playSuccessBeep() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) {}
+  }
+
+  // Xử lý khi camera phát hiện mã QR thật (KHÔNG TỰ ĐỘNG DUYỆT KHỐNG)
+  function handleRealQrScanned(rawText, cornerPoints) {
+    const parsed = parseStudentQrData(rawText, cornerPoints);
+    if (!parsed) {
+      // Mã QR lạ hoặc không thuộc danh sách lớp -> Tuyệt đối không duyệt
+      return;
+    }
+
+    const { studentId, optionIdx } = parsed;
+    const now = Date.now();
+
+    // Chống quét trùng liên tục trong 1.5s cho cùng 1 học sinh cùng 1 đáp án
+    state.lastScannedTime = state.lastScannedTime || {};
+    const prev = state.lastScannedTime[studentId];
+    if (prev && (now - prev.time < 1500) && prev.optionIdx === optionIdx) {
+      return;
+    }
+    state.lastScannedTime[studentId] = { time: now, optionIdx: optionIdx };
+
+    const student = CLASS_ROSTER.find(s => s.id === studentId);
+    if (!student) return;
+
+    const currentQ = state.filteredList[state.currentIndex];
+    const isCorrect = currentQ ? (optionIdx === currentQ.correct) : false;
+
+    // Cập nhật trạng thái câu trả lời của học sinh
+    state.scannedStudents[studentId] = {
+      id: student.id,
+      name: student.name,
+      option: optionIdx,
+      isCorrect: isCorrect
+    };
+
+    // Bíp âm thanh xác nhận
+    playSuccessBeep();
+
+    // Hiển thị chip hoạt họa tên học sinh trên kính ngắm camera
+    spawnDetectedChip(student.id, optionIdx, isCorrect);
+
+    // Cập nhật số liệu và bảng điểm danh
+    updateScannerMetrics();
+
+    // Cập nhật chip trạng thái
+    const plkLetters = ['A', 'B', 'C', 'D'];
+    const totalScanned = Object.keys(state.scannedStudents).length;
+    const statusChip = document.getElementById('scanner-status-chip');
+    if (statusChip) {
+      if (totalScanned >= CLASS_ROSTER.length) {
+        statusChip.innerHTML = '🎉 <strong>Đã quét đủ 35/35 học sinh của lớp!</strong> Bấm "Chiếu kết quả" để xem biểu đồ.';
+      } else {
+        statusChip.innerHTML = `<span class="live-indicator pulse-green"></span> 🎯 Đã nhận diện: <strong>#${student.id.toString().padStart(2, '0')} ${student.name} [${plkLetters[optionIdx]}]</strong> (${totalScanned}/${CLASS_ROSTER.length} HS)`;
+      }
+    }
   }
 
   function spawnDetectedChip(studentId, optionIdx, isCorrect) {
@@ -1575,6 +1849,7 @@
     }
   }
 
+  // Chế độ thử nghiệm / mô phỏng nhanh dành cho giáo viên trải nghiệm (khi chưa in thẻ)
   function batchScanClassroom() {
     const currentQ = state.filteredList[state.currentIndex];
     if (!currentQ) return;
@@ -1592,7 +1867,6 @@
           option: chosenOpt,
           isCorrect: (chosenOpt === currentQ.correct)
         };
-        // Cập nhật giao diện điểm danh
         updateStudentRollCallCard(student.id, chosenOpt, chosenOpt === currentQ.correct);
         if (index % 6 === 0) {
           spawnDetectedChip(student.id, chosenOpt, chosenOpt === currentQ.correct);
@@ -1604,12 +1878,13 @@
 
     const statusChip = document.getElementById('scanner-status-chip');
     if (statusChip) {
-      statusChip.innerHTML = `✅ <strong>Đã điểm danh toàn bộ 35 học sinh của lớp!</strong>`;
+      statusChip.innerHTML = `⚡ <strong>Đã mô phỏng nộp bài cho toàn bộ 35 học sinh!</strong>`;
     }
   }
 
   function resetCurrentQuestionScan() {
     state.scannedStudents = {};
+    state.lastScannedTime = {};
     const overlay = document.getElementById('scanner-detected-overlay');
     if (overlay) overlay.innerHTML = '';
     
@@ -1633,7 +1908,7 @@
 
     const statusChip = document.getElementById('scanner-status-chip');
     if (statusChip) {
-      statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Đã đặt lại bảng điểm danh. Đang quét lại câu này...';
+      statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Đã đặt lại bảng điểm danh. Đang chờ thẻ QR...';
     }
   }
 
@@ -1644,6 +1919,7 @@
       state.currentIndex = 0;
     }
     state.scannedStudents = {};
+    state.lastScannedTime = {};
     resetQuestionState();
     refreshQuizArea();
     startCameraScanner();

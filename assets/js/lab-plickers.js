@@ -690,7 +690,48 @@
   ];
 
   // ==========================================
-  // 2. STATE QUẢN LÝ ỨNG DỤNG PLICKERS
+  // 2. DANH SÁCH 35 HỌC SINH LỚP HỌC (CLASS ROSTER)
+  // ==========================================
+  const CLASS_ROSTER = [
+    { id: 1, name: 'Phạm Lâm Gia Ân' },
+    { id: 2, name: 'Lê Thị Hà An' },
+    { id: 3, name: 'Nguyễn Ngọc Phương Anh' },
+    { id: 4, name: 'Phạm Khánh Duy' },
+    { id: 5, name: 'Nguyễn Tuấn Duy' },
+    { id: 6, name: 'Đặng Thị Ngọc Dung' },
+    { id: 7, name: 'Bùi Xuân Dương' },
+    { id: 8, name: 'Đỗ Tiến Đạt' },
+    { id: 9, name: 'Lê Thành Đạt' },
+    { id: 10, name: 'Trịnh Gia Huy' },
+    { id: 11, name: 'Bành Tấn Khả' },
+    { id: 12, name: 'Trần Quốc Kiệt' },
+    { id: 13, name: 'Vũ Hương Lan' },
+    { id: 14, name: 'Nguyễn Khánh Linh' },
+    { id: 15, name: 'Lê Quỳnh Cẩm Ly' },
+    { id: 16, name: 'Chung Thủy Xuân Mai' },
+    { id: 17, name: 'Đỗ Văn Nhật Minh' },
+    { id: 18, name: 'Huỳnh Thị Kim Minh' },
+    { id: 19, name: 'Lê Huỳnh Hồng Ngọc' },
+    { id: 20, name: 'Nguyễn Thị Hồng Ngọc' },
+    { id: 21, name: 'Lê Bùi Hoài Nhi' },
+    { id: 22, name: 'Nguyễn Thị Giang Nhi' },
+    { id: 23, name: 'Nguyễn Thị Ý Như' },
+    { id: 24, name: 'Nguyễn Hoài Sang' },
+    { id: 25, name: 'Trần Quang Thiện' },
+    { id: 26, name: 'Nguyễn Ngọc Thanh Thư' },
+    { id: 27, name: 'Huỳnh Thị Yến Thy' },
+    { id: 28, name: 'Phạm Hoài Tính' },
+    { id: 29, name: 'Lương Lê Thu Trang' },
+    { id: 30, name: 'Nguyễn Huyền Trang' },
+    { id: 31, name: 'Nguyễn Thị Thùy Trâm' },
+    { id: 32, name: 'Phạm Thị Phương Trinh' },
+    { id: 33, name: 'Trần Nguyễn Kiều Trinh' },
+    { id: 34, name: 'Võ Ngọc Phương Uyên' },
+    { id: 35, name: 'Trần Ngọc Huy' }
+  ];
+
+  // ==========================================
+  // 3. STATE QUẢN LÝ ỨNG DỤNG PLICKERS
   // ==========================================
   let state = {
     gradeFilter: 'all',       // 'all', 6, 7, 8, 9
@@ -708,6 +749,7 @@
     timerInterval: null,
     answersLog: {},           // lưu câu đã làm { [id]: { selected, correct, isCorrect } }
     mockPollData: null,       // biểu đồ phân phối học sinh
+    showRollCall: false,      // bật/tắt bảng điểm danh trong Presentation mode
     // Trạng thái Camera Scanner trên điện thoại
     cameraStream: null,
     facingMode: 'environment', // 'environment' (camera sau) hoặc 'user' (camera trước)
@@ -993,6 +1035,9 @@
             <button class="teacher-btn ${state.mockPollData ? 'active' : ''}" id="btn-toggle-poll">
               📊 Biểu đồ phản hồi của lớp
             </button>
+            <button class="teacher-btn ${state.showRollCall ? 'active' : ''}" id="btn-toggle-rollcall">
+              📋 Bảng Điểm Danh (35 HS)
+            </button>
             <button class="teacher-btn btn-open-cam-scanner" id="btn-open-cam-present">
               📱 Mở Camera Quét Thẻ
             </button>
@@ -1003,6 +1048,9 @@
 
           <!-- Biểu đồ phân phối phản hồi Plickers mô phỏng -->
           ${state.mockPollData ? renderPollChart(state.mockPollData, currentQ.correct) : ''}
+
+          <!-- Bảng Điểm Danh 35 Học Sinh theo thời gian thực -->
+          ${state.showRollCall ? renderRollCallBoard() : ''}
         ` : ''}
       </div>
     `;
@@ -1042,49 +1090,144 @@
   }
 
   // ==========================================
-  // 7. BỘ THẺ IN PLICKERS MẪU (PRINTABLE CARDS)
+  // 7. BỘ THẺ IN PLICKERS 35 HỌC SINH (PRINTABLE CARDS)
   // ==========================================
   function renderPrintableCardsView() {
     return `
       <div class="plk-cards-container">
         <div class="cards-intro-banner">
           <div class="intro-text">
-            <h3>🖨️ Bộ Thẻ Mã Plickers Chuẩn Dành Cho Lớp Học</h3>
-            <p>Mỗi học sinh giữ một thẻ số tương ứng. Khi trả lời, học sinh <strong>xoay chữ cái A, B, C hoặc D lên phía trên</strong>. Giáo viên mở ứng dụng Plickers trên điện thoại để quét toàn bộ lớp trong 3 - 5 giây.</p>
+            <h3>🖨️ Bộ 35 Thẻ Mã Plickers In Sẵn Họ Tên Học Sinh</h3>
+            <p>Hệ thống đã tạo sẵn 35 thẻ mã ma trận chuẩn riêng biệt cho 35 học sinh của lớp. Mỗi học sinh giữ một thẻ tương ứng với số thứ tự và họ tên của mình. Khi trả lời, học sinh <strong>xoay chữ cái A, B, C hoặc D lên phía trên</strong>.</p>
           </div>
           <button class="plk-btn-print" onclick="window.print()">
-            🖨️ In bộ thẻ này ngay
+            🖨️ In bộ 35 thẻ ngay
           </button>
         </div>
 
         <div class="plickers-cards-grid">
-          ${[1, 2, 3, 4, 5, 6, 7, 8].map(num => `
+          ${CLASS_ROSTER.map(student => `
             <div class="plk-card-printable">
-              <div class="card-num-badge">Thẻ #${num}</div>
+              <div class="card-num-badge">Thẻ #${student.id.toString().padStart(2, '0')}</div>
+              <div class="card-student-name">${student.name}</div>
               <!-- 4 Labels ở 4 cạnh của thẻ Plickers xoay 4 hướng -->
               <div class="edge-label label-top">A</div>
               <div class="edge-label label-right">B</div>
               <div class="edge-label label-bottom">C</div>
               <div class="edge-label label-left">D</div>
 
-              <!-- SVG Mã Ma Trận Plickers chuẩn -->
+              <!-- SVG Mã Ma Trận Plickers chuẩn cá nhân hóa -->
               <svg class="plk-qr-matrix" viewBox="0 0 100 100" width="100%" height="100%">
                 <rect x="0" y="0" width="100" height="100" fill="#ffffff" stroke="#000" stroke-width="3"/>
-                <!-- Ma trận giả lập các ô Plickers độc nhất -->
+                <!-- Ma trận giả lập các ô Plickers độc nhất theo ID học sinh -->
                 <rect x="15" y="15" width="20" height="20" fill="#000"/>
                 <rect x="65" y="15" width="20" height="20" fill="#000"/>
                 <rect x="15" y="65" width="20" height="20" fill="#000"/>
                 <rect x="40" y="40" width="20" height="20" fill="#000"/>
-                ${(num % 2 === 0) ? '<rect x="40" y="15" width="20" height="20" fill="#000"/>' : ''}
-                ${(num % 3 === 0) ? '<rect x="65" y="65" width="20" height="20" fill="#000"/>' : ''}
-                ${(num % 4 === 0) ? '<rect x="15" y="40" width="20" height="20" fill="#000"/>' : ''}
-                ${(num % 5 === 0) ? '<rect x="65" y="40" width="20" height="20" fill="#000"/>' : ''}
+                ${(student.id % 2 === 0) ? '<rect x="40" y="15" width="20" height="20" fill="#000"/>' : ''}
+                ${(student.id % 3 === 0) ? '<rect x="65" y="65" width="20" height="20" fill="#000"/>' : ''}
+                ${(student.id % 4 === 0) ? '<rect x="15" y="40" width="20" height="20" fill="#000"/>' : ''}
+                ${(student.id % 5 === 0) ? '<rect x="65" y="40" width="20" height="20" fill="#000"/>' : ''}
+                ${(student.id % 7 === 0) ? '<rect x="40" y="65" width="20" height="20" fill="#000"/>' : ''}
               </svg>
             </div>
           `).join('')}
         </div>
       </div>
     `;
+  }
+
+  // ==========================================
+  // 8. BẢNG ĐIỂM DANH 35 HỌC SINH (ROLL CALL BOARD)
+  // ==========================================
+  function renderRollCallBoard() {
+    const totalStudents = CLASS_ROSTER.length;
+    const scannedCount = Object.keys(state.scannedStudents).length;
+    const pendingCount = totalStudents - scannedCount;
+    const percent = Math.round((scannedCount / totalStudents) * 100);
+    const plkLetters = ['A', 'B', 'C', 'D'];
+
+    return `
+      <div class="plk-rollcall-section" id="plk-rollcall-section">
+        <div class="rollcall-header">
+          <div class="rc-title-area">
+            <h4>📋 Bảng Điểm Danh & Thu Bài Lớp Học (${scannedCount}/${totalStudents} HS)</h4>
+            <span class="rc-subtitle">Cập nhật trực tiếp khi Camera quét từng thẻ học sinh (Nhấp vào thẻ để điểm danh thủ công)</span>
+          </div>
+          <div class="rc-stats-badges">
+            <span class="rc-badge badge-total">👥 Sĩ số: <strong>${totalStudents}</strong></span>
+            <span class="rc-badge badge-scanned">✅ Đã nộp: <strong>${scannedCount}</strong> (${percent}%)</span>
+            <span class="rc-badge badge-pending">⏳ Chưa quét: <strong>${pendingCount}</strong></span>
+          </div>
+        </div>
+
+        <div class="rollcall-progress-track">
+          <div class="rollcall-progress-bar" id="rollcall-progress-bar" style="width: ${percent}%;"></div>
+        </div>
+
+        <div class="rollcall-grid" id="rollcall-grid">
+          ${CLASS_ROSTER.map(student => {
+            const scanData = state.scannedStudents[student.id];
+            const isScanned = !!scanData;
+            const letter = isScanned ? plkLetters[scanData.option] : '';
+            const isCorrect = isScanned ? scanData.isCorrect : false;
+
+            return `
+              <div class="rc-student-card ${isScanned ? 'scanned' : 'pending'}" 
+                   id="rc-card-${student.id}" 
+                   data-student-id="${student.id}"
+                   title="${student.name} (${isScanned ? 'Đã điểm danh: ' + letter : 'Chưa điểm danh — Bấm để điểm danh thủ công'})">
+                <div class="rc-card-top">
+                  <span class="rc-id-badge">#${student.id.toString().padStart(2, '0')}</span>
+                  <span class="rc-indicator-dot ${isScanned ? 'dot-green' : 'dot-gray'}"></span>
+                </div>
+                <div class="rc-name">${student.name}</div>
+                <div class="rc-status-pill">
+                  ${isScanned ? `
+                    <span class="rc-ans-badge ${isCorrect ? 'ans-correct' : 'ans-wrong'}">
+                      ✅ [${letter}]
+                    </span>
+                  ` : `
+                    <span class="rc-pending-badge">⏳ Chưa nộp</span>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function updateStudentRollCallCard(studentId, optionIdx, isCorrect) {
+    const cardEl = document.getElementById(`rc-card-${studentId}`);
+    if (cardEl) {
+      cardEl.classList.remove('pending');
+      cardEl.classList.add('scanned', 'just-scanned');
+      const plkLetters = ['A', 'B', 'C', 'D'];
+      const dotEl = cardEl.querySelector('.rc-indicator-dot');
+      if (dotEl) {
+        dotEl.classList.remove('dot-gray');
+        dotEl.classList.add('dot-green');
+      }
+      const statusPill = cardEl.querySelector('.rc-status-pill');
+      if (statusPill) {
+        statusPill.innerHTML = `
+          <span class="rc-ans-badge ${isCorrect ? 'ans-correct' : 'ans-wrong'}">
+            ✅ [${plkLetters[optionIdx]}]
+          </span>
+        `;
+      }
+      setTimeout(() => cardEl.classList.remove('just-scanned'), 1200);
+    }
+
+    // Cập nhật thanh tiến trình điểm danh nếu đang hiển thị
+    const totalStudents = CLASS_ROSTER.length;
+    const scannedCount = Object.keys(state.scannedStudents).length;
+    const bar = document.getElementById('rollcall-progress-bar');
+    if (bar) {
+      bar.style.width = `${Math.min(100, Math.round((scannedCount / totalStudents) * 100))}%`;
+    }
   }
 
   // ==========================================
@@ -1106,7 +1249,7 @@
     const plkLetters = ['A', 'B', 'C', 'D'];
     const plkColors = ['card-red', 'card-blue', 'card-yellow', 'card-green'];
     const totalScanned = Object.keys(state.scannedStudents).length;
-    const maxStudents = 40;
+    const maxStudents = CLASS_ROSTER.length;
 
     // Đếm số lượng chọn từng phương án
     const counts = [0, 0, 0, 0];
@@ -1195,6 +1338,9 @@
             }).join('')}
           </div>
         </div>
+
+        <!-- Bảng Điểm Danh 35 Học Sinh trực tiếp -->
+        ${renderRollCallBoard()}
 
         <!-- Thanh công cụ hành động của giáo viên -->
         <div class="scanner-action-toolbar">
@@ -1325,10 +1471,10 @@
       }
 
       const totalScanned = Object.keys(state.scannedStudents).length;
-      if (totalScanned >= 38) {
+      if (totalScanned >= CLASS_ROSTER.length) {
         const statusChip = document.getElementById('scanner-status-chip');
         if (statusChip) {
-          statusChip.innerHTML = '🎉 <strong>Đã quét đủ 38 - 40 học sinh!</strong> Bấm "Chiếu kết quả" để xem biểu đồ.';
+          statusChip.innerHTML = '🎉 <strong>Đã điểm danh đủ 35/35 học sinh!</strong> Bấm "Chiếu kết quả" để xem biểu đồ.';
         }
         return;
       }
@@ -1336,14 +1482,11 @@
       const currentQ = state.filteredList[state.currentIndex];
       if (!currentQ) return;
 
-      let newId = null;
-      for (let i = 1; i <= 40; i++) {
-        if (!state.scannedStudents[i]) {
-          newId = i;
-          break;
-        }
-      }
-      if (!newId) return;
+      // Tìm ngẫu nhiên một học sinh trong danh sách 35 HS chưa quét
+      const unscannedList = CLASS_ROSTER.filter(s => !state.scannedStudents[s.id]);
+      if (unscannedList.length === 0) return;
+
+      const student = unscannedList[Math.floor(Math.random() * unscannedList.length)];
 
       let chosenOpt = currentQ.correct;
       if (Math.random() > 0.72) {
@@ -1351,14 +1494,14 @@
         chosenOpt = wrongOpts[Math.floor(Math.random() * wrongOpts.length)];
       }
 
-      state.scannedStudents[newId] = {
-        id: newId,
-        name: `HS ${newId.toString().padStart(2, '0')}`,
+      state.scannedStudents[student.id] = {
+        id: student.id,
+        name: student.name,
         option: chosenOpt,
         isCorrect: (chosenOpt === currentQ.correct)
       };
 
-      spawnDetectedChip(newId, chosenOpt, chosenOpt === currentQ.correct);
+      spawnDetectedChip(student.id, chosenOpt, chosenOpt === currentQ.correct);
       updateScannerMetrics();
     }, 650);
   }
@@ -1367,21 +1510,25 @@
     const overlay = document.getElementById('scanner-detected-overlay');
     if (!overlay) return;
 
+    const student = CLASS_ROSTER.find(s => s.id === Number(studentId)) || { id: studentId, name: `HS ${studentId}` };
     const plkLetters = ['A', 'B', 'C', 'D'];
-    const posX = Math.floor(12 + Math.random() * 76);
-    const posY = Math.floor(18 + Math.random() * 64);
+    const posX = Math.floor(10 + Math.random() * 80);
+    const posY = Math.floor(15 + Math.random() * 65);
 
     const chip = document.createElement('div');
     chip.className = `detected-chip ${isCorrect ? 'chip-correct' : 'chip-other'}`;
     chip.style.left = `${posX}%`;
     chip.style.top = `${posY}%`;
-    chip.innerHTML = `🎯 HS #${studentId.toString().padStart(2, '0')}: [${plkLetters[optionIdx]}]`;
+    chip.innerHTML = `🎯 #${student.id.toString().padStart(2, '0')} ${student.name}: [${plkLetters[optionIdx]}] ✅`;
 
     overlay.appendChild(chip);
 
+    // Cập nhật ngay lập tức ô điểm danh của học sinh trên bảng điểm danh
+    updateStudentRollCallCard(student.id, optionIdx, isCorrect);
+
     setTimeout(() => {
       if (chip.parentNode) chip.parentNode.removeChild(chip);
-    }, 2400);
+    }, 2800);
   }
 
   function updateScannerMetrics() {
@@ -1389,7 +1536,7 @@
     if (!currentQ) return;
 
     const totalScanned = Object.keys(state.scannedStudents).length;
-    const maxStudents = 40;
+    const maxStudents = CLASS_ROSTER.length;
 
     const countEl = document.getElementById('scanner-student-count');
     if (countEl) countEl.textContent = totalScanned;
@@ -1411,36 +1558,53 @@
       if (vEl) vEl.textContent = `${c} HS`;
       if (pEl) pEl.textContent = `${pct}%`;
     });
+
+    // Cập nhật số liệu trên thanh tiêu đề bảng điểm danh
+    const rcTitle = document.querySelector('.rc-title-area h4');
+    if (rcTitle) {
+      rcTitle.textContent = `📋 Bảng Điểm Danh & Thu Bài Lớp Học (${totalScanned}/${maxStudents} HS)`;
+    }
+    const badgeScanned = document.querySelector('.rc-badge.badge-scanned strong');
+    if (badgeScanned) {
+      const pct = totalScanned > 0 ? Math.round((totalScanned / maxStudents) * 100) : 0;
+      badgeScanned.textContent = `${totalScanned} (${pct}%)`;
+    }
+    const badgePending = document.querySelector('.rc-badge.badge-pending strong');
+    if (badgePending) {
+      badgePending.textContent = `${maxStudents - totalScanned}`;
+    }
   }
 
   function batchScanClassroom() {
     const currentQ = state.filteredList[state.currentIndex];
     if (!currentQ) return;
 
-    const targetCount = 36 + Math.floor(Math.random() * 4);
-    for (let i = 1; i <= targetCount; i++) {
-      if (!state.scannedStudents[i]) {
+    CLASS_ROSTER.forEach((student, index) => {
+      if (!state.scannedStudents[student.id]) {
         let chosenOpt = currentQ.correct;
         if (Math.random() > 0.72) {
           const wrongOpts = [0, 1, 2, 3].filter(o => o !== currentQ.correct);
           chosenOpt = wrongOpts[Math.floor(Math.random() * wrongOpts.length)];
         }
-        state.scannedStudents[i] = {
-          id: i,
-          name: `HS ${i.toString().padStart(2, '0')}`,
+        state.scannedStudents[student.id] = {
+          id: student.id,
+          name: student.name,
           option: chosenOpt,
           isCorrect: (chosenOpt === currentQ.correct)
         };
-        if (i % 4 === 0) {
-          spawnDetectedChip(i, chosenOpt, chosenOpt === currentQ.correct);
+        // Cập nhật giao diện điểm danh
+        updateStudentRollCallCard(student.id, chosenOpt, chosenOpt === currentQ.correct);
+        if (index % 6 === 0) {
+          spawnDetectedChip(student.id, chosenOpt, chosenOpt === currentQ.correct);
         }
       }
-    }
+    });
+
     updateScannerMetrics();
 
     const statusChip = document.getElementById('scanner-status-chip');
     if (statusChip) {
-      statusChip.innerHTML = `✅ <strong>Đã quét xong cả lớp (${Object.keys(state.scannedStudents).length} HS)!</strong>`;
+      statusChip.innerHTML = `✅ <strong>Đã điểm danh toàn bộ 35 học sinh của lớp!</strong>`;
     }
   }
 
@@ -1448,11 +1612,28 @@
     state.scannedStudents = {};
     const overlay = document.getElementById('scanner-detected-overlay');
     if (overlay) overlay.innerHTML = '';
+    
+    // Đặt lại tất cả các ô điểm danh về trạng thái Chưa nộp
+    CLASS_ROSTER.forEach(student => {
+      const cardEl = document.getElementById(`rc-card-${student.id}`);
+      if (cardEl) {
+        cardEl.className = 'rc-student-card pending';
+        const dot = cardEl.querySelector('.rc-indicator-dot');
+        if (dot) {
+          dot.className = 'rc-indicator-dot dot-gray';
+        }
+        const statusPill = cardEl.querySelector('.rc-status-pill');
+        if (statusPill) {
+          statusPill.innerHTML = '<span class="rc-pending-badge">⏳ Chưa nộp</span>';
+        }
+      }
+    });
+
     updateScannerMetrics();
 
     const statusChip = document.getElementById('scanner-status-chip');
     if (statusChip) {
-      statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Đã đặt lại. Đang quét lại câu này...';
+      statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Đã đặt lại bảng điểm danh. Đang quét lại câu này...';
     }
   }
 
@@ -1773,6 +1954,45 @@
         updateToolbarStyles();
       });
     }
+
+    // --- BẬT / TẮT BẢNG ĐIỂM DANH TRONG PRESENTATION MODE ---
+    const btnToggleRollCall = document.getElementById('btn-toggle-rollcall');
+    if (btnToggleRollCall) {
+      btnToggleRollCall.addEventListener('click', () => {
+        state.showRollCall = !state.showRollCall;
+        refreshQuizArea();
+      });
+    }
+
+    // --- ĐIỂM DANH THỦ CÔNG KHI NHẤP VÀO THẺ HỌC SINH ---
+    document.querySelectorAll('.rc-student-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const studentId = Number(card.getAttribute('data-student-id'));
+        const currentQ = state.filteredList[state.currentIndex];
+        if (!currentQ) return;
+
+        if (state.scannedStudents[studentId]) {
+          // Bỏ điểm danh nếu nhấp lần 2
+          delete state.scannedStudents[studentId];
+          card.className = 'rc-student-card pending';
+          const dot = card.querySelector('.rc-indicator-dot');
+          if (dot) dot.className = 'rc-indicator-dot dot-gray';
+          const pill = card.querySelector('.rc-status-pill');
+          if (pill) pill.innerHTML = '<span class="rc-pending-badge">⏳ Chưa nộp</span>';
+        } else {
+          // Điểm danh học sinh với đáp án đúng của câu hỏi
+          const chosenOpt = currentQ.correct;
+          state.scannedStudents[studentId] = {
+            id: studentId,
+            name: CLASS_ROSTER.find(s => s.id === studentId)?.name || `HS ${studentId}`,
+            option: chosenOpt,
+            isCorrect: true
+          };
+          updateStudentRollCallCard(studentId, chosenOpt, true);
+        }
+        updateScannerMetrics();
+      });
+    });
   }
 
   // ==========================================

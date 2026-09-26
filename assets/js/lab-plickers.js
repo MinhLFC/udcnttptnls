@@ -1340,6 +1340,9 @@
           <button class="scanner-act-btn btn-batch-scan" id="btn-batch-scan" title="Chế độ mô phỏng thử nghiệm khi không có thẻ in thực tế">
             ⚡ Thử nghiệm cả lớp (Demo)
           </button>
+          <button class="scanner-act-btn btn-show-results" id="btn-show-results" title="Xem bảng điểm và tỉ trọng kết quả">
+            📊 Bảng điểm
+          </button>
           <button class="scanner-act-btn btn-reset-scan" id="btn-reset-scan" title="Xóa dữ liệu để quét lại câu này">
             🔄 Quét lại
           </button>
@@ -1928,9 +1931,15 @@
   // ==========================================
   // 9c. BẢNG TỔNG KẾT KẾT QUẢ KHI ĐỦ 35/35 HỌC SINH
   // ==========================================
-  function showScannerResultsSummary() {
-    // Nếu đã hiển thị rồi thì không render lại
-    if (document.getElementById('plk-scanner-results-panel')) return;
+  function showScannerResultsSummary(forceOpen = false) {
+    const existingPanel = document.getElementById('plk-scanner-results-panel');
+    if (existingPanel) {
+      if (forceOpen) {
+        existingPanel.remove();
+      } else {
+        return;
+      }
+    }
 
     const currentQ = state.filteredList[state.currentIndex];
     if (!currentQ) return;
@@ -1964,9 +1973,16 @@
       };
     }).filter(Boolean);
 
-    const correctPct = Math.round((correctCount / totalStudents) * 100);
-    const wrongPct = Math.round((wrongCount / totalStudents) * 100);
-    const avgScore = (studentResults.reduce((sum, s) => sum + s.score, 0) / totalStudents).toFixed(1);
+    const answeredCount = studentResults.length;
+    if (answeredCount === 0 && forceOpen) {
+      alert('Hiện chưa có học sinh nào nộp câu trả lời. Hãy quét thẻ QR học sinh hoặc bấm "⚡ Thử nghiệm cả lớp (Demo)" trước!');
+      return;
+    }
+
+    const baseCount = answeredCount > 0 ? answeredCount : totalStudents;
+    const correctPct = Math.round((correctCount / baseCount) * 100);
+    const wrongPct = Math.round((wrongCount / baseCount) * 100);
+    const avgScore = answeredCount > 0 ? (studentResults.reduce((sum, s) => sum + s.score, 0) / answeredCount).toFixed(1) : '0.0';
 
     // Xếp hạng lớp
     let classGrade = '🏆 Xuất sắc!';
@@ -1985,9 +2001,22 @@
     panel.className = 'plk-results-panel';
     panel.innerHTML = `
       <div class="results-panel-header">
-        <h3>📊 Tổng Kết Kết Quả Câu ${state.currentIndex + 1}</h3>
-        <span class="results-grade" style="color: ${gradeColor}">${classGrade}</span>
-        <button class="results-close-btn" id="btn-close-results" title="Đóng bảng tổng kết">✕</button>
+        <div class="results-header-info">
+          <h3>📊 Bảng Điểm & Tỉ Trọng Kết Quả Câu ${state.currentIndex + 1}</h3>
+          <div class="results-meta-tags">
+            <span class="results-grade-badge" style="color: ${gradeColor}; border-color: ${gradeColor};">${classGrade}</span>
+            <span class="results-progress-tag">Đã thu: <strong>${answeredCount}/${totalStudents} HS</strong></span>
+          </div>
+        </div>
+        <div class="results-header-actions">
+          <button class="results-act-btn btn-export-csv" id="btn-export-csv" title="Tải file Excel / CSV về máy">
+            📥 Xuất Excel (CSV)
+          </button>
+          <button class="results-act-btn btn-print-results" id="btn-print-results" title="In hoặc lưu PDF">
+            🖨️ In bảng điểm
+          </button>
+          <button class="results-close-btn" id="btn-close-results" title="Đóng bảng tổng kết">✕</button>
+        </div>
       </div>
 
       <div class="results-summary-cards">
@@ -2014,11 +2043,11 @@
       </div>
 
       <div class="results-dist-section">
-        <h4>📈 Phân bố đáp án (Tỉ trọng chọn A / B / C / D)</h4>
+        <h4>📈 Phân Bố Tỉ Trọng Các Phương Án (A / B / C / D)</h4>
         <div class="results-dist-bars">
           ${plkLetters.map((letter, idx) => {
             const c = counts[idx];
-            const pct = totalStudents > 0 ? Math.round((c / totalStudents) * 100) : 0;
+            const pct = answeredCount > 0 ? Math.round((c / answeredCount) * 100) : 0;
             const isCorrect = idx === currentQ.correct;
             const barColor = isCorrect ? '#10b981' : '#64748b';
             return `
@@ -2036,35 +2065,35 @@
 
       <div class="results-students-section">
         <div class="results-students-group">
-          <h4>✅ Học sinh trả lời <strong>ĐÚNG</strong> (${correctCount} em — ${correctPct}%)</h4>
+          <h4>✅ Danh Sách Học Sinh Trả Lời <strong>ĐÚNG</strong> (${correctCount} em — ${correctPct}%)</h4>
           <div class="results-students-list correct-list">
             ${correctStudents.length > 0 ? correctStudents.map(s => `
               <span class="rs-chip rs-correct">#${s.id.toString().padStart(2, '0')} ${s.name} [${s.letter}] — 10đ</span>
-            `).join('') : '<span class="rs-empty">Không có học sinh nào trả lời đúng</span>'}
+            `).join('') : '<span class="rs-empty">Chưa có học sinh nào trả lời đúng</span>'}
           </div>
         </div>
 
         <div class="results-students-group">
-          <h4>❌ Học sinh trả lời <strong>SAI</strong> (${wrongCount} em — ${wrongPct}%)</h4>
+          <h4>❌ Danh Sách Học Sinh Trả Lời <strong>SAI</strong> (${wrongCount} em — ${wrongPct}%)</h4>
           <div class="results-students-list wrong-list">
             ${wrongStudents.length > 0 ? wrongStudents.map(s => `
               <span class="rs-chip rs-wrong">#${s.id.toString().padStart(2, '0')} ${s.name} [${s.letter}] — 0đ</span>
-            `).join('') : '<span class="rs-empty">Tất cả học sinh đều trả lời đúng!</span>'}
+            `).join('') : '<span class="rs-empty">Tất cả học sinh đã nộp đều trả lời đúng!</span>'}
           </div>
         </div>
       </div>
 
       <div class="results-full-table">
-        <h4>📋 Bảng Điểm Chi Tiết Toàn Lớp</h4>
+        <h4>📋 Bảng Điểm Chi Tiết Toàn Lớp (${answeredCount}/${totalStudents} học sinh)</h4>
         <div class="results-table-wrap">
           <table class="results-table">
             <thead>
               <tr>
                 <th>STT</th>
-                <th>Họ và Tên</th>
-                <th>Đáp án</th>
-                <th>Kết quả</th>
-                <th>Điểm</th>
+                <th>Họ và Tên Học Sinh</th>
+                <th>Đáp Án Đã Chọn</th>
+                <th>Kết Quả</th>
+                <th>Điểm Số</th>
               </tr>
             </thead>
             <tbody>
@@ -2094,6 +2123,22 @@
       }
     }
 
+    // Gắn sự kiện nút Xuất Excel (CSV)
+    const exportBtn = document.getElementById('btn-export-csv');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        downloadClassResultsCsv(studentResults, currentQ, counts, plkLetters, correctPct, avgScore);
+      });
+    }
+
+    // Gắn sự kiện nút In bảng điểm
+    const printBtn = document.getElementById('btn-print-results');
+    if (printBtn) {
+      printBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
     // Gắn sự kiện nút đóng
     const closeBtn = document.getElementById('btn-close-results');
     if (closeBtn) {
@@ -2107,6 +2152,36 @@
     setTimeout(() => {
       panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 300);
+  }
+
+  // Tải bảng điểm và tỉ trọng kết quả ra file Excel CSV có hỗ trợ tiếng Việt UTF-8 BOM
+  function downloadClassResultsCsv(studentResults, currentQ, counts, plkLetters, correctPct, avgScore) {
+    const BOM = "\uFEFF";
+    let csv = "BẢNG ĐIỂM CHI TIẾT & PHÂN TÍCH KẾT QUẢ PLICKERS\n";
+    csv += `Câu hỏi,"${(currentQ.question || '').replace(/"/g, '""')}"\n`;
+    csv += `Khối lớp,KHTN ${currentQ.grade} - ${currentQ.subjectName}\n`;
+    csv += `Đáp án đúng,${plkLetters[currentQ.correct]}\n`;
+    csv += `Điểm trung bình lớp,${avgScore} / 10\n`;
+    csv += `Tỉ lệ trả lời đúng,${correctPct}%\n\n`;
+    csv += "TỈ TRỌNG CHỌN ĐÁP ÁN\n";
+    plkLetters.forEach((l, idx) => {
+      const pct = studentResults.length > 0 ? Math.round((counts[idx] / studentResults.length) * 100) : 0;
+      csv += `Đáp án ${l},${counts[idx]} học sinh,${pct}%\n`;
+    });
+    csv += "\nSTT,Họ và Tên Học Sinh,Đáp Án Đã Chọn,Kết Quả,Điểm Số\n";
+    studentResults.forEach(s => {
+      csv += `${s.id},"${s.name}",${s.letter},${s.isCorrect ? 'Đúng' : 'Sai'},${s.score}\n`;
+    });
+
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Bang_Diem_Plickers_Cau_${state.currentIndex + 1}_KHTN${currentQ.grade}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   // Chế độ thử nghiệm / mô phỏng nhanh dành cho giáo viên trải nghiệm (khi chưa in thẻ)
@@ -2467,6 +2542,13 @@
     const btnBatchScan = document.getElementById('btn-batch-scan');
     if (btnBatchScan) {
       btnBatchScan.addEventListener('click', batchScanClassroom);
+    }
+
+    const btnShowResults = document.getElementById('btn-show-results');
+    if (btnShowResults) {
+      btnShowResults.addEventListener('click', () => {
+        showScannerResultsSummary(true);
+      });
     }
 
     const btnResetScan = document.getElementById('btn-reset-scan');

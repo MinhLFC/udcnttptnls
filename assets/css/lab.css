@@ -2462,22 +2462,103 @@ input[type="range"]::-webkit-slider-thumb {
 
 .results-panel-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.results-panel-header h3 {
+.results-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 250px;
+}
+
+.results-header-info h3 {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 800;
   color: var(--text-main);
-  flex: 1;
 }
 
-.results-grade {
-  font-size: 1.1rem;
-  font-weight: 900;
+.results-meta-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.results-grade-badge {
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 2px 10px;
+  border-radius: 20px;
+  border: 1.5px solid;
+  background: var(--bg-surface-soft);
+}
+
+.results-progress-tag {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.results-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.results-act-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.results-act-btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-export-csv {
+  background: #059669;
+  color: #ffffff;
+  border: 1.5px solid #059669;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+}
+
+.btn-export-csv:hover {
+  background: #047857;
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
+}
+
+.btn-print-results {
+  background: var(--bg-surface-soft);
+  color: var(--text-main);
+  border: 1.5px solid var(--border-color);
+}
+
+.btn-print-results:hover {
+  border-color: var(--text-main);
+}
+
+.btn-show-results {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.btn-show-results:hover {
+  background: #2563eb;
 }
 
 .results-close-btn {
@@ -2746,4 +2827,17 @@ input[type="range"]::-webkit-slider-thumb {
 
 [data-theme="dark"] .results-table tr.row-wrong {
   background: rgba(239, 68, 68, 0.08);
+}
+
+@media print {
+  .results-header-actions,
+  .results-close-btn {
+    display: none !important;
+  }
+
+  .plk-results-panel {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
 }

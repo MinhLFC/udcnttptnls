@@ -1403,6 +1403,9 @@
     const statusChip = document.getElementById('scanner-status-chip');
     if (!videoEl) return;
 
+    // Kích hoạt chế độ quay ngang cho điện thoại
+    requestLandscapeMode();
+
     if (state.cameraStream) {
       state.cameraStream.getTracks().forEach(track => track.stop());
       state.cameraStream = null;
@@ -1444,9 +1447,77 @@
     }
   }
 
+  // ==========================================
+  // 9a. CHẾ ĐỘ QUAY NGANG (LANDSCAPE) CHO ĐIỆN THOẠI
+  // ==========================================
+
+  // Yêu cầu trình duyệt khóa màn hình ngang khi mở camera quét thẻ
+  function requestLandscapeMode() {
+    // Thêm class CSS để giao diện tối ưu cho chế độ ngang
+    document.body.classList.add('plk-landscape-scanner');
+
+    // Sử dụng Screen Orientation API (hỗ trợ trên Chrome/Edge Android)
+    try {
+      const orientation = screen.orientation;
+      if (orientation && orientation.lock) {
+        orientation.lock('landscape').catch(() => {
+          // Một số trình duyệt chỉ cho phép khóa hướng khi ở chế độ fullscreen
+          tryFullscreenLandscape();
+        });
+      } else {
+        tryFullscreenLandscape();
+      }
+    } catch (e) {
+      tryFullscreenLandscape();
+    }
+  }
+
+  // Thử kích hoạt fullscreen + khóa ngang (fallback cho Safari/iOS)
+  function tryFullscreenLandscape() {
+    const scannerEl = document.querySelector('.plk-scanner-container');
+    if (!scannerEl) return;
+
+    const requestFS = scannerEl.requestFullscreen ||
+                      scannerEl.webkitRequestFullscreen ||
+                      scannerEl.mozRequestFullScreen ||
+                      scannerEl.msRequestFullscreen;
+    if (requestFS) {
+      try {
+        requestFS.call(scannerEl).then(() => {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+          }
+        }).catch(() => {});
+      } catch (e) {}
+    }
+  }
+
+  // Giải phóng khóa hướng màn hình khi tắt camera
+  function releaseLandscapeMode() {
+    document.body.classList.remove('plk-landscape-scanner');
+
+    try {
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    } catch (e) {}
+
+    // Thoát fullscreen nếu đang ở chế độ toàn màn hình
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      const exitFS = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+      if (exitFS) {
+        try { exitFS.call(document); } catch (e) {}
+      }
+    }
+  }
+
   // Dừng Camera và hủy toàn bộ tiến trình quét hình ảnh
   function stopCameraScanner() {
     state.isScannerActive = false;
+
+    // Giải phóng chế độ quay ngang
+    releaseLandscapeMode();
+
     if (state.scanFrameTimeout) {
       clearTimeout(state.scanFrameTimeout);
       state.scanFrameTimeout = null;
@@ -1847,6 +1918,195 @@
     if (badgePending) {
       badgePending.textContent = `${maxStudents - totalScanned}`;
     }
+
+    // Tự động hiện bảng tổng kết khi đã quét đủ 35/35 HS
+    if (totalScanned >= maxStudents) {
+      showScannerResultsSummary();
+    }
+  }
+
+  // ==========================================
+  // 9c. BẢNG TỔNG KẾT KẾT QUẢ KHI ĐỦ 35/35 HỌC SINH
+  // ==========================================
+  function showScannerResultsSummary() {
+    // Nếu đã hiển thị rồi thì không render lại
+    if (document.getElementById('plk-scanner-results-panel')) return;
+
+    const currentQ = state.filteredList[state.currentIndex];
+    if (!currentQ) return;
+
+    const plkLetters = ['A', 'B', 'C', 'D'];
+    const totalStudents = CLASS_ROSTER.length;
+
+    // Tính toán thống kê
+    const counts = [0, 0, 0, 0];
+    let correctCount = 0;
+    let wrongCount = 0;
+
+    const studentResults = CLASS_ROSTER.map(student => {
+      const scan = state.scannedStudents[student.id];
+      if (!scan) return null;
+
+      counts[scan.option]++;
+      if (scan.isCorrect) {
+        correctCount++;
+      } else {
+        wrongCount++;
+      }
+
+      return {
+        id: student.id,
+        name: student.name,
+        option: scan.option,
+        letter: plkLetters[scan.option],
+        isCorrect: scan.isCorrect,
+        score: scan.isCorrect ? 10 : 0
+      };
+    }).filter(Boolean);
+
+    const correctPct = Math.round((correctCount / totalStudents) * 100);
+    const wrongPct = Math.round((wrongCount / totalStudents) * 100);
+    const avgScore = (studentResults.reduce((sum, s) => sum + s.score, 0) / totalStudents).toFixed(1);
+
+    // Xếp hạng lớp
+    let classGrade = '🏆 Xuất sắc!';
+    let gradeColor = '#059669';
+    if (correctPct >= 80) { classGrade = '🏆 Xuất sắc!'; gradeColor = '#059669'; }
+    else if (correctPct >= 60) { classGrade = '🌟 Tốt!'; gradeColor = '#2563eb'; }
+    else if (correctPct >= 40) { classGrade = '💪 Khá'; gradeColor = '#d97706'; }
+    else { classGrade = '📚 Cần ôn tập thêm'; gradeColor = '#dc2626'; }
+
+    // Danh sách HS đúng và sai
+    const correctStudents = studentResults.filter(s => s.isCorrect);
+    const wrongStudents = studentResults.filter(s => !s.isCorrect);
+
+    const panel = document.createElement('div');
+    panel.id = 'plk-scanner-results-panel';
+    panel.className = 'plk-results-panel';
+    panel.innerHTML = `
+      <div class="results-panel-header">
+        <h3>📊 Tổng Kết Kết Quả Câu ${state.currentIndex + 1}</h3>
+        <span class="results-grade" style="color: ${gradeColor}">${classGrade}</span>
+        <button class="results-close-btn" id="btn-close-results" title="Đóng bảng tổng kết">✕</button>
+      </div>
+
+      <div class="results-summary-cards">
+        <div class="rsc-card rsc-correct">
+          <div class="rsc-icon">✅</div>
+          <div class="rsc-value">${correctCount}</div>
+          <div class="rsc-label">Trả lời đúng (${correctPct}%)</div>
+        </div>
+        <div class="rsc-card rsc-wrong">
+          <div class="rsc-icon">❌</div>
+          <div class="rsc-value">${wrongCount}</div>
+          <div class="rsc-label">Trả lời sai (${wrongPct}%)</div>
+        </div>
+        <div class="rsc-card rsc-avg">
+          <div class="rsc-icon">⭐</div>
+          <div class="rsc-value">${avgScore}</div>
+          <div class="rsc-label">Điểm trung bình / 10</div>
+        </div>
+        <div class="rsc-card rsc-answer">
+          <div class="rsc-icon">🎯</div>
+          <div class="rsc-value">${plkLetters[currentQ.correct]}</div>
+          <div class="rsc-label">Đáp án đúng</div>
+        </div>
+      </div>
+
+      <div class="results-dist-section">
+        <h4>📈 Phân bố đáp án (Tỉ trọng chọn A / B / C / D)</h4>
+        <div class="results-dist-bars">
+          ${plkLetters.map((letter, idx) => {
+            const c = counts[idx];
+            const pct = totalStudents > 0 ? Math.round((c / totalStudents) * 100) : 0;
+            const isCorrect = idx === currentQ.correct;
+            const barColor = isCorrect ? '#10b981' : '#64748b';
+            return `
+              <div class="rdb-row ${isCorrect ? 'rdb-correct' : ''}">
+                <span class="rdb-letter">${letter} ${isCorrect ? '★' : ''}</span>
+                <div class="rdb-bar-track">
+                  <div class="rdb-bar-fill" style="width: ${pct}%; background: ${barColor};"></div>
+                </div>
+                <span class="rdb-count">${c} HS (${pct}%)</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="results-students-section">
+        <div class="results-students-group">
+          <h4>✅ Học sinh trả lời <strong>ĐÚNG</strong> (${correctCount} em — ${correctPct}%)</h4>
+          <div class="results-students-list correct-list">
+            ${correctStudents.length > 0 ? correctStudents.map(s => `
+              <span class="rs-chip rs-correct">#${s.id.toString().padStart(2, '0')} ${s.name} [${s.letter}] — 10đ</span>
+            `).join('') : '<span class="rs-empty">Không có học sinh nào trả lời đúng</span>'}
+          </div>
+        </div>
+
+        <div class="results-students-group">
+          <h4>❌ Học sinh trả lời <strong>SAI</strong> (${wrongCount} em — ${wrongPct}%)</h4>
+          <div class="results-students-list wrong-list">
+            ${wrongStudents.length > 0 ? wrongStudents.map(s => `
+              <span class="rs-chip rs-wrong">#${s.id.toString().padStart(2, '0')} ${s.name} [${s.letter}] — 0đ</span>
+            `).join('') : '<span class="rs-empty">Tất cả học sinh đều trả lời đúng!</span>'}
+          </div>
+        </div>
+      </div>
+
+      <div class="results-full-table">
+        <h4>📋 Bảng Điểm Chi Tiết Toàn Lớp</h4>
+        <div class="results-table-wrap">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Họ và Tên</th>
+                <th>Đáp án</th>
+                <th>Kết quả</th>
+                <th>Điểm</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${studentResults.map(s => `
+                <tr class="${s.isCorrect ? 'row-correct' : 'row-wrong'}">
+                  <td class="td-id">#${s.id.toString().padStart(2, '0')}</td>
+                  <td class="td-name">${s.name}</td>
+                  <td class="td-answer">${s.letter}</td>
+                  <td class="td-result">${s.isCorrect ? '✅ Đúng' : '❌ Sai'}</td>
+                  <td class="td-score">${s.score}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    // Chèn bảng tổng kết ngay sau bảng điểm danh
+    const scannerContainer = document.querySelector('.plk-scanner-container');
+    if (scannerContainer) {
+      const toolbar = scannerContainer.querySelector('.scanner-action-toolbar');
+      if (toolbar) {
+        scannerContainer.insertBefore(panel, toolbar);
+      } else {
+        scannerContainer.appendChild(panel);
+      }
+    }
+
+    // Gắn sự kiện nút đóng
+    const closeBtn = document.getElementById('btn-close-results');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        const p = document.getElementById('plk-scanner-results-panel');
+        if (p) p.remove();
+      });
+    }
+
+    // Cuộn xuống bảng tổng kết
+    setTimeout(() => {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   }
 
   // Chế độ thử nghiệm / mô phỏng nhanh dành cho giáo viên trải nghiệm (khi chưa in thẻ)
@@ -1887,6 +2147,10 @@
     state.lastScannedTime = {};
     const overlay = document.getElementById('scanner-detected-overlay');
     if (overlay) overlay.innerHTML = '';
+
+    // Xóa bảng tổng kết cũ (nếu có)
+    const oldPanel = document.getElementById('plk-scanner-results-panel');
+    if (oldPanel) oldPanel.remove();
     
     // Đặt lại tất cả các ô điểm danh về trạng thái Chưa nộp
     CLASS_ROSTER.forEach(student => {

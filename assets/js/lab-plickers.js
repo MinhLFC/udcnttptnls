@@ -866,11 +866,13 @@
           ${renderCurrentMode()}
         </div>
 
-        <!-- Nút bấm nổi quét thẻ trên điện thoại (Mobile Quick Scan FAB) -->
+        <!-- Nút bấm nổi quét thẻ trên điện thoại (chỉ hiện khi chưa vào chế độ quét) -->
+        ${state.mode !== 'scanner' ? `
         <button class="plk-mobile-scan-fab" id="btn-mobile-scan-fab" title="Mở Camera quét thẻ học sinh">
           <span class="fab-icon">📷</span>
           <span class="fab-text">Quét thẻ học sinh</span>
         </button>
+        ` : ''}
       </div>
     `;
 
@@ -1587,29 +1589,30 @@
 
       const videoEl = document.getElementById('plk-camera-video');
       if (!videoEl || videoEl.readyState < 2) {
-        state.scanFrameTimeout = setTimeout(processFrame, 150);
+        state.scanFrameTimeout = setTimeout(processFrame, 100);
         return;
       }
 
       if (isProcessing) {
-        state.scanFrameTimeout = setTimeout(processFrame, 100);
+        state.scanFrameTimeout = setTimeout(processFrame, 80);
         return;
       }
 
       isProcessing = true;
 
       // Ưu tiên 1: Native BarcodeDetector (Hỗ trợ phần cứng cực nhanh trên Chrome/Edge/Android)
-      if ('BarcodeDetector' in window) {
+      if ('BarcodeDetector' in window && !state.barcodeDetectorFailed) {
         if (!state.barcodeDetector) {
           try {
             state.barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
           } catch (e) {
             state.barcodeDetector = null;
+            state.barcodeDetectorFailed = true;
           }
         }
       }
 
-      if (state.barcodeDetector) {
+      if (state.barcodeDetector && !state.barcodeDetectorFailed) {
         state.barcodeDetector.detect(videoEl)
           .then(barcodes => {
             if (barcodes && barcodes.length > 0) {
@@ -1620,14 +1623,15 @@
               });
             }
           })
-          .catch(() => {
-            // Fallback jsQR qua canvas nếu API gặp trục trặc
+          .catch(e => {
+            // Nếu BarcodeDetector bị lỗi (thường gặp trên iOS/Safari), tắt hẳn và chuyển sang jsQR
+            state.barcodeDetectorFailed = true;
             scanFrameWithJsQr(videoEl);
           })
           .finally(() => {
             isProcessing = false;
             if (state.isScannerActive && state.mode === 'scanner') {
-              state.scanFrameTimeout = setTimeout(processFrame, 160);
+              state.scanFrameTimeout = setTimeout(processFrame, 90);
             }
           });
         return;
@@ -1642,14 +1646,15 @@
 
       isProcessing = false;
       if (state.isScannerActive && state.mode === 'scanner') {
-        state.scanFrameTimeout = setTimeout(processFrame, 160);
+        state.scanFrameTimeout = setTimeout(processFrame, 90);
       }
     }
 
-    state.scanFrameTimeout = setTimeout(processFrame, 150);
+    state.scanFrameTimeout = setTimeout(processFrame, 100);
   }
 
   // Quét khung hình video bằng canvas và thư viện jsQR
+  // HỖ TRỢ MULTI-SCAN: Quét quét liên tục TẤT CẢ các thẻ có trong khung hình khi giáo viên lia camera
   function scanFrameWithJsQr(videoEl) {
     if (typeof jsQR === 'undefined') return;
 
@@ -1665,23 +1670,38 @@
     const vh = videoEl.videoHeight;
     if (!vw || !vh) return;
 
-    // Giới hạn độ phân giải xử lý tối đa 640px để quét mượt mà, không nóng máy
-    const scale = Math.min(1, 640 / Math.max(vw, vh));
+    // Giữ độ phân giải sắc nét (tối đa 960px) để nhận diện được cả thẻ ở khoảng cách xa khi lia lớp
+    const scale = Math.min(1, 960 / Math.max(vw, vh));
     const width = Math.floor(vw * scale);
     const height = Math.floor(vh * scale);
 
-    canvas.width = width;
-    canvas.height = height;
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
     ctx.drawImage(videoEl, 0, 0, width, height);
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-      inversionAttempts: 'dontInvert'
-    });
+    let imageData = ctx.getImageData(0, 0, width, height);
 
-    if (code && code.data) {
+    // VÒNG LẶP MULTI-SCAN: Khi lia camera qua nhiều học sinh hoặc bảng thẻ,
+    // thuật toán sẽ xóa vùng thẻ vừa tìm thấy để tiếp tục tìm các thẻ khác trong cùng 1 khung hình!
+    let detectedCount = 0;
+    const maxCodesPerFrame = 10; // Quét tối đa 10 thẻ trong 1 khung hình
+
+    while (detectedCount < maxCodesPerFrame) {
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'dontInvert'
+      });
+
+      if (!code || !code.data) {
+        break; // Hết mã QR trong khung hình này
+      }
+
+      detectedCount++;
+
       let cornerPoints = null;
       if (code.location) {
         cornerPoints = [
@@ -1691,7 +1711,27 @@
           code.location.bottomLeftCorner
         ];
       }
+
+      // Xử lý mã thẻ học sinh này
       handleRealQrScanned(code.data, cornerPoints);
+
+      // Để jsQR tiếp tục tìm các mã QR khác còn lại trong khung hình:
+      // Che trắng vùng mã QR vừa phát hiện trên canvas và quét tiếp
+      if (code.location) {
+        const loc = code.location;
+        const minX = Math.max(0, Math.min(loc.topLeftCorner.x, loc.bottomLeftCorner.x) - 6);
+        const maxX = Math.min(width, Math.max(loc.topRightCorner.x, loc.bottomRightCorner.x) + 6);
+        const minY = Math.max(0, Math.min(loc.topLeftCorner.y, loc.topRightCorner.y) - 6);
+        const maxY = Math.min(height, Math.max(loc.bottomLeftCorner.y, loc.bottomRightCorner.y) + 6);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(minX, minY, Math.max(1, maxX - minX), Math.max(1, maxY - minY));
+
+        // Lấy lại imageData đã che mã vừa quét để jsQR tìm mã tiếp theo
+        imageData = ctx.getImageData(0, 0, width, height);
+      } else {
+        break;
+      }
     }
   }
 
@@ -1703,14 +1743,20 @@
     const deg = Math.atan2(dy, dx) * 180 / Math.PI;
     const normDeg = (deg + 360) % 360;
 
+    // Hệ tọa độ màn hình (y hướng xuống):
+    // Vector p0 (TopLeft) -> p1 (TopRight)
+    // A: Cạnh A trên cùng (Thẻ đứng thẳng) -> vector hướng sang phải dx > 0, dy ≈ 0 (gần 0° hoặc 360°)
+    // B: Cạnh B trên cùng (Xoay 90° cùng chiều kim đồng hồ) -> vector hướng xuống dx ≈ 0, dy > 0 (gần 90°)
+    // C: Cạnh C trên cùng (Xoay 180°) -> vector hướng sang trái dx < 0, dy ≈ 0 (gần 180°)
+    // D: Cạnh D trên cùng (Xoay 270°) -> vector hướng lên dx ≈ 0, dy < 0 (gần 270°)
     if (normDeg >= 315 || normDeg < 45) {
-      return 0; // A (Thẻ đứng thẳng, cạnh A ở trên)
-    } else if (normDeg >= 225 && normDeg < 315) {
-      return 1; // B (Học sinh xoay cạnh B lên trên)
+      return 0; // A
+    } else if (normDeg >= 45 && normDeg < 135) {
+      return 1; // B
     } else if (normDeg >= 135 && normDeg < 225) {
-      return 2; // C (Học sinh xoay cạnh C lên trên)
+      return 2; // C
     } else {
-      return 3; // D (Học sinh xoay cạnh D lên trên)
+      return 3; // D
     }
   }
 
@@ -1788,23 +1834,30 @@
     return null;
   }
 
-  // Âm thanh 'bíp' nhẹ khi camera quét trúng một thẻ học sinh
+  // Âm thanh 'bíp' nhẹ khi camera quét trúng một thẻ học sinh (Dùng chung AudioContext tránh tràn bộ nhớ trình duyệt)
+  let sharedAudioContext = null;
   function playSuccessBeep() {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      if (!sharedAudioContext || sharedAudioContext.state === 'closed') {
+        sharedAudioContext = new AudioCtx();
+      }
+      if (sharedAudioContext.state === 'suspended') {
+        sharedAudioContext.resume().catch(() => {});
+      }
+      const osc = sharedAudioContext.createOscillator();
+      const gain = sharedAudioContext.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      const now = sharedAudioContext.currentTime;
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
       osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.15);
+      gain.connect(sharedAudioContext.destination);
+      osc.start(now);
+      osc.stop(now + 0.1);
     } catch (e) {}
   }
 

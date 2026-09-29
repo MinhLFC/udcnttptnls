@@ -1437,8 +1437,8 @@
       const constraints = {
         video: {
           facingMode: { ideal: state.facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 }
         },
         audio: false
       };
@@ -1460,7 +1460,7 @@
           }, 500);
 
           if (statusChip) {
-            statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Camera đang hoạt động — Hãy giơ thẻ QR học sinh vào khung hình';
+            statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Đang quét mã QR học sinh...';
           }
           // Bắt đầu vòng lặp quét nhận diện mã QR thật
           startRealQrCameraLoop();
@@ -1670,8 +1670,9 @@
     const vh = videoEl.videoHeight;
     if (!vw || !vh) return;
 
-    // Giữ độ phân giải sắc nét (tối đa 960px) để nhận diện được cả thẻ ở khoảng cách xa khi lia lớp
-    const scale = Math.min(1, 960 / Math.max(vw, vh));
+    // Giữ độ phân giải sắc nét tối đa 1280px để nhận diện được cả thẻ nhỏ/ở xa hoặc trên màn hình
+    const maxDim = Math.max(vw, vh);
+    const scale = maxDim > 1280 ? (1280 / maxDim) : 1;
     const width = Math.floor(vw * scale);
     const height = Math.floor(vh * scale);
 
@@ -1692,8 +1693,9 @@
     const maxCodesPerFrame = 10; // Quét tối đa 10 thẻ trong 1 khung hình
 
     while (detectedCount < maxCodesPerFrame) {
+      // 'attemptBoth' giúp quét nhạy hơn rất nhiều trên màn hình máy tính (chống chói sáng/sọc màn hình)
       const code = jsQR(imageData.data, imageData.width, imageData.height, {
-        inversionAttempts: 'dontInvert'
+        inversionAttempts: 'attemptBoth'
       });
 
       if (!code || !code.data) {
@@ -1716,13 +1718,15 @@
       handleRealQrScanned(code.data, cornerPoints);
 
       // Để jsQR tiếp tục tìm các mã QR khác còn lại trong khung hình:
-      // Che trắng vùng mã QR vừa phát hiện trên canvas và quét tiếp
+      // Che trắng toàn bộ vùng 4 góc của mã vừa quét và quét tiếp
       if (code.location) {
         const loc = code.location;
-        const minX = Math.max(0, Math.min(loc.topLeftCorner.x, loc.bottomLeftCorner.x) - 6);
-        const maxX = Math.min(width, Math.max(loc.topRightCorner.x, loc.bottomRightCorner.x) + 6);
-        const minY = Math.max(0, Math.min(loc.topLeftCorner.y, loc.topRightCorner.y) - 6);
-        const maxY = Math.min(height, Math.max(loc.bottomLeftCorner.y, loc.bottomRightCorner.y) + 6);
+        const xs = [loc.topLeftCorner.x, loc.topRightCorner.x, loc.bottomRightCorner.x, loc.bottomLeftCorner.x];
+        const ys = [loc.topLeftCorner.y, loc.topRightCorner.y, loc.bottomRightCorner.y, loc.bottomLeftCorner.y];
+        const minX = Math.max(0, Math.min(...xs) - 10);
+        const maxX = Math.min(width, Math.max(...xs) + 10);
+        const minY = Math.max(0, Math.min(...ys) - 10);
+        const maxY = Math.min(height, Math.max(...ys) + 10);
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(minX, minY, Math.max(1, maxX - minX), Math.max(1, maxY - minY));

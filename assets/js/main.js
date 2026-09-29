@@ -53,9 +53,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- 3. Active Link Highlight Based on URL ---
   const path = window.location.pathname.split('/').pop() || 'index.html';
+  const hasPlickersTab = window.location.search.includes('tab=plickers') || window.location.hash === '#plickers';
+
   document.querySelectorAll('.nav-link').forEach(link => {
     const href = link.getAttribute('href');
-    if (href === path || (path === '' && href === 'index.html')) {
+    if (href === 'lab.html?tab=plickers') {
+      link.classList.toggle('active', hasPlickersTab);
+    } else if (href === 'lab.html') {
+      link.classList.toggle('active', path === 'lab.html' && !hasPlickersTab);
+    } else if (href === path || (path === '' && href === 'index.html')) {
       link.classList.add('active');
     } else if (path !== 'contact.html' && href.startsWith('#')) {
       // Keep in-page anchors active on scroll

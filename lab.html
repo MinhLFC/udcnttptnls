@@ -41,7 +41,8 @@
         <li><a href="index.html" class="nav-link">Trang Chủ</a></li>
         <li><a href="index.html#about" class="nav-link">Giới Thiệu</a></li>
         <li><a href="skills.html" class="nav-link">Kỹ Năng</a></li>
-        <li><a href="lab.html" class="nav-link active">Thí Nghiệm</a></li>
+        <li><a href="lab.html" class="nav-link active" id="nav-link-lab">Thí Nghiệm</a></li>
+        <li><a href="lab.html?tab=plickers" class="nav-link" id="nav-link-plickers">Plickers KHTN</a></li>
         <li><a href="contact.html" class="nav-link">Liên Hệ</a></li>
       </ul>
 
@@ -228,12 +229,67 @@
       document.querySelectorAll('.experiment-panel').forEach(panel => panel.classList.remove('active'));
       
       // Activate selected
-      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-      document.getElementById(`panel-${tabName}`).classList.add('active');
+      const targetBtn = document.querySelector(`[data-tab="${tabName}"]`);
+      if (targetBtn) targetBtn.classList.add('active');
+      const targetPanel = document.getElementById(`panel-${tabName}`);
+      if (targetPanel) targetPanel.classList.add('active');
+
+      // Cập nhật trạng thái active trên thanh menu chính
+      const navLab = document.getElementById('nav-link-lab');
+      const navPlk = document.getElementById('nav-link-plickers');
+      if (navLab && navPlk) {
+        if (tabName === 'plickers') {
+          navPlk.classList.add('active');
+          navLab.classList.remove('active');
+        } else {
+          navPlk.classList.remove('active');
+          navLab.classList.add('active');
+        }
+      }
 
       // Kích hoạt tính toán lại kích thước canvas mô hình 3D
       window.dispatchEvent(new Event('resize'));
     }
+
+    // Lắng nghe click trực tiếp vào nút Plickers KHTN trên menu chính
+    document.addEventListener('DOMContentLoaded', () => {
+      const plkNavLink = document.getElementById('nav-link-plickers');
+      if (plkNavLink) {
+        plkNavLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchTab('plickers');
+          try {
+            history.pushState(null, '', 'lab.html?tab=plickers');
+          } catch (err) {}
+          const panel = document.getElementById('panel-plickers');
+          if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
+
+      const labNavLink = document.getElementById('nav-link-lab');
+      if (labNavLink) {
+        labNavLink.addEventListener('click', (e) => {
+          if (window.location.search.includes('tab=plickers')) {
+            e.preventDefault();
+            switchTab('acid-base');
+            try {
+              history.pushState(null, '', 'lab.html');
+            } catch (err) {}
+          }
+        });
+      }
+
+      // Tự động mở tab Plickers nếu truy cập từ đường link có ?tab=plickers hoặc #plickers
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam === 'plickers' || window.location.hash === '#plickers') {
+        switchTab('plickers');
+        setTimeout(() => {
+          const panel = document.getElementById('panel-plickers');
+          if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      }
+    });
   </script>
 
 </body>

@@ -958,7 +958,10 @@
     const existing = document.getElementById('plk-sync-modal-overlay');
     if (existing) existing.remove();
 
-    const joinUrl = `https://udcnttptnls.vercel.app/lab.html?room=${encodeURIComponent(state.syncRoomId)}&mode=scanner`;
+    const origin = (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin.startsWith('http'))
+      ? window.location.origin
+      : 'https://udcnttptnls.vercel.app';
+    const joinUrl = `${origin}/plickers.html?room=${encodeURIComponent(state.syncRoomId)}&mode=scanner`;
 
     // Tạo mã QR kết nối
     let qrSvg = '';

@@ -3014,3 +3014,210 @@ body.plk-landscape-scanner .plk-mobile-scan-fab {
     page-break-inside: avoid;
   }
 }
+
+/* ==========================================================================
+   REALTIME SYNC MODAL & CONTROLS (ĐỒNG BỘ ĐIỆN THOẠI <-> MÁY TÍNH)
+   ========================================================================== */
+.plk-btn-sync {
+  position: relative;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: var(--text-main);
+}
+
+.plk-btn-sync:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(16, 185, 129, 0.18));
+}
+
+.plk-live-dot.dot-online {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.plk-live-dot.dot-offline {
+  background: #94a3b8;
+  box-shadow: none;
+}
+
+.plk-sync-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.plk-sync-modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  max-width: 520px;
+  width: 100%;
+  padding: 1.75rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  position: relative;
+  animation: modalScale 0.25s ease-out;
+}
+
+@keyframes modalScale {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.sync-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sync-modal-header h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+}
+
+.sync-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.sync-modal-close:hover {
+  background: var(--bg-surface-elevated);
+  color: var(--text-main);
+}
+
+.sync-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: center;
+}
+
+.sync-qr-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border-radius: 16px;
+  margin: 0 auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.sync-qr-wrapper {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sync-room-input-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+
+.sync-room-input {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-align: center;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 2px solid var(--primary);
+  background: var(--bg-surface-elevated);
+  color: var(--text-main);
+  max-width: 140px;
+}
+
+.sync-room-btn {
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.sync-steps-list {
+  text-align: left;
+  background: var(--bg-surface-elevated);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.sync-steps-list ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.sync-steps-list li {
+  margin-bottom: 0.4rem;
+}
+
+.sync-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0 auto;
+}
+
+.sync-status-badge.online {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
+.sync-status-badge.offline {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.btn-export-excel-present {
+  background: linear-gradient(135deg, #059669, #10b981) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.btn-results-present {
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.btn-sync-present {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}

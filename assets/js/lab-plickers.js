@@ -760,7 +760,9 @@
     barcodeDetector: null,
     lastScannedTime: {},       // { [studentId]: { time, optionIdx } } chống quét lặp
     isScannerActive: false,
-    rollcallCompact: window.innerWidth <= 768  // Mặc định compact trên điện thoại
+    rollcallCompact: window.innerWidth <= 768,  // Mặc định compact trên điện thoại
+    syncRoomId: getInitialRoomId(),
+    syncConnected: false
   };
 
   // ==========================================
@@ -770,13 +772,340 @@
     initPlickersApp();
   });
 
+    // ==========================================
+  // 3a. ĐỒNG BỘ THỜI GIAN THỰC (ĐIỆN THOẠI <-> MÁY TÍNH)
+  // ==========================================
+  const myDeviceId = 'dev_' + Math.random().toString(36).substring(2, 9);
+  let mqttClient = null;
+
+  function getInitialRoomId() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const roomFromUrl = params.get('room');
+      if (roomFromUrl) {
+        localStorage.setItem('plk_sync_room', roomFromUrl);
+        return roomFromUrl.trim();
+      }
+      return localStorage.getItem('plk_sync_room') || '2026';
+    } catch (e) {
+      return '2026';
+    }
+  }
+
+  function initRealtimeSync() {
+    if (typeof mqtt === 'undefined') {
+      console.warn('MQTT.js library not loaded');
+      return;
+    }
+
+    try {
+      const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
+      mqttClient = mqtt.connect(brokerUrl, {
+        clientId: myDeviceId,
+        keepalive: 60,
+        clean: true,
+        reconnectPeriod: 2500
+      });
+
+      const topic = `udcnttptnls/plk/${state.syncRoomId}`;
+
+      mqttClient.on('connect', () => {
+        state.syncConnected = true;
+        console.log('✅ Realtime Sync Connected. Phòng:', state.syncRoomId);
+        updateSyncStatusBadges();
+        mqttClient.subscribe(topic, { qos: 0 });
+
+        // Gửi thông điệp yêu cầu đồng bộ trạng thái mới nhất
+        broadcastSync('REQUEST_STATE', {});
+      });
+
+      mqttClient.on('message', (t, message) => {
+        try {
+          const payload = JSON.parse(message.toString());
+          if (payload.senderId === myDeviceId) return; // Bỏ qua tin của chính mình
+          handleIncomingSyncMessage(payload);
+        } catch (e) {
+          console.warn('Sync parse error:', e);
+        }
+      });
+
+      mqttClient.on('error', (err) => {
+        console.warn('MQTT Sync Error:', err);
+        state.syncConnected = false;
+        updateSyncStatusBadges();
+      });
+
+      mqttClient.on('close', () => {
+        state.syncConnected = false;
+        updateSyncStatusBadges();
+      });
+    } catch (err) {
+      console.warn('Init realtime sync error:', err);
+    }
+
+    // Đồng bộ tức thời giữa các tab trên cùng một máy qua localStorage
+    window.addEventListener('storage', (e) => {
+      if (e.key === `plk_local_sync_${state.syncRoomId}` && e.newValue) {
+        try {
+          const payload = JSON.parse(e.newValue);
+          if (payload.senderId !== myDeviceId) {
+            handleIncomingSyncMessage(payload);
+          }
+        } catch (err) {}
+      }
+    });
+  }
+
+  function broadcastSync(type, data = {}) {
+    const payload = {
+      type: type,
+      senderId: myDeviceId,
+      roomId: state.syncRoomId,
+      timestamp: Date.now(),
+      currentIndex: state.currentIndex,
+      ...data
+    };
+
+    const str = JSON.stringify(payload);
+
+    // Gửi qua MQTT (kết nối Internet)
+    if (mqttClient && state.syncConnected) {
+      const topic = `udcnttptnls/plk/${state.syncRoomId}`;
+      mqttClient.publish(topic, str);
+    }
+
+    // Gửi qua LocalStorage (cùng trình duyệt / máy tính)
+    try {
+      localStorage.setItem(`plk_local_sync_${state.syncRoomId}`, str);
+    } catch (e) {}
+  }
+
+  function handleIncomingSyncMessage(msg) {
+    if (!msg || !msg.type) return;
+
+    if (msg.type === 'SYNC_SCAN') {
+      if (msg.currentIndex !== undefined && msg.currentIndex !== state.currentIndex) {
+        state.currentIndex = msg.currentIndex;
+      }
+      if (msg.scannedStudents) {
+        state.scannedStudents = msg.scannedStudents;
+
+        // Cập nhật bảng điểm danh trên màn hình máy tính
+        Object.values(state.scannedStudents).forEach(s => {
+          updateStudentRollCallCard(s.id, s.option, s.isCorrect);
+        });
+
+        // Cập nhật số liệu và biểu đồ
+        updateScannerMetrics();
+
+        // Nếu máy tính đang ở chế độ Trình chiếu Plickers, cập nhật biểu đồ phân phối
+        if (state.mode === 'presentation') {
+          const counts = [0, 0, 0, 0];
+          Object.values(state.scannedStudents).forEach(s => {
+            if (s.option >= 0 && s.option <= 3) counts[s.option]++;
+          });
+          state.mockPollData = counts;
+          const pollSection = document.querySelector('.plk-poll-section');
+          if (pollSection) {
+            const currentQ = state.filteredList[state.currentIndex];
+            pollSection.outerHTML = renderPollChart(state.mockPollData, currentQ ? currentQ.correct : 0);
+          }
+        }
+
+        // Tự động hiện bảng tổng kết khi cả lớp 35 học sinh đã nộp đủ
+        const total = Object.keys(state.scannedStudents).length;
+        if (total >= CLASS_ROSTER.length) {
+          showScannerResultsSummary();
+        }
+      }
+    } else if (msg.type === 'SYNC_RESET') {
+      state.scannedStudents = {};
+      state.mockPollData = null;
+      resetCurrentQuestionScan();
+    } else if (msg.type === 'SYNC_QUESTION') {
+      if (msg.currentIndex !== undefined && msg.currentIndex !== state.currentIndex) {
+        state.currentIndex = msg.currentIndex;
+        state.scannedStudents = {};
+        state.mockPollData = null;
+        refreshQuizArea();
+      }
+    } else if (msg.type === 'REQUEST_STATE') {
+      if (Object.keys(state.scannedStudents).length > 0) {
+        broadcastSync('SYNC_SCAN', {
+          currentIndex: state.currentIndex,
+          scannedStudents: state.scannedStudents
+        });
+      }
+    }
+  }
+
+  function updateSyncStatusBadges() {
+    document.querySelectorAll('.plk-live-dot').forEach(dot => {
+      dot.classList.toggle('dot-online', state.syncConnected);
+      dot.classList.toggle('dot-offline', !state.syncConnected);
+    });
+    const syncBadge = document.getElementById('sync-modal-status-badge');
+    if (syncBadge) {
+      syncBadge.className = `sync-status-badge ${state.syncConnected ? 'online' : 'offline'}`;
+      syncBadge.innerHTML = state.syncConnected
+        ? '🟢 Đã kết nối với máy chủ đồng bộ thời gian thực'
+        : '⚪ Đang kết nối lại máy chủ đồng bộ...';
+    }
+  }
+
+  // Hộp thoại popup quét QR để đồng bộ điện thoại với máy tính
+  function showSyncPairingModal() {
+    const existing = document.getElementById('plk-sync-modal-overlay');
+    if (existing) existing.remove();
+
+    const joinUrl = `https://udcnttptnls.vercel.app/lab.html?room=${encodeURIComponent(state.syncRoomId)}&mode=scanner`;
+
+    // Tạo mã QR kết nối
+    let qrSvg = '';
+    if (typeof qrcode !== 'undefined') {
+      try {
+        const qr = qrcode(0, 'M');
+        qr.addData(joinUrl);
+        qr.make();
+        qrSvg = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+      } catch (e) {}
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'plk-sync-modal-overlay';
+    modal.className = 'plk-sync-modal-overlay';
+    modal.innerHTML = `
+      <div class="plk-sync-modal">
+        <div class="sync-modal-header">
+          <h3>📱 Đồng Bộ Thời Gian Thực (Điện Thoại ➔ Máy Tính)</h3>
+          <button class="sync-modal-close" id="btn-close-sync-modal">✕</button>
+        </div>
+        <div class="sync-modal-body">
+          <p style="margin: 0; color: var(--text-main); font-weight: 600;">
+            Quét mã QR bằng Camera điện thoại để mở máy quét và kết nối trực tiếp với màn hình máy tính:
+          </p>
+
+          <div class="sync-qr-card">
+            <div class="sync-qr-wrapper">
+              ${qrSvg || '<p>Đang tạo mã QR...</p>'}
+            </div>
+            <div style="font-size: 0.8rem; color: #475569; font-weight: 600;">
+              Mở Camera iPhone / Android quét để kết nối
+            </div>
+          </div>
+
+          <div class="sync-room-input-group">
+            <span style="font-weight: 700; font-size: 0.95rem;">Mã Phòng:</span>
+            <input type="text" id="sync-room-code-input" class="sync-room-input" value="${state.syncRoomId}" maxlength="8" />
+            <button class="sync-room-btn" id="btn-change-room-code">Đổi Phòng</button>
+          </div>
+
+          <div class="sync-status-badge ${state.syncConnected ? 'online' : 'offline'}" id="sync-modal-status-badge">
+            ${state.syncConnected ? '🟢 Đã kết nối với máy chủ đồng bộ thời gian thực' : '⚪ Đang kết nối máy chủ đồng bộ...'}
+          </div>
+
+          <div class="sync-steps-list">
+            <ol>
+              <li>Dùng <strong>điện thoại</strong> quét mã QR ở trên (hoặc truy cập cùng Mã Phòng).</li>
+              <li>Cầm điện thoại <strong>quét thẻ học sinh</strong> trong lớp.</li>
+              <li>Màn hình máy tính / máy chiếu sẽ <strong>nhảy kết quả và biểu đồ ngay tức thì</strong>!</li>
+              <li>Bấm nút <strong>"Xuất Excel (CSV)"</strong> trên máy tính bất kỳ lúc nào để tải bảng điểm.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Sự kiện đóng modal
+    document.getElementById('btn-close-sync-modal').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    // Sự kiện đổi mã phòng
+    document.getElementById('btn-change-room-code').addEventListener('click', () => {
+      const input = document.getElementById('sync-room-code-input');
+      if (!input) return;
+      const newRoom = input.value.trim();
+      if (!newRoom) {
+        alert('Vui lòng nhập mã phòng hợp lệ!');
+        return;
+      }
+      state.syncRoomId = newRoom;
+      localStorage.setItem('plk_sync_room', newRoom);
+      modal.remove();
+      if (mqttClient) {
+        mqttClient.end(true, () => {
+          initRealtimeSync();
+          refreshQuizArea();
+          showSyncPairingModal();
+        });
+      } else {
+        initRealtimeSync();
+        refreshQuizArea();
+        showSyncPairingModal();
+      }
+    });
+  }
+
+  // Hàm xuất Excel dành riêng cho màn hình Trình chiếu Máy tính
+  function exportPresentationExcel() {
+    const currentQ = state.filteredList[state.currentIndex];
+    if (!currentQ) return;
+
+    const plkLetters = ['A', 'B', 'C', 'D'];
+    const counts = [0, 0, 0, 0];
+    let correctCount = 0;
+
+    const studentResults = CLASS_ROSTER.map(student => {
+      const scan = state.scannedStudents[student.id];
+      if (!scan) return null;
+
+      counts[scan.option]++;
+      if (scan.isCorrect) correctCount++;
+
+      return {
+        id: student.id,
+        name: student.name,
+        option: scan.option,
+        letter: plkLetters[scan.option],
+        isCorrect: scan.isCorrect,
+        score: scan.isCorrect ? 10 : 0
+      };
+    }).filter(Boolean);
+
+    if (studentResults.length === 0) {
+      alert('Chưa có học sinh nào nộp câu trả lời. Hãy quét thẻ bằng điện thoại hoặc bấm "⚡ Thử nghiệm cả lớp (Demo)" trước!');
+      return;
+    }
+
+    const answeredCount = studentResults.length;
+    const correctPct = Math.round((correctCount / answeredCount) * 100);
+    const avgScore = (studentResults.reduce((sum, s) => sum + s.score, 0) / answeredCount).toFixed(1);
+
+    downloadClassResultsCsv(studentResults, currentQ, counts, plkLetters, correctPct, avgScore);
+  }
+
   function initPlickersApp() {
     const container = document.getElementById('experiment-plickers');
     if (!container) return;
 
+    // Kiểm tra URL query params (?room=2026&mode=scanner)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'scanner') {
+      state.mode = 'scanner';
+    }
+
     applyFilters();
     renderMainLayout(container);
     startTimer();
+    initRealtimeSync();
+
+    if (state.mode === 'scanner') {
+      startCameraScanner();
+    }
   }
 
   function applyFilters() {
@@ -857,6 +1186,9 @@
             </button>
             <button class="plk-mode-btn ${state.mode === 'cards' ? 'active' : ''}" data-mode="cards">
               🖨️ Bộ thẻ Plickers
+            </button>
+            <button class="plk-mode-btn plk-btn-sync" id="btn-topbar-sync" title="Đồng bộ thời gian thực với Điện thoại">
+              <span class="plk-live-dot ${state.syncConnected ? 'dot-online' : 'dot-offline'}"></span> 📱 Đồng bộ (Phòng ${state.syncRoomId})
             </button>
           </div>
         </div>
@@ -1046,6 +1378,15 @@
             </button>
             <button class="teacher-btn btn-open-cam-scanner" id="btn-open-cam-present">
               📱 Mở Camera Quét Thẻ
+            </button>
+            <button class="teacher-btn btn-sync-present" id="btn-sync-present" title="Đồng bộ trực tiếp với Điện thoại">
+              📱 Đồng bộ ĐT (Phòng ${state.syncRoomId})
+            </button>
+            <button class="teacher-btn btn-export-excel-present" id="btn-present-export-excel" title="Xuất kết quả ra file Excel">
+              📥 Xuất Excel
+            </button>
+            <button class="teacher-btn btn-results-present" id="btn-present-results" title="Xem bảng điểm chi tiết">
+              📊 Bảng Điểm
             </button>
             <button class="teacher-btn" id="btn-next-present">
               Câu tiếp theo ➔
@@ -1873,6 +2214,12 @@
     // Cập nhật số liệu và bảng điểm danh
     updateScannerMetrics();
 
+    // Đồng bộ kết quả tức thì sang Máy Tính (máy chiếu)
+    broadcastSync('SYNC_SCAN', {
+      currentIndex: state.currentIndex,
+      scannedStudents: state.scannedStudents
+    });
+
     // Cập nhật chip trạng thái
     const plkLetters = ['A', 'B', 'C', 'D'];
     const totalScanned = Object.keys(state.scannedStudents).length;
@@ -2144,7 +2491,7 @@
       </div>
     `;
 
-    // Chèn bảng tổng kết ngay sau bảng điểm danh
+    // Chèn bảng tổng kết ngay trên màn hình (hoạt động cho cả điện thoại và máy tính)
     const scannerContainer = document.querySelector('.plk-scanner-container');
     if (scannerContainer) {
       const toolbar = scannerContainer.querySelector('.scanner-action-toolbar');
@@ -2152,6 +2499,11 @@
         scannerContainer.insertBefore(panel, toolbar);
       } else {
         scannerContainer.appendChild(panel);
+      }
+    } else {
+      const quizCard = document.querySelector('.plk-quiz-card') || document.getElementById('plickers-body-content');
+      if (quizCard) {
+        quizCard.appendChild(panel);
       }
     }
 
@@ -2252,6 +2604,11 @@
   function resetCurrentQuestionScan() {
     state.scannedStudents = {};
     state.lastScannedTime = {};
+
+    // Đồng bộ lệnh quét lại sang Máy Tính
+    broadcastSync('SYNC_RESET', {
+      currentIndex: state.currentIndex
+    });
     const overlay = document.getElementById('scanner-detected-overlay');
     if (overlay) overlay.innerHTML = '';
 
@@ -2296,6 +2653,11 @@
     }
     state.scannedStudents = {};
     state.lastScannedTime = {};
+
+    // Đồng bộ chuyển câu hỏi sang Máy Tính
+    broadcastSync('SYNC_QUESTION', {
+      currentIndex: state.currentIndex
+    });
     resetQuestionState();
     refreshQuizArea();
     startCameraScanner();
@@ -2326,6 +2688,14 @@
         updateToolbarStyles();
       });
     });
+
+    // Nút mở hộp thoại đồng bộ trên TopBar
+    const btnTopSync = document.getElementById('btn-topbar-sync');
+    if (btnTopSync) {
+      btnTopSync.addEventListener('click', () => {
+        showSyncPairingModal();
+      });
+    }
 
     // Mode Switcher buttons
     document.querySelectorAll('.plk-mode-btn').forEach(btn => {
@@ -2540,6 +2910,27 @@
         refreshQuizArea();
         updateToolbarStyles();
         startCameraScanner();
+      });
+    }
+
+    const btnSyncPresent = document.getElementById('btn-sync-present');
+    if (btnSyncPresent) {
+      btnSyncPresent.addEventListener('click', () => {
+        showSyncPairingModal();
+      });
+    }
+
+    const btnPresentExcel = document.getElementById('btn-present-export-excel');
+    if (btnPresentExcel) {
+      btnPresentExcel.addEventListener('click', () => {
+        exportPresentationExcel();
+      });
+    }
+
+    const btnPresentResults = document.getElementById('btn-present-results');
+    if (btnPresentResults) {
+      btnPresentResults.addEventListener('click', () => {
+        showScannerResultsSummary(true);
       });
     }
 

@@ -759,7 +759,8 @@
     scanFrameTimeout: null,
     barcodeDetector: null,
     lastScannedTime: {},       // { [studentId]: { time, optionIdx } } chống quét lặp
-    isScannerActive: false
+    isScannerActive: false,
+    rollcallCompact: window.innerWidth <= 768  // Mặc định compact trên điện thoại
   };
 
   // ==========================================
@@ -1139,79 +1140,88 @@
     const pendingCount = totalStudents - scannedCount;
     const percent = Math.round((scannedCount / totalStudents) * 100);
     const plkLetters = ['A', 'B', 'C', 'D'];
+    const isCompact = state.rollcallCompact !== false; // Mặc định compact
+
+    const compactGrid = CLASS_ROSTER.map(student => {
+      const scanData = state.scannedStudents[student.id];
+      const isScanned = !!scanData;
+      const letter = isScanned ? plkLetters[scanData.option] : '';
+      const isCorrect = isScanned ? scanData.isCorrect : false;
+      const cls = isScanned ? (isCorrect ? 'mini-correct' : 'mini-wrong') : 'mini-pending';
+      const tooltip = '#' + student.id + ' ' + student.name + (isScanned ? ' → [' + letter + '] ' + (isCorrect ? '✅ Đúng' : '❌ Sai') : ' (Chưa nộp)');
+      return `<div class="rc-mini-card ${cls}" id="rc-card-${student.id}" data-student-id="${student.id}" title="${tooltip}"><span class="mini-num">${student.id.toString().padStart(2,'0')}</span><span class="mini-ans">${isScanned ? letter : '?'}</span></div>`;
+    }).join('');
+
+    const fullGrid = CLASS_ROSTER.map(student => {
+      const scanData = state.scannedStudents[student.id];
+      const isScanned = !!scanData;
+      const letter = isScanned ? plkLetters[scanData.option] : '';
+      const isCorrect = isScanned ? scanData.isCorrect : false;
+      return `
+        <div class="rc-student-card ${isScanned ? 'scanned' : 'pending'}" id="rc-card-${student.id}" data-student-id="${student.id}" title="${student.name} (${isScanned ? 'Đã điểm danh: ' + letter : 'Chưa điểm danh'})">
+          <div class="rc-card-top"><span class="rc-id-badge">#${student.id.toString().padStart(2,'0')}</span><span class="rc-indicator-dot ${isScanned ? 'dot-green' : 'dot-gray'}"></span></div>
+          <div class="rc-name">${student.name}</div>
+          <div class="rc-status-pill">${isScanned ? `<span class="rc-ans-badge ${isCorrect ? 'ans-correct' : 'ans-wrong'}">✅ [${letter}]</span>` : '<span class="rc-pending-badge">⏳ Chưa nộp</span>'}</div>
+        </div>`;
+    }).join('');
 
     return `
       <div class="plk-rollcall-section" id="plk-rollcall-section">
         <div class="rollcall-header">
           <div class="rc-title-area">
-            <h4>📋 Bảng Điểm Danh & Thu Bài Lớp Học (${scannedCount}/${totalStudents} HS)</h4>
-            <span class="rc-subtitle">Cập nhật trực tiếp khi Camera quét từng thẻ học sinh (Nhấp vào thẻ để điểm danh thủ công)</span>
+            <h4>📋 Bảng Điểm Danh &amp; Thu Bài (${scannedCount}/${totalStudents} HS)</h4>
           </div>
-          <div class="rc-stats-badges">
-            <span class="rc-badge badge-total">👥 Sĩ số: <strong>${totalStudents}</strong></span>
-            <span class="rc-badge badge-scanned">✅ Đã nộp: <strong>${scannedCount}</strong> (${percent}%)</span>
-            <span class="rc-badge badge-pending">⏳ Chưa quét: <strong>${pendingCount}</strong></span>
+          <div class="rc-header-right">
+            <span class="rc-badge badge-scanned">✅ <strong>${scannedCount}</strong>/${totalStudents}</span>
+            <span class="rc-badge badge-pending">⏳ Còn <strong>${pendingCount}</strong></span>
+            <button class="rc-view-toggle-btn" id="btn-toggle-rollcall-view">${isCompact ? '📋 Chi tiết' : '🔲 Gọn'}</button>
           </div>
         </div>
-
-        <div class="rollcall-progress-track">
-          <div class="rollcall-progress-bar" id="rollcall-progress-bar" style="width: ${percent}%;"></div>
-        </div>
-
-        <div class="rollcall-grid" id="rollcall-grid">
-          ${CLASS_ROSTER.map(student => {
-            const scanData = state.scannedStudents[student.id];
-            const isScanned = !!scanData;
-            const letter = isScanned ? plkLetters[scanData.option] : '';
-            const isCorrect = isScanned ? scanData.isCorrect : false;
-
-            return `
-              <div class="rc-student-card ${isScanned ? 'scanned' : 'pending'}" 
-                   id="rc-card-${student.id}" 
-                   data-student-id="${student.id}"
-                   title="${student.name} (${isScanned ? 'Đã điểm danh: ' + letter : 'Chưa điểm danh — Bấm để điểm danh thủ công'})">
-                <div class="rc-card-top">
-                  <span class="rc-id-badge">#${student.id.toString().padStart(2, '0')}</span>
-                  <span class="rc-indicator-dot ${isScanned ? 'dot-green' : 'dot-gray'}"></span>
-                </div>
-                <div class="rc-name">${student.name}</div>
-                <div class="rc-status-pill">
-                  ${isScanned ? `
-                    <span class="rc-ans-badge ${isCorrect ? 'ans-correct' : 'ans-wrong'}">
-                      ✅ [${letter}]
-                    </span>
-                  ` : `
-                    <span class="rc-pending-badge">⏳ Chưa nộp</span>
-                  `}
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
+        <div class="rollcall-progress-track"><div class="rollcall-progress-bar" id="rollcall-progress-bar" style="width:${percent}%;"></div></div>
+        ${isCompact
+          ? `<div class="rollcall-compact-grid" id="rollcall-grid">${compactGrid}</div>
+             <div class="rc-compact-legend">
+               <span class="legend-item"><span class="legend-dot ld-correct"></span>Đúng</span>
+               <span class="legend-item"><span class="legend-dot ld-wrong"></span>Sai</span>
+               <span class="legend-item"><span class="legend-dot ld-pending"></span>Chưa nộp</span>
+               <span class="legend-note">Bấm vào ô để điểm danh thủ công</span>
+             </div>`
+          : `<div class="rollcall-grid" id="rollcall-grid">${fullGrid}</div>`
+        }
       </div>
     `;
   }
 
   function updateStudentRollCallCard(studentId, optionIdx, isCorrect) {
     const cardEl = document.getElementById(`rc-card-${studentId}`);
+    const plkLetters = ['A', 'B', 'C', 'D'];
+
     if (cardEl) {
-      cardEl.classList.remove('pending');
-      cardEl.classList.add('scanned', 'just-scanned');
-      const plkLetters = ['A', 'B', 'C', 'D'];
-      const dotEl = cardEl.querySelector('.rc-indicator-dot');
-      if (dotEl) {
-        dotEl.classList.remove('dot-gray');
-        dotEl.classList.add('dot-green');
+      // Kiểm tra xem đang ở chế độ compact hay full
+      const isMiniCard = cardEl.classList.contains('rc-mini-card');
+
+      if (isMiniCard) {
+        // Cập nhật mini card (compact mode)
+        cardEl.classList.remove('mini-pending');
+        cardEl.classList.add(isCorrect ? 'mini-correct' : 'mini-wrong', 'mini-flash');
+        const ansEl = cardEl.querySelector('.mini-ans');
+        if (ansEl) ansEl.textContent = plkLetters[optionIdx];
+        setTimeout(() => cardEl.classList.remove('mini-flash'), 1000);
+      } else {
+        // Cập nhật full card (detail mode)
+        cardEl.classList.remove('pending');
+        cardEl.classList.add('scanned', 'just-scanned');
+        const dotEl = cardEl.querySelector('.rc-indicator-dot');
+        if (dotEl) {
+          dotEl.classList.remove('dot-gray');
+          dotEl.classList.add('dot-green');
+        }
+        const statusPill = cardEl.querySelector('.rc-status-pill');
+        if (statusPill) {
+          statusPill.innerHTML = `<span class="rc-ans-badge ${isCorrect ? 'ans-correct' : 'ans-wrong'}">✅ [${plkLetters[optionIdx]}]</span>`;
+        }
+        setTimeout(() => cardEl.classList.remove('just-scanned'), 1200);
       }
-      const statusPill = cardEl.querySelector('.rc-status-pill');
-      if (statusPill) {
-        statusPill.innerHTML = `
-          <span class="rc-ans-badge ${isCorrect ? 'ans-correct' : 'ans-wrong'}">
-            ✅ [${plkLetters[optionIdx]}]
-          </span>
-        `;
-      }
-      setTimeout(() => cardEl.classList.remove('just-scanned'), 1200);
     }
 
     // Cập nhật thanh tiến trình điểm danh nếu đang hiển thị
@@ -2231,14 +2241,19 @@
     CLASS_ROSTER.forEach(student => {
       const cardEl = document.getElementById(`rc-card-${student.id}`);
       if (cardEl) {
-        cardEl.className = 'rc-student-card pending';
-        const dot = cardEl.querySelector('.rc-indicator-dot');
-        if (dot) {
-          dot.className = 'rc-indicator-dot dot-gray';
-        }
-        const statusPill = cardEl.querySelector('.rc-status-pill');
-        if (statusPill) {
-          statusPill.innerHTML = '<span class="rc-pending-badge">⏳ Chưa nộp</span>';
+        if (cardEl.classList.contains('rc-mini-card')) {
+          // Chế độ compact
+          cardEl.classList.remove('mini-correct', 'mini-wrong');
+          cardEl.classList.add('mini-pending');
+          const ansEl = cardEl.querySelector('.mini-ans');
+          if (ansEl) ansEl.textContent = '?';
+        } else {
+          // Chế độ full
+          cardEl.className = 'rc-student-card pending';
+          const dot = cardEl.querySelector('.rc-indicator-dot');
+          if (dot) dot.className = 'rc-indicator-dot dot-gray';
+          const statusPill = cardEl.querySelector('.rc-status-pill');
+          if (statusPill) statusPill.innerHTML = '<span class="rc-pending-badge">⏳ Chưa nộp</span>';
         }
       }
     });
@@ -2556,6 +2571,12 @@
       btnResetScan.addEventListener('click', resetCurrentQuestionScan);
     }
 
+    // Nút chuyển chế độ hiển thị bảng điểm danh: compact <-> chi tiết
+    const btnToggleRcView = document.getElementById('btn-toggle-rollcall-view');
+    if (btnToggleRcView) {
+      btnToggleRcView.addEventListener('click', toggleRollcallViewMode);
+    }
+
     const btnNextScan = document.getElementById('btn-next-scan');
     if (btnNextScan) {
       btnNextScan.addEventListener('click', nextQuestionInScanner);
@@ -2586,8 +2607,14 @@
       });
     }
 
-    // --- ĐIỂM DANH THỦ CÔNG KHI NHẤP VÀO THẺ HỌC SINH ---
-    document.querySelectorAll('.rc-student-card').forEach(card => {
+    // --- ĐIỂM DANH THỦ CÔNG KHI NHẤP VÀO THẺ HỌC SINH (cả compact lẫn full) ---
+    bindRollCallManualClicks();
+  }
+
+  // Hàm gắn sự kiện click điểm danh thủ công cho cả 2 chế độ compact & full
+  function bindRollCallManualClicks() {
+    const selector = '.rc-student-card, .rc-mini-card';
+    document.querySelectorAll(selector).forEach(card => {
       card.addEventListener('click', () => {
         const studentId = Number(card.getAttribute('data-student-id'));
         const currentQ = state.filteredList[state.currentIndex];
@@ -2596,11 +2623,18 @@
         if (state.scannedStudents[studentId]) {
           // Bỏ điểm danh nếu nhấp lần 2
           delete state.scannedStudents[studentId];
-          card.className = 'rc-student-card pending';
-          const dot = card.querySelector('.rc-indicator-dot');
-          if (dot) dot.className = 'rc-indicator-dot dot-gray';
-          const pill = card.querySelector('.rc-status-pill');
-          if (pill) pill.innerHTML = '<span class="rc-pending-badge">⏳ Chưa nộp</span>';
+          if (card.classList.contains('rc-mini-card')) {
+            card.classList.remove('mini-correct', 'mini-wrong');
+            card.classList.add('mini-pending');
+            const ansEl = card.querySelector('.mini-ans');
+            if (ansEl) ansEl.textContent = '?';
+          } else {
+            card.className = 'rc-student-card pending';
+            const dot = card.querySelector('.rc-indicator-dot');
+            if (dot) dot.className = 'rc-indicator-dot dot-gray';
+            const pill = card.querySelector('.rc-status-pill');
+            if (pill) pill.innerHTML = '<span class="rc-pending-badge">⏳ Chưa nộp</span>';
+          }
         } else {
           // Điểm danh học sinh với đáp án đúng của câu hỏi
           const chosenOpt = currentQ.correct;
@@ -2615,6 +2649,23 @@
         updateScannerMetrics();
       });
     });
+  }
+
+  // Chuyển đổi chế độ compact <-> chi tiết của bảng điểm danh
+  function toggleRollcallViewMode() {
+    state.rollcallCompact = !state.rollcallCompact;
+    const rcSection = document.getElementById('plk-rollcall-section');
+    if (rcSection) {
+      // Parse HTML mới từ renderRollCallBoard và thay thế
+      const tmpDiv = document.createElement('div');
+      tmpDiv.innerHTML = renderRollCallBoard();
+      const newSection = tmpDiv.firstElementChild;
+      rcSection.replaceWith(newSection);
+      // Gắn lại sự kiện sau khi render
+      bindRollCallManualClicks();
+      const newToggle = document.getElementById('btn-toggle-rollcall-view');
+      if (newToggle) newToggle.addEventListener('click', toggleRollcallViewMode);
+    }
   }
 
   // ==========================================

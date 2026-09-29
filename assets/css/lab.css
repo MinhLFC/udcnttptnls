@@ -2124,16 +2124,23 @@ input[type="range"]::-webkit-slider-thumb {
 .rollcall-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 2px;
 }
 
 .rc-title-area h4 {
-  margin: 0 0 4px 0;
-  font-size: 1.05rem;
+  margin: 0 0 2px 0;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--text-main);
+}
+
+@media (max-width: 600px) {
+  .rc-title-area h4 {
+    font-size: 0.85rem;
+  }
 }
 
 .rc-subtitle {
@@ -2141,16 +2148,21 @@ input[type="range"]::-webkit-slider-thumb {
   color: var(--text-muted);
 }
 
+@media (max-width: 600px) {
+  .rc-subtitle { display: none; } /* Ẩn subtitle để tiết kiệm chỗ trên mobile */
+}
+
 .rc-stats-badges {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .rc-badge {
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 20px;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
@@ -2199,7 +2211,7 @@ input[type="range"]::-webkit-slider-thumb {
   transition: width 0.3s ease;
 }
 
-/* Lưới 35 học sinh */
+/* Lưới 35 học sinh — Chế độ đầy đủ */
 .rollcall-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
@@ -2213,8 +2225,172 @@ input[type="range"]::-webkit-slider-thumb {
   .rollcall-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    max-height: 320px;
+    max-height: 260px;
   }
+}
+
+/* Lưới 35 học sinh — Chế độ compact (mini badge) */
+.rollcall-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+@media (max-width: 400px) {
+  .rollcall-compact-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+  }
+}
+
+/* Header phải của roll call (badges + toggle) */
+.rc-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Nút toggle compact / chi tiết */
+.rc-view-toggle-btn {
+  padding: 4px 10px;
+  border-radius: 16px;
+  border: 1.5px solid var(--primary);
+  background: var(--bg-surface);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.rc-view-toggle-btn:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+/* Mini card — chế độ compact */
+.rc-mini-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 8px;
+  padding: 5px 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1.5px solid transparent;
+  user-select: none;
+  min-height: 46px;
+}
+
+.rc-mini-card:hover {
+  transform: scale(1.05);
+  border-color: var(--primary);
+}
+
+.mini-num {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+.mini-ans {
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Trạng thái mini card */
+.rc-mini-card.mini-pending {
+  background: var(--bg-surface-soft);
+  border-color: var(--border-color);
+}
+.rc-mini-card.mini-pending .mini-ans {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.rc-mini-card.mini-correct {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+}
+.rc-mini-card.mini-correct .mini-ans {
+  color: #059669;
+}
+.rc-mini-card.mini-correct .mini-num {
+  color: #059669;
+}
+
+.rc-mini-card.mini-wrong {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+.rc-mini-card.mini-wrong .mini-ans {
+  color: #dc2626;
+}
+.rc-mini-card.mini-wrong .mini-num {
+  color: #dc2626;
+}
+
+/* Hiệu ứng vừa quét */
+.rc-mini-card.mini-flash {
+  animation: miniFlash 0.8s ease-out;
+}
+
+@keyframes miniFlash {
+  0% { transform: scale(1.2); box-shadow: 0 0 12px rgba(16, 185, 129, 0.7); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+/* Dark mode cho mini cards */
+[data-theme="dark"] .rc-mini-card.mini-correct {
+  background: rgba(16, 185, 129, 0.2);
+}
+[data-theme="dark"] .rc-mini-card.mini-wrong {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Chú thích màu (legend) cho chế độ compact */
+.rc-compact-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.ld-correct { background: #10b981; }
+.ld-wrong   { background: #ef4444; }
+.ld-pending { background: #94a3b8; }
+
+.legend-note {
+  font-style: italic;
+  margin-left: auto;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 480px) {
+  .legend-note { display: none; }
 }
 
 .rc-student-card {

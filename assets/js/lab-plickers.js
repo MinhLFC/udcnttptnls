@@ -1589,55 +1589,18 @@
 
       const videoEl = document.getElementById('plk-camera-video');
       if (!videoEl || videoEl.readyState < 2) {
-        state.scanFrameTimeout = setTimeout(processFrame, 100);
+        state.scanFrameTimeout = setTimeout(processFrame, 80);
         return;
       }
 
       if (isProcessing) {
-        state.scanFrameTimeout = setTimeout(processFrame, 80);
+        state.scanFrameTimeout = setTimeout(processFrame, 60);
         return;
       }
 
       isProcessing = true;
 
-      // Ưu tiên 1: Native BarcodeDetector (Hỗ trợ phần cứng cực nhanh trên Chrome/Edge/Android)
-      if ('BarcodeDetector' in window && !state.barcodeDetectorFailed) {
-        if (!state.barcodeDetector) {
-          try {
-            state.barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
-          } catch (e) {
-            state.barcodeDetector = null;
-            state.barcodeDetectorFailed = true;
-          }
-        }
-      }
-
-      if (state.barcodeDetector && !state.barcodeDetectorFailed) {
-        state.barcodeDetector.detect(videoEl)
-          .then(barcodes => {
-            if (barcodes && barcodes.length > 0) {
-              barcodes.forEach(b => {
-                if (b.rawValue) {
-                  handleRealQrScanned(b.rawValue, b.cornerPoints);
-                }
-              });
-            }
-          })
-          .catch(e => {
-            // Nếu BarcodeDetector bị lỗi (thường gặp trên iOS/Safari), tắt hẳn và chuyển sang jsQR
-            state.barcodeDetectorFailed = true;
-            scanFrameWithJsQr(videoEl);
-          })
-          .finally(() => {
-            isProcessing = false;
-            if (state.isScannerActive && state.mode === 'scanner') {
-              state.scanFrameTimeout = setTimeout(processFrame, 90);
-            }
-          });
-        return;
-      }
-
-      // Ưu tiên 2: Sử dụng jsQR xử lý canvas (Tương thích mọi nền tảng kể cả Safari / iOS)
+      // Sử dụng trực tiếp jsQR Canvas Multi-Scan (quét được toàn bộ lớp học, không bị giới hạn 1 thẻ)
       try {
         scanFrameWithJsQr(videoEl);
       } catch (err) {
@@ -1646,11 +1609,11 @@
 
       isProcessing = false;
       if (state.isScannerActive && state.mode === 'scanner') {
-        state.scanFrameTimeout = setTimeout(processFrame, 90);
+        state.scanFrameTimeout = setTimeout(processFrame, 80);
       }
     }
 
-    state.scanFrameTimeout = setTimeout(processFrame, 100);
+    state.scanFrameTimeout = setTimeout(processFrame, 80);
   }
 
   // Quét khung hình video bằng canvas và thư viện jsQR
@@ -1687,16 +1650,19 @@
     ctx.drawImage(videoEl, 0, 0, width, height);
     let imageData = ctx.getImageData(0, 0, width, height);
 
-    // VÒNG LẶP MULTI-SCAN: Khi lia camera qua nhiều học sinh hoặc bảng thẻ,
-    // thuật toán sẽ xóa vùng thẻ vừa tìm thấy để tiếp tục tìm các thẻ khác trong cùng 1 khung hình!
+    // VÒNG LẶP MULTI-SCAN: Quét lần lượt TẤT CẢ các mã QR trong khung hình
     let detectedCount = 0;
-    const maxCodesPerFrame = 10; // Quét tối đa 10 thẻ trong 1 khung hình
+    const maxCodesPerFrame = 35; // Cho phép quét tối đa cả 35 thẻ cùng lúc trong 1 lần lia
 
     while (detectedCount < maxCodesPerFrame) {
-      // 'attemptBoth' giúp quét nhạy hơn rất nhiều trên màn hình máy tính (chống chói sáng/sọc màn hình)
-      const code = jsQR(imageData.data, imageData.width, imageData.height, {
-        inversionAttempts: 'attemptBoth'
-      });
+      let code = null;
+      try {
+        code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'attemptBoth'
+        });
+      } catch (e) {
+        break;
+      }
 
       if (!code || !code.data) {
         break; // Hết mã QR trong khung hình này
@@ -1718,15 +1684,15 @@
       handleRealQrScanned(code.data, cornerPoints);
 
       // Để jsQR tiếp tục tìm các mã QR khác còn lại trong khung hình:
-      // Che trắng toàn bộ vùng 4 góc của mã vừa quét và quét tiếp
+      // Che trắng toàn bộ vùng 4 góc của mã vừa quét (padding 4px vừa khít không lẹm sang thẻ lân cận)
       if (code.location) {
         const loc = code.location;
         const xs = [loc.topLeftCorner.x, loc.topRightCorner.x, loc.bottomRightCorner.x, loc.bottomLeftCorner.x];
         const ys = [loc.topLeftCorner.y, loc.topRightCorner.y, loc.bottomRightCorner.y, loc.bottomLeftCorner.y];
-        const minX = Math.max(0, Math.min(...xs) - 10);
-        const maxX = Math.min(width, Math.max(...xs) + 10);
-        const minY = Math.max(0, Math.min(...ys) - 10);
-        const maxY = Math.min(height, Math.max(...ys) + 10);
+        const minX = Math.max(0, Math.min(...xs) - 4);
+        const maxX = Math.min(width, Math.max(...xs) + 4);
+        const minY = Math.max(0, Math.min(...ys) - 4);
+        const maxY = Math.min(height, Math.max(...ys) + 4);
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(minX, minY, Math.max(1, maxX - minX), Math.max(1, maxY - minY));
@@ -1876,10 +1842,10 @@
     const { studentId, optionIdx } = parsed;
     const now = Date.now();
 
-    // Chống quét trùng liên tục trong 1.5s cho cùng 1 học sinh cùng 1 đáp án
+    // Chống quét trùng liên tục trong 800ms cho cùng 1 học sinh cùng 1 đáp án
     state.lastScannedTime = state.lastScannedTime || {};
     const prev = state.lastScannedTime[studentId];
-    if (prev && (now - prev.time < 1500) && prev.optionIdx === optionIdx) {
+    if (prev && (now - prev.time < 800) && prev.optionIdx === optionIdx) {
       return;
     }
     state.lastScannedTime[studentId] = { time: now, optionIdx: optionIdx };

@@ -1416,8 +1416,15 @@
     const statusChip = document.getElementById('scanner-status-chip');
     if (!videoEl) return;
 
-    // Kích hoạt chế độ quay ngang cho điện thoại
+    // Kích hoạt chế độ quay ngang cho điện thoại (chỉ thêm CSS class, không fullscreen)
     requestLandscapeMode();
+
+    // Đảm bảo video hiển thị trước khi gán stream
+    videoEl.style.display = 'block';
+    videoEl.setAttribute('playsinline', '');
+    videoEl.setAttribute('webkit-playsinline', '');
+    videoEl.muted = true;
+    videoEl.autoplay = true;
 
     if (state.cameraStream) {
       state.cameraStream.getTracks().forEach(track => track.stop());
@@ -1437,9 +1444,18 @@
       navigator.mediaDevices.getUserMedia(constraints)
         .then(stream => {
           state.cameraStream = stream;
+
+          // Gán stream và play video — cách đúng chuẩn để tránh đen camera
           videoEl.srcObject = stream;
-          videoEl.setAttribute('playsinline', 'true');
-          videoEl.play().catch(err => console.log('Video play catch:', err));
+          videoEl.onloadedmetadata = () => {
+            videoEl.play().catch(err => console.log('Video play catch:', err));
+          };
+          // Fallback nếu loadedmetadata không gọi
+          setTimeout(() => {
+            if (videoEl.paused && videoEl.srcObject) {
+              videoEl.play().catch(() => {});
+            }
+          }, 500);
 
           if (statusChip) {
             statusChip.innerHTML = '<span class="live-indicator pulse-green"></span> 📷 Camera đang hoạt động — Hãy giơ thẻ QR học sinh vào khung hình';
@@ -1466,43 +1482,26 @@
 
   // Yêu cầu trình duyệt khóa màn hình ngang khi mở camera quét thẻ
   function requestLandscapeMode() {
-    // Thêm class CSS để giao diện tối ưu cho chế độ ngang
+    // Chỉ thêm class CSS để giao diện tối ưu cho chế độ quét
+    // KHÔNG ép fullscreen vì gây đen camera trên nhiều thiết bị
     document.body.classList.add('plk-landscape-scanner');
 
-    // Sử dụng Screen Orientation API (hỗ trợ trên Chrome/Edge Android)
+    // Thử khóa hướng ngang (hoạt động trên Chrome Android nếu được cho phép)
+    // KHÔNG fallback fullscreen vì fullscreen làm video element không render
     try {
       const orientation = screen.orientation;
       if (orientation && orientation.lock) {
         orientation.lock('landscape').catch(() => {
-          // Một số trình duyệt chỉ cho phép khóa hướng khi ở chế độ fullscreen
-          tryFullscreenLandscape();
+          // Không làm gì — người dùng có thể tự xoay
         });
-      } else {
-        tryFullscreenLandscape();
       }
-    } catch (e) {
-      tryFullscreenLandscape();
-    }
+    } catch (e) {}
   }
 
-  // Thử kích hoạt fullscreen + khóa ngang (fallback cho Safari/iOS)
+  // Hàm này giữ lại nhưng không được gọi nữa (xóa fullscreen gây bug)
   function tryFullscreenLandscape() {
-    const scannerEl = document.querySelector('.plk-scanner-container');
-    if (!scannerEl) return;
-
-    const requestFS = scannerEl.requestFullscreen ||
-                      scannerEl.webkitRequestFullscreen ||
-                      scannerEl.mozRequestFullScreen ||
-                      scannerEl.msRequestFullscreen;
-    if (requestFS) {
-      try {
-        requestFS.call(scannerEl).then(() => {
-          if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(() => {});
-          }
-        }).catch(() => {});
-      } catch (e) {}
-    }
+    // Đã vô hiệu hóa — fullscreen làm video element bị đen trên mobile Chrome
+    // Người dùng tự xoay điện thoại ngang để có trải nghiệm tốt nhất
   }
 
   // Giải phóng khóa hướng màn hình khi tắt camera

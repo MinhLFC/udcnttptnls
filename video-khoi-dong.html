@@ -85,6 +85,39 @@
       from { transform: scale(1); }
       to { transform: scale(1.05); }
     }
+    /* Chế độ Toàn màn hình (Fullscreen) */
+    .video-player-card:fullscreen,
+    .video-player-card:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      border-radius: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      background: #000000 !important;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .video-player-card:fullscreen #animationCanvas,
+    .video-player-card:-webkit-full-screen #animationCanvas {
+      width: 100% !important;
+      height: calc(100vh - 120px) !important;
+      max-height: calc(100vh - 120px) !important;
+      object-fit: contain !important;
+    }
+    .video-player-card:fullscreen .subtitles-banner,
+    .video-player-card:-webkit-full-screen .subtitles-banner {
+      font-size: 1.35rem !important;
+      padding: 0.85rem 1.5rem !important;
+    }
+    .video-player-card:fullscreen .player-controls,
+    .video-player-card:-webkit-full-screen .player-controls {
+      background: rgba(15, 23, 42, 0.98) !important;
+      backdrop-filter: blur(12px) !important;
+      border-radius: 0 !important;
+      padding: 0.85rem 2rem !important;
+    }
     .time-slider {
       flex: 1;
       min-width: 150px;
@@ -313,6 +346,13 @@
 
         <span class="time-display" id="timeDisplay">00:00 / 03:00</span>
         <input type="range" id="timeSlider" class="time-slider" min="0" max="180" step="0.5" value="0" oninput="seekVideo(this.value)">
+
+        <button class="btn-ctrl" id="fullscreenBtn" onclick="toggleFullscreen()" title="Chế độ Toàn màn hình">
+          <svg id="fullscreenSvg" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+          </svg>
+          <span id="fullscreenText">⛶ Toàn Màn Hình</span>
+        </button>
 
         <button class="btn-ctrl btn-record" id="recordBtn" onclick="toggleRecording()">
           <span id="recordText">⏺ Xuất File Video (.webm)</span>
@@ -1297,6 +1337,56 @@
       recordText.innerText = "⏺ Xuất File Video (.webm)";
       pauseVideo();
     }
+
+    // ==================== TÍNH NĂNG TOÀN MÀN HÌNH (FULLSCREEN) ====================
+    function toggleFullscreen() {
+      const playerCard = document.querySelector('.video-player-card');
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (playerCard.requestFullscreen) {
+          playerCard.requestFullscreen();
+        } else if (playerCard.webkitRequestFullscreen) {
+          playerCard.webkitRequestFullscreen();
+        } else if (playerCard.msRequestFullscreen) {
+          playerCard.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+    function updateFullscreenUI() {
+      const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      const fsText = document.getElementById('fullscreenText');
+      if (fsText) {
+        fsText.innerText = isFull ? "🗗 Thu Nhỏ" : "⛶ Toàn Màn Hình";
+      }
+      // Vẽ lại canvas để tỷ lệ luôn sắc nét
+      drawScene(currentTime);
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenUI);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+
+    // Nhấp đúp chuột lên màn hình canvas để bật/tắt toàn màn hình
+    canvas.addEventListener('dblclick', toggleFullscreen);
+
+    // Phím tắt bàn phím: F để toàn màn hình, Space để tạm dừng/phát
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
+      }
+    });
 
     // Khởi động ban đầu
     drawScene(0);

@@ -508,33 +508,79 @@
     let recordedChunks = [];
     let isRecording = false;
 
-    // Kịch bản lời thoại và phụ đề theo mốc thời gian
+    // Kịch bản lời thoại và phụ đề theo mốc thời gian kèm file thuyết minh Tiếng Việt chuẩn
     const scriptTimeline = [
-      { start: 0, end: 12, text: "Chào các em! Hãy thử quan sát các chuyển động quen thuộc xung quanh chúng ta mỗi ngày.", voice: "Chào các em! Hãy thử quan sát các chuyển động quen thuộc xung quanh chúng ta mỗi ngày." },
-      { start: 12, end: 24, text: "Khi đi siêu thị mua sắm, làm sao để chiếc xe chở hàng di chuyển về phía trước?", voice: "Khi đi siêu thị mua sắm, làm sao để chiếc xe chở hàng di chuyển về phía trước?" },
-      { start: 24, end: 35, text: "Và khi một cầu thủ vung chân sút bóng, điều gì đã khiến quả bóng bay vút vào lưới?", voice: "Và khi một cầu thủ vung chân sút bóng, điều gì đã khiến quả bóng bay vút vào lưới?" },
-      { start: 35, end: 46, text: "Đó chính là LỰC ĐẨY! Bàn tay hoặc bàn chân đã đẩy vật rời xa người tác dụng.", voice: "Đó chính là lực đẩy! Bàn tay hoặc bàn chân đã đẩy vật rời xa người tác dụng." },
-      { start: 46, end: 57, text: "Ở một hướng ngược lại, khi hai đội lớp mình thi đấu kéo co sôi nổi...", voice: "Ở một hướng ngược lại, khi hai đội lớp mình thi đấu kéo co sôi nổi..." },
-      { start: 57, end: 68, text: "Hay khi người thợ dùng dây kéo một thùng hàng nặng, cung thủ kéo căng dây cung...", voice: "Hay khi người thợ dùng dây kéo một thùng hàng nặng, cung thủ kéo căng dây cung..." },
-      { start: 68, end: 78, text: "Các bạn ấy đang tác dụng một LỰC KÉO, làm vật chuyển động lại gần mình!", voice: "Các bạn ấy đang tác dụng một lực kéo, làm vật chuyển động lại gần mình!" },
-      { start: 78, end: 95, text: "⏸️ Thử thách tương tác: Hãy trả lời câu hỏi hiện lên trên màn hình nhé!", voice: "Hãy dừng lại một chút để suy nghĩ và trả lời câu hỏi thử thách nhé!" },
-      { start: 95, end: 110, text: "Chính xác! Tất cả những tác dụng đẩy hoặc kéo đó được gọi chung là: LỰC!", voice: "Chính xác! Tất cả những tác dụng đẩy hoặc kéo đó được gọi chung là Lực!" },
-      { start: 110, end: 125, text: "Nhưng lực thì mắt ta không nhìn thấy được hình dạng cụ thể. Vậy làm sao để vẽ được lực?", voice: "Nhưng lực thì mắt ta không nhìn thấy được hình dạng cụ thể. Vậy làm sao để vẽ được lực?" },
-      { start: 125, end: 145, text: "Trong khoa học, ta biểu diễn lực bằng MŨI TÊN: có Điểm Đặt tại vật, có Phương và Chiều kéo/đẩy.", voice: "Trong khoa học, ta biểu diễn lực bằng một mũi tên: có điểm đặt tại vật chịu lực, có phương và chiều của lực." },
-      { start: 145, end: 165, text: "Độ dài mũi tên biểu thị ĐỘ LỚN của lực (đo bằng Niutơn - N) theo một tỉ xích quy định.", voice: "Độ dài mũi tên biểu thị độ lớn của lực đo bằng Niutơn theo một tỉ xích quy định, ví dụ 1 cm ứng với 10 Niutơn." },
-      { start: 165, end: 180, text: "BÀI 40: LỰC VÀ BIỂU DIỄN LỰC — Hãy cùng bắt đầu tiết học thật sôi nổi ngay bây giờ!", voice: "Chào mừng các em bước vào Bài 40: Lực và biểu diễn lực ngay sau đây nhé!" }
+      { start: 0, end: 12, text: "Chào các em! Hãy thử quan sát các chuyển động quen thuộc xung quanh chúng ta mỗi ngày.", voice: "Chào các em! Hãy thử quan sát các chuyển động quen thuộc xung quanh chúng ta mỗi ngày.", audio: "assets/audio/voice/voice_00.mp3" },
+      { start: 12, end: 24, text: "Khi đi siêu thị mua sắm, làm sao để chiếc xe chở hàng di chuyển về phía trước?", voice: "Khi đi siêu thị mua sắm, làm sao để chiếc xe chở hàng di chuyển về phía trước?", audio: "assets/audio/voice/voice_01.mp3" },
+      { start: 24, end: 35, text: "Và khi một cầu thủ vung chân sút bóng, điều gì đã khiến quả bóng bay vút vào lưới?", voice: "Và khi một cầu thủ vung chân sút bóng, điều gì đã khiến quả bóng bay vút vào lưới?", audio: "assets/audio/voice/voice_02.mp3" },
+      { start: 35, end: 46, text: "Đó chính là LỰC ĐẨY! Bàn tay hoặc bàn chân đã đẩy vật rời xa người tác dụng.", voice: "Đó chính là lực đẩy! Bàn tay hoặc bàn chân đã đẩy vật rời xa người tác dụng.", audio: "assets/audio/voice/voice_03.mp3" },
+      { start: 46, end: 57, text: "Ở một hướng ngược lại, khi hai đội lớp mình thi đấu kéo co sôi nổi...", voice: "Ở một hướng ngược lại, khi hai đội lớp mình thi đấu kéo co sôi nổi...", audio: "assets/audio/voice/voice_04.mp3" },
+      { start: 57, end: 68, text: "Hay khi người thợ dùng dây kéo một thùng hàng nặng, cung thủ kéo căng dây cung...", voice: "Hay khi người thợ dùng dây kéo một thùng hàng nặng, cung thủ kéo căng dây cung...", audio: "assets/audio/voice/voice_05.mp3" },
+      { start: 68, end: 78, text: "Các bạn ấy đang tác dụng một LỰC KÉO, làm vật chuyển động lại gần mình!", voice: "Các bạn ấy đang tác dụng một lực kéo, làm vật chuyển động lại gần mình!", audio: "assets/audio/voice/voice_06.mp3" },
+      { start: 78, end: 95, text: "⏸️ Thử thách tương tác: Hãy trả lời câu hỏi hiện lên trên màn hình nhé!", voice: "Hãy dừng lại một chút để suy nghĩ và trả lời câu hỏi thử thách nhé!", audio: "assets/audio/voice/voice_07.mp3" },
+      { start: 95, end: 110, text: "Chính xác! Tất cả những tác dụng đẩy hoặc kéo đó được gọi chung là: LỰC!", voice: "Chính xác! Tất cả những tác dụng đẩy hoặc kéo đó được gọi chung là Lực!", audio: "assets/audio/voice/voice_08.mp3" },
+      { start: 110, end: 125, text: "Nhưng lực thì mắt ta không nhìn thấy được hình dạng cụ thể. Vậy làm sao để vẽ được lực?", voice: "Nhưng lực thì mắt ta không nhìn thấy được hình dạng cụ thể. Vậy làm sao để vẽ được lực?", audio: "assets/audio/voice/voice_09.mp3" },
+      { start: 125, end: 145, text: "Trong khoa học, ta biểu diễn lực bằng MŨI TÊN: có Điểm Đặt tại vật, có Phương và Chiều kéo/đẩy.", voice: "Trong khoa học, ta biểu diễn lực bằng một mũi tên: có điểm đặt tại vật chịu lực, có phương và chiều của lực.", audio: "assets/audio/voice/voice_10.mp3" },
+      { start: 145, end: 165, text: "Độ dài mũi tên biểu thị ĐỘ LỚN của lực (đo bằng Niutơn - N) theo một tỉ xích quy định.", voice: "Độ dài mũi tên biểu thị độ lớn của lực đo bằng Niutơn theo một tỉ xích quy định, ví dụ 1 cm ứng với 10 Niutơn.", audio: "assets/audio/voice/voice_11.mp3" },
+      { start: 165, end: 180, text: "BÀI 40: LỰC VÀ BIỂU DIỄN LỰC — Hãy cùng bắt đầu tiết học thật sôi nổi ngay bây giờ!", voice: "Chào mừng các em bước vào Bài 40: Lực và biểu diễn lực ngay sau đây nhé!", audio: "assets/audio/voice/voice_12.mp3" }
     ];
 
     let currentSpeechIndex = -1;
 
-    function speakText(text) {
-      if (!voiceEnabled || !('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'vi-VN';
-      utterance.rate = 1.0;
-      utterance.pitch = 1.05;
-      window.speechSynthesis.speak(utterance);
+    // Hệ thống thuyết minh Tiếng Việt chuẩn
+    const narratorAudio = new Audio();
+    narratorAudio.preload = 'auto';
+    let vnVoice = null;
+
+    function initVoices() {
+      if (!('speechSynthesis' in window)) return;
+      const voices = window.speechSynthesis.getVoices();
+      vnVoice = voices.find(v => (v.lang && (v.lang === 'vi-VN' || v.lang.startsWith('vi'))) || 
+                                 (v.name && (v.name.toLowerCase().includes('vietnam') || v.name.toLowerCase().includes('hoaimy') || v.name.toLowerCase().includes('namminh')))) || null;
+    }
+    if ('speechSynthesis' in window) {
+      initVoices();
+      window.speechSynthesis.onvoiceschanged = initVoices;
+    }
+
+    function playNarratorVoice(audioSrc, fallbackText) {
+      if (!voiceEnabled) return;
+
+      // Dừng âm thanh cũ
+      narratorAudio.pause();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+      // 1. Ưu tiên cao nhất: Phát file âm thanh Tiếng Việt tự nhiên chuẩn (100% giọng tiếng Việt)
+      if (audioSrc) {
+        narratorAudio.src = audioSrc;
+        narratorAudio.currentTime = 0;
+        const playPromise = narratorAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            // Khi bị chặn tự phát, fallback SpeechSynthesis NẾU CÓ giọng Tiếng Việt
+            speakTextFallback(fallbackText);
+          });
+        }
+      } else {
+        speakTextFallback(fallbackText);
+      }
+    }
+
+    // Hàm dự phòng: TUYỆT ĐỐI chỉ đọc nếu tìm thấy giọng Tiếng Việt (vi-VN), chặn giọng tiếng Anh
+    function speakTextFallback(text) {
+      if (!voiceEnabled || !('speechSynthesis' in window) || !text) return;
+      initVoices();
+      if (vnVoice) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.voice = vnVoice;
+        utterance.lang = 'vi-VN';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+      } else {
+        console.warn("Chỉ hỗ trợ thuyết minh tiếng Việt chuẩn. Đã chặn giọng tiếng Anh mặc định để tránh phát âm sai.");
+      }
     }
 
     function toggleVoice() {
@@ -542,9 +588,13 @@
       const voiceIcon = document.getElementById('voiceIcon');
       if (voiceEnabled) {
         voiceIcon.innerText = "🔊 Thuyết Minh: BẬT";
+        if (isPlaying && narratorAudio.src && !narratorAudio.ended && narratorAudio.currentTime > 0) {
+          narratorAudio.play().catch(()=>{});
+        }
       } else {
         voiceIcon.innerText = "🔇 Thuyết Minh: TẮT";
-        window.speechSynthesis.cancel();
+        narratorAudio.pause();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       }
     }
 
@@ -567,6 +617,9 @@
       isPlaying = true;
       playIcon.innerText = "⏸ Tạm Dừng";
       lastTimestamp = performance.now();
+      if (voiceEnabled && narratorAudio.src && !narratorAudio.ended && narratorAudio.currentTime > 0) {
+        narratorAudio.play().catch(()=>{});
+      }
       animFrameId = requestAnimationFrame(videoLoop);
     }
 
@@ -574,6 +627,7 @@
       isPlaying = false;
       playIcon.innerText = "▶ Phát Video";
       if (animFrameId) cancelAnimationFrame(animFrameId);
+      narratorAudio.pause();
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
@@ -584,6 +638,8 @@
       quizAnswered = false;
       quizOverlay.classList.remove('active');
       currentSpeechIndex = -1;
+      narratorAudio.pause();
+      narratorAudio.currentTime = 0;
       drawScene(0);
       playVideo();
     }
@@ -591,6 +647,10 @@
     function seekVideo(val) {
       currentTime = parseFloat(val);
       quizOverlay.classList.remove('active');
+      narratorAudio.pause();
+      narratorAudio.currentTime = 0;
+      currentSpeechIndex = -1;
+      updateSubtitlesAndVoice(currentTime);
       drawScene(currentTime);
     }
 
@@ -602,10 +662,11 @@
         feedback.style.color = '#34d399';
         feedback.innerHTML = '🎉 HOÀN TOÀN CHÍNH XÁC! Lực chính là sự đẩy hoặc sự kéo của vật này lên vật khác.';
         quizAnswered = true;
-        speakText("Chính xác! Lực chính là sự đẩy hoặc sự kéo của vật này lên vật khác.");
+        playNarratorVoice("assets/audio/voice/voice_quiz_correct.mp3", "Chính xác! Lực chính là sự đẩy hoặc sự kéo của vật này lên vật khác.");
         setTimeout(() => {
           quizOverlay.classList.remove('active');
           currentTime = 95; // Chuyển sang phần tiếp theo
+          currentSpeechIndex = -1;
           playVideo();
         }, 3200);
       } else {
@@ -655,7 +716,7 @@
         const index = scriptTimeline.indexOf(item);
         if (index !== currentSpeechIndex) {
           currentSpeechIndex = index;
-          speakText(item.voice);
+          playNarratorVoice(item.audio, item.voice || item.text);
         }
       }
     }

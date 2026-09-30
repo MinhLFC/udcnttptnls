@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phòng Thí Nghiệm Hóa Học Ảo | Đỗ Văn Nhật Minh - HCMUE</title>
-  <meta name="description" content="Phòng thí nghiệm Hóa học ảo - Thực hành thí nghiệm tương tác trực tiếp trên trình duyệt. Đỗ Văn Nhật Minh - Trường ĐH Sư phạm TP.HCM.">
+  <title>Phòng Thí Nghiệm Ảo | Đỗ Văn Nhật Minh - HCMUE</title>
+  <meta name="description" content="Phòng thí nghiệm ảo - Thực hành thí nghiệm tương tác trực tiếp trên trình duyệt. Đỗ Văn Nhật Minh - Trường ĐH Sư phạm TP.HCM.">
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/images/logo-hcmue.png">
@@ -88,8 +88,8 @@
   <section class="lab-hero">
     <div class="container lab-hero-content">
       <div class="lab-hero-badge">🧪 Phòng Thí Nghiệm Ảo — HCMUE</div>
-      <h1>Thí Nghiệm Hóa Học Tương Tác</h1>
-      <p>Khám phá và thực hành các thí nghiệm hóa học trực tiếp trên trình duyệt. Được thiết kế cho sinh viên Khoa Hóa học — ĐHSP TP.HCM.</p>
+      <h1>Thí Nghiệm Tương Tác</h1>
+      <p>Khám phá và thực hành các thí nghiệm Hóa học, Vật Lý và Sinh học trực tiếp trên trình duyệt. Được thiết kế cho sinh viên — ĐHSP TP.HCM.</p>
     </div>
   </section>
 
@@ -106,6 +106,12 @@
         </button>
         <button class="lab-tab-btn" data-tab="molecule" onclick="switchTab('molecule')">
           <span class="tab-icon">🔬</span> Phân Tử 3D
+        </button>
+        <button class="lab-tab-btn" data-tab="circuit" onclick="switchTab('circuit')">
+          <span class="tab-icon">⚡</span> Mạch Điện
+        </button>
+        <button class="lab-tab-btn" data-tab="biology" onclick="switchTab('biology')">
+          <span class="tab-icon">🧬</span> Hệ Cơ Quan
         </button>
       </div>
 
@@ -147,6 +153,32 @@
           </div>
         </div>
       </div>
+      <!-- Experiment 4: Physics Circuit -->
+      <div class="experiment-panel" id="panel-circuit">
+        <div class="experiment-container">
+          <div class="experiment-header">
+            <h2>⚡ Thí Nghiệm Vật Lý — Sơ Đồ Mạch Điện</h2>
+            <p>Chọn loại mạch, điều chỉnh điện trở và hiệu điện thế, bật dòng điện để quan sát electron chuyển động.</p>
+          </div>
+          <div id="experiment-circuit">
+            <!-- Nội dung sẽ được tạo bởi lab-circuit.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Experiment 5: Biology Organ Systems -->
+      <div class="experiment-panel" id="panel-biology">
+        <div class="experiment-container">
+          <div class="experiment-header">
+            <h2>🧬 Sinh Học — Mô Hình 3D Hệ Cơ Quan Cơ Thể Người</h2>
+            <p>Chọn hệ cơ quan để xem mô hình 3D tương tác. Kéo để xoay, quan sát chức năng và cấu tạo từng hệ.</p>
+          </div>
+          <div id="experiment-biology">
+            <!-- Nội dung sẽ được tạo bởi lab-biology.js -->
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -163,7 +195,7 @@
             </div>
           </div>
           <p class="footer-desc">
-            Phòng Thí Nghiệm Hóa Học Ảo — nơi thực hành và khám phá thế giới hóa học qua các mô hình tương tác trực quan.
+            Phòng Thí Nghiệm Ảo — nơi thực hành và khám phá thế giới hóa học qua các mô hình tương tác trực quan.
           </p>
         </div>
 
@@ -172,7 +204,7 @@
           <ul class="footer-links">
             <li><a href="index.html" class="footer-link">Trang Chủ</a></li>
             <li><a href="skills.html" class="footer-link">Kỹ Năng</a></li>
-            <li><a href="lab.html" class="footer-link">Thí Nghiệm Hóa Học</a></li>
+            <li><a href="lab.html" class="footer-link">Thí Nghiệm</a></li>
             <li><a href="plickers.html" class="footer-link">Plickers KHTN</a></li>
             <li><a href="contact.html" class="footer-link">Liên Hệ</a></li>
           </ul>
@@ -199,6 +231,8 @@
   <script src="assets/js/lab-acid-base.js"></script>
   <script src="assets/js/lab-balance.js"></script>
   <script src="assets/js/lab-molecule.js"></script>
+  <script src="assets/js/lab-circuit.js"></script>
+  <script src="assets/js/lab-biology.js"></script>
   
   <script>
     // Tự động chuyển hướng nếu người dùng bấm link cũ lab.html?tab=plickers hoặc chứa room
@@ -209,7 +243,7 @@
       }
     })();
 
-    // Tab switching logic cho 3 thí nghiệm Hóa học
+    // Tab switching logic cho 5 thí nghiệm (Hóa học, Vật Lý, Sinh học)
     function switchTab(tabName) {
       // Deactivate all tabs and panels
       document.querySelectorAll('.lab-tab-btn').forEach(btn => btn.classList.remove('active'));

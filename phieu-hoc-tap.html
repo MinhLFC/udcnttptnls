@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="assets/css/style.css">
   
   <style>
-    /* Styling riêng cho trang Phiếu Học Tập */
+    /* Styling riêng cho trang Phiếu Học Tập - Tương thích hoàn hảo Light / Dark Mode */
     .pht-hero {
       background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(147, 51, 234, 0.08) 100%);
       padding: 3rem 0 2rem;
@@ -30,47 +30,82 @@
       align-items: center;
       gap: 0.5rem;
       padding: 0.4rem 1rem;
-      background: var(--primary-light, #e0e7ff);
-      color: var(--primary-color, #4338ca);
+      background: var(--bg-surface-soft);
+      color: var(--primary);
+      border: 1px solid var(--border-color);
       border-radius: 9999px;
       font-size: 0.85rem;
       font-weight: 700;
       margin-bottom: 1rem;
+    }
+    [data-theme="dark"] .pht-badge {
+      color: #93c5fd;
     }
     .pht-container {
       max-width: 1050px;
       margin: 0 auto;
       padding: 2rem 1.25rem 4rem;
     }
+
+    /* CARD CHÍNH */
     .infographic-card {
-      background: var(--card-bg, #ffffff);
-      border: 1px solid var(--border-color, #e2e8f0);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
       border-radius: 1.25rem;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      box-shadow: var(--shadow-md);
       overflow: hidden;
       margin-bottom: 2.5rem;
+      color: var(--text-main);
     }
     .infographic-header {
       background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 50%, #6d28d9 100%);
-      color: #ffffff;
+      color: #ffffff !important;
       padding: 1.75rem 2rem;
+    }
+    .infographic-header h2, 
+    .infographic-header p,
+    .infographic-header li,
+    .infographic-header span,
+    .infographic-header strong {
+      color: #ffffff !important;
     }
     .infographic-body {
       padding: 2rem;
+      background: var(--bg-surface);
+      color: var(--text-main);
     }
+    .infographic-body h3 {
+      color: var(--text-main) !important;
+      font-size: 1.25rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .infographic-body p {
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+    .infographic-body strong {
+      color: var(--text-main);
+    }
+
     .sec-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
-      background: var(--primary-color, #2563eb);
-      color: white;
+      width: 32px;
+      height: 32px;
+      background: #2563eb;
+      color: #ffffff !important;
       border-radius: 9999px;
       font-weight: 800;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       margin-right: 0.75rem;
+      flex-shrink: 0;
     }
+
     .force-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -82,11 +117,12 @@
       padding: 1.25rem;
       border: 1px solid var(--border-color);
       transition: all 0.3s ease;
-      background: var(--bg-secondary, #f8fafc);
+      background: var(--bg-surface-soft);
+      color: var(--text-main);
     }
     .force-box:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      box-shadow: var(--shadow-md);
     }
     .force-push {
       border-top: 4px solid #0284c7;
@@ -94,20 +130,37 @@
     .force-pull {
       border-top: 4px solid #059669;
     }
+    .force-box p, .force-box ul, .force-box li {
+      color: var(--text-muted);
+    }
+    .force-box strong {
+      color: var(--text-main);
+    }
+
+    /* SVG Containers */
     .svg-wrapper {
       background: #ffffff;
       border-radius: 0.75rem;
       padding: 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-color);
       margin: 1rem 0;
       display: flex;
       justify-content: center;
       align-items: center;
     }
     [data-theme="dark"] .svg-wrapper {
-      background: #0f172a;
-      border-color: #334155;
+      background: #1a253e;
+      border-color: #243454;
     }
+
+    /* SVG Text colors for Dark & Light */
+    .svg-floor { stroke: #cbd5e1; }
+    [data-theme="dark"] .svg-floor { stroke: #475569; }
+    .svg-text-label { fill: #0f172a; }
+    [data-theme="dark"] .svg-text-label { fill: #f8fafc !important; }
+    .svg-ruler-text { fill: #475569; }
+    [data-theme="dark"] .svg-ruler-text { fill: #cbd5e1 !important; }
+
     .anatomy-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -115,11 +168,38 @@
       margin: 1.5rem 0;
     }
     .anatomy-item {
-      background: var(--bg-secondary, #f8fafc);
+      background: var(--bg-surface-soft);
       padding: 1.25rem;
       border-radius: 0.85rem;
       border: 1px solid var(--border-color);
       position: relative;
+      color: var(--text-main);
+    }
+    .anatomy-tag {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #2563eb;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    [data-theme="dark"] .anatomy-tag {
+      color: #60a5fa;
+    }
+    .anatomy-item h4 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+      color: var(--text-main) !important;
+    }
+    .anatomy-item p {
+      font-size: 0.85rem;
+      color: var(--text-muted) !important;
+      margin: 0;
+      line-height: 1.5;
+    }
+    .anatomy-item strong {
+      color: var(--text-main) !important;
     }
     .anatomy-num {
       position: absolute;
@@ -128,52 +208,105 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: var(--primary-light, #e0e7ff);
-      color: var(--primary-color, #4338ca);
+      background: #e0e7ff;
+      color: #3730a3;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
       font-size: 0.85rem;
     }
+    [data-theme="dark"] .anatomy-num {
+      background: #1e3a8a;
+      color: #93c5fd;
+    }
+
     .interactive-worksheet {
-      background: var(--bg-secondary, #f8fafc);
-      border: 2px dashed var(--primary-color, #3b82f6);
+      background: var(--bg-surface-soft);
+      border: 2px dashed #4f46e5;
       border-radius: 1.25rem;
       padding: 1.75rem;
       margin-top: 2rem;
+      color: var(--text-main);
+    }
+    .interactive-worksheet h3 {
+      color: #4338ca !important;
+      font-size: 1.2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      margin: 0;
+    }
+    [data-theme="dark"] .interactive-worksheet h3 {
+      color: #818cf8 !important;
+    }
+    .interactive-worksheet-badge {
+      font-size: 0.8rem;
+      background: var(--bg-surface);
+      color: var(--text-main);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
     }
     .quiz-question {
-      background: var(--card-bg, #ffffff);
+      background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 0.75rem;
       padding: 1rem;
       margin-bottom: 1rem;
+      color: var(--text-main);
+    }
+    .quiz-question p {
+      color: var(--text-main) !important;
     }
     .quiz-btn {
-      padding: 0.4rem 0.8rem;
+      padding: 0.5rem 0.9rem;
       border-radius: 0.5rem;
       border: 1px solid var(--border-color);
-      background: var(--card-bg);
+      background: var(--bg-surface-soft);
+      color: var(--text-main);
       cursor: pointer;
       font-size: 0.85rem;
       font-weight: 600;
       transition: all 0.2s;
     }
     .quiz-btn:hover {
-      background: var(--primary-light);
-      border-color: var(--primary-color);
+      background: var(--border-color);
     }
     .quiz-btn.selected-correct {
       background: #10b981 !important;
-      color: white !important;
+      color: #ffffff !important;
       border-color: #059669 !important;
     }
     .quiz-btn.selected-wrong {
       background: #ef4444 !important;
-      color: white !important;
+      color: #ffffff !important;
       border-color: #dc2626 !important;
     }
+    .sources-box {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .sources-box h4 {
+      color: var(--text-main) !important;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .sources-box li {
+      color: var(--text-muted);
+    }
+    .sources-box strong {
+      color: var(--text-main);
+    }
+
     .btn-action {
       display: inline-flex;
       align-items: center;
@@ -187,7 +320,7 @@
     }
     .btn-print {
       background: #2563eb;
-      color: white;
+      color: #ffffff !important;
       border: none;
     }
     .btn-print:hover {
@@ -281,8 +414,8 @@
       <div class="pht-badge">
         <span>📑 DẠY HỌC PHÁT TRIỂN NĂNG LỰC KHTN — HCMUE</span>
       </div>
-      <h1 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.75rem;">Kho Phiếu Học Tập & Đồ Họa Thông Tin</h1>
-      <p style="max-width: 720px; margin: 0 auto; color: var(--text-secondary); font-size: 1.05rem;">
+      <h1 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.75rem; color: var(--text-main);">Kho Phiếu Học Tập & Đồ Họa Thông Tin</h1>
+      <p style="max-width: 720px; margin: 0 auto; color: var(--text-muted); font-size: 1.05rem;">
         Tổng hợp các tài nguyên đồ họa thông tin (Infographic), sơ đồ tư duy và phiếu học tập tương tác bám sát Yêu cầu cần đạt (YCCĐ) Chương trình GDPT 2018 môn Khoa học tự nhiên.
       </p>
     </div>
@@ -294,8 +427,8 @@
     <!-- THANH CÔNG CỤ / NÚT IN VÀ CHUYỂN BÀI -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;" class="no-print">
       <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <span style="font-weight: 700; font-size: 0.95rem;">Chủ đề hiện tại:</span>
-        <span style="background: var(--primary-light); color: var(--primary-color); padding: 0.3rem 0.8rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.85rem;">
+        <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Chủ đề hiện tại:</span>
+        <span style="background: var(--bg-surface-soft); color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.85rem; border: 1px solid var(--border-color);">
           KHTN 6 · Bài 40: Lực & Biểu diễn lực
         </span>
       </div>
@@ -324,7 +457,7 @@
               Khoa học tự nhiên lớp 6 · Bộ sách Kết nối tri thức với cuộc sống
             </p>
           </div>
-          <div style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 0.75rem; padding: 0.75rem 1.25rem; font-size: 0.85rem; max-width: 320px;">
+          <div style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 0.75rem; padding: 0.75rem 1.25rem; font-size: 0.85rem; max-width: 340px;">
             <strong style="display: block; color: #fef08a; margin-bottom: 0.25rem;">📌 Yêu Cầu Cần Đạt (YCCĐ):</strong>
             <ul style="padding-left: 1rem; margin: 0; line-height: 1.4;">
               <li>Lấy được ví dụ chứng tỏ lực là sự đẩy hoặc sự kéo.</li>
@@ -339,11 +472,11 @@
         
         <!-- PHẦN 1: BẢN CHẤT CỦA LỰC -->
         <section style="margin-bottom: 2.5rem;">
-          <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; margin-bottom: 0.75rem;">
+          <h3>
             <span class="sec-badge">1</span>
             LỰC LÀ GÌ? VÍ DỤ VỀ SỰ ĐẨY VÀ SỰ KÉO
           </h3>
-          <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+          <p>
             Tác dụng đẩy, kéo của vật này lên vật khác được gọi là <strong>lực</strong>. Lực có thể làm biến đổi chuyển động của vật hoặc làm vật bị biến dạng.
           </p>
 
@@ -359,7 +492,7 @@
               <!-- SVG LỰC ĐẨY -->
               <div class="svg-wrapper">
                 <svg viewBox="0 0 320 130" style="width: 100%; max-height: 140px;">
-                  <line x1="10" y1="115" x2="310" y2="115" stroke="#cbd5e1" stroke-width="2.5" stroke-dasharray="6,4" />
+                  <line x1="10" y1="115" x2="310" y2="115" class="svg-floor" stroke-width="2.5" stroke-dasharray="6,4" />
                   
                   <!-- Người đẩy xe -->
                   <circle cx="50" cy="35" r="13" fill="#0284c7" />
@@ -391,7 +524,7 @@
                 </svg>
               </div>
 
-              <ul style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 1.25rem; margin: 0; line-height: 1.6;">
+              <ul style="font-size: 0.85rem; padding-left: 1.25rem; margin: 0; line-height: 1.6;">
                 <li><strong>Người đẩy xe hàng:</strong> Tay người tạo lực đẩy làm xe di chuyển về phía trước.</li>
                 <li><strong>Cầu thủ sút bóng:</strong> Lực từ bàn chân đẩy quả bóng bay vào khung thành.</li>
                 <li><strong>Đóng ngăn kéo bàn:</strong> Dùng tay đẩy ngăn kéo khép kín vào hộc bàn.</li>
@@ -408,7 +541,7 @@
               <!-- SVG LỰC KÉO -->
               <div class="svg-wrapper">
                 <svg viewBox="0 0 320 130" style="width: 100%; max-height: 140px;">
-                  <line x1="10" y1="115" x2="310" y2="115" stroke="#cbd5e1" stroke-width="2.5" stroke-dasharray="6,4" />
+                  <line x1="10" y1="115" x2="310" y2="115" class="svg-floor" stroke-width="2.5" stroke-dasharray="6,4" />
 
                   <!-- Người kéo dây ngả người -->
                   <circle cx="80" cy="38" r="13" fill="#059669" />
@@ -439,7 +572,7 @@
                 </svg>
               </div>
 
-              <ul style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 1.25rem; margin: 0; line-height: 1.6;">
+              <ul style="font-size: 0.85rem; padding-left: 1.25rem; margin: 0; line-height: 1.6;">
                 <li><strong>Kéo thùng hàng bằng dây:</strong> Lực kéo truyền qua dây làm thùng dịch chuyển lại gần người.</li>
                 <li><strong>Trò chơi Kéo co:</strong> Hai đội cùng dùng lực kéo sợi dây thừng về phía đội mình.</li>
                 <li><strong>Giương cung tên:</strong> Dùng ngón tay kéo căng dây cung về phía sau trước khi bắn.</li>
@@ -451,11 +584,11 @@
 
         <!-- PHẦN 2: BIỂU DIỄN LỰC BẰNG MŨI TÊN -->
         <section style="margin-bottom: 2.5rem;">
-          <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; margin-bottom: 0.75rem;">
+          <h3>
             <span class="sec-badge">2</span>
             CÁCH BIỂU DIỄN LỰC BẰNG MŨI TÊN (VECTƠ LỰC)
           </h3>
-          <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+          <p>
             Mỗi lực được biểu diễn bằng một <strong>mũi tên</strong> có đầy đủ 4 yếu tố đặc trưng quy chuẩn sau:
           </p>
 
@@ -463,36 +596,36 @@
           <div class="anatomy-grid">
             <div class="anatomy-item">
               <span class="anatomy-num">1</span>
-              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--primary-color); font-weight: 700; display: block; margin-bottom: 0.25rem;">Gốc mũi tên</span>
-              <h4 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem;">ĐIỂM ĐẶT</h4>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+              <span class="anatomy-tag">Gốc mũi tên</span>
+              <h4>ĐIỂM ĐẶT</h4>
+              <p>
                 Đặt tại <strong>vật chịu tác dụng</strong> của lực (thường vẽ tại bề mặt tiếp xúc hoặc trọng tâm vật).
               </p>
             </div>
 
             <div class="anatomy-item">
               <span class="anatomy-num">2</span>
-              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--primary-color); font-weight: 700; display: block; margin-bottom: 0.25rem;">Đường thẳng mang lực</span>
-              <h4 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem;">PHƯƠNG</h4>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+              <span class="anatomy-tag">Đường thẳng mang lực</span>
+              <h4>PHƯƠNG</h4>
+              <p>
                 Trùng với phương của sự kéo hoặc đẩy (<em>nằm ngang, thẳng đứng, xiên góc...</em>).
               </p>
             </div>
 
             <div class="anatomy-item">
               <span class="anatomy-num">3</span>
-              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--primary-color); font-weight: 700; display: block; margin-bottom: 0.25rem;">Đầu mũi tên</span>
-              <h4 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem;">CHIỀU</h4>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+              <span class="anatomy-tag">Đầu mũi tên</span>
+              <h4>CHIỀU</h4>
+              <p>
                 Chỉ theo chiều kéo hoặc đẩy (<em>từ trái sang phải, từ dưới lên trên...</em>).
               </p>
             </div>
 
             <div class="anatomy-item">
               <span class="anatomy-num">4</span>
-              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--primary-color); font-weight: 700; display: block; margin-bottom: 0.25rem;">Chiều dài mũi tên</span>
-              <h4 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem;">ĐỘ LỚN</h4>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+              <span class="anatomy-tag">Chiều dài mũi tên</span>
+              <h4>ĐỘ LỚN</h4>
+              <p>
                 Biểu thị độ lớn của lực (đơn vị <strong>Niutơn - N</strong>) theo một <strong>tỉ xích</strong> cho trước.
               </p>
             </div>
@@ -502,8 +635,8 @@
           <div class="svg-wrapper" style="padding: 1.5rem 1rem;">
             <svg viewBox="0 0 650 200" style="width: 100%; max-width: 650px;">
               <!-- Sàn nhà -->
-              <line x1="30" y1="150" x2="620" y2="150" stroke="#94a3b8" stroke-width="2.5" />
-              <path d="M 40 150 L 30 162 M 80 150 L 70 162 M 120 150 L 110 162 M 160 150 L 150 162 M 200 150 L 190 162 M 240 150 L 230 162 M 280 150 L 270 162 M 320 150 L 310 162 M 360 150 L 350 162 M 400 150 L 390 162 M 440 150 L 430 162 M 480 150 L 470 162 M 520 150 L 510 162 M 560 150 L 550 162 M 600 150 L 590 162" stroke="#cbd5e1" stroke-width="1.5" />
+              <line x1="30" y1="150" x2="620" y2="150" class="svg-floor" stroke-width="2.5" />
+              <path d="M 40 150 L 30 162 M 80 150 L 70 162 M 120 150 L 110 162 M 160 150 L 150 162 M 200 150 L 190 162 M 240 150 L 230 162 M 280 150 L 270 162 M 320 150 L 310 162 M 360 150 L 350 162 M 400 150 L 390 162 M 440 150 L 430 162 M 480 150 L 470 162 M 520 150 L 510 162 M 560 150 L 550 162 M 600 150 L 590 162" class="svg-floor" stroke-width="1.5" />
 
               <!-- Vật chịu lực (Khối gỗ) -->
               <rect x="70" y="70" width="100" height="80" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2" />
@@ -538,16 +671,16 @@
               <line x1="340" y1="42" x2="340" y2="90" stroke="#6366f1" stroke-width="1.2" stroke-dasharray="3,3" />
 
               <!-- Thước tỉ xích bên dưới -->
-              <line x1="170" y1="130" x2="380" y2="130" stroke="#475569" stroke-width="1.2" />
-              <line x1="170" y1="126" x2="170" y2="134" stroke="#475569" stroke-width="1.2" />
-              <line x1="240" y1="126" x2="240" y2="134" stroke="#475569" stroke-width="1.2" />
-              <line x1="310" y1="126" x2="310" y2="134" stroke="#475569" stroke-width="1.2" />
-              <line x1="380" y1="126" x2="380" y2="134" stroke="#475569" stroke-width="1.2" />
-              <text x="195" y="142" fill="#475569" font-size="9" font-weight="bold">10 N</text>
-              <text x="265" y="142" fill="#475569" font-size="9" font-weight="bold">10 N</text>
-              <text x="335" y="142" fill="#475569" font-size="9" font-weight="bold">10 N</text>
+              <line x1="170" y1="130" x2="380" y2="130" class="svg-floor" stroke-width="1.2" />
+              <line x1="170" y1="126" x2="170" y2="134" class="svg-floor" stroke-width="1.2" />
+              <line x1="240" y1="126" x2="240" y2="134" class="svg-floor" stroke-width="1.2" />
+              <line x1="310" y1="126" x2="310" y2="134" class="svg-floor" stroke-width="1.2" />
+              <line x1="380" y1="126" x2="380" y2="134" class="svg-floor" stroke-width="1.2" />
+              <text x="195" y="142" class="svg-ruler-text" font-size="9" font-weight="bold">10 N</text>
+              <text x="265" y="142" class="svg-ruler-text" font-size="9" font-weight="bold">10 N</text>
+              <text x="335" y="142" class="svg-ruler-text" font-size="9" font-weight="bold">10 N</text>
 
-              <text x="210" y="180" fill="#0f172a" font-weight="bold" font-size="11">➌ Tỉ xích: 1 cm ứng với 10 N (Độ dài = 3 đoạn = 30 N)</text>
+              <text x="210" y="180" class="svg-text-label" font-weight="bold" font-size="11">➌ Tỉ xích: 1 cm ứng với 10 N (Độ dài = 3 đoạn = 30 N)</text>
             </svg>
           </div>
         </section>
@@ -555,11 +688,11 @@
         <!-- PHẦN 3: PHIẾU HỌC TẬP TƯƠNG TÁC DÀNH CHO HỌC SINH -->
         <section class="interactive-worksheet">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
-            <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--primary-color); display: flex; align-items: center; margin: 0;">
+            <h3>
               <span class="sec-badge" style="background: #4f46e5;">3</span>
               PHIẾU HỌC TẬP TƯƠNG TÁC (LUYỆN TẬP TẠI LỚP)
             </h3>
-            <span style="font-size: 0.8rem; background: var(--card-bg); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600; border: 1px solid var(--border-color);">
+            <span class="interactive-worksheet-badge">
               Học sinh bấm chọn đáp án để tự chấm điểm
             </span>
           </div>
@@ -606,8 +739,8 @@
         </section>
 
         <!-- PHẦN 4: NGUỒN TÀI LIỆU TRÍCH DẪN (THEO TIÊU CHÍ BÀI THỰC HÀNH) -->
-        <section style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-secondary);">
-          <h4 style="font-weight: 800; color: var(--text-primary); text-transform: uppercase; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <section class="sources-box">
+          <h4>
             <span>📚 NGUỒN TÀI LIỆU & BẢN QUYỀN HÌNH ẢNH</span>
           </h4>
           <p style="font-style: italic; margin-bottom: 0.5rem;">

@@ -1092,210 +1092,895 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* ==========================================================================
-   THÍ NGHIỆM SINH HỌC — MÔ HÌNH 3D HỆ CƠ QUAN CƠ THỂ NGƯỜI
+   THÍ NGHIỆM SINH HỌC — GIẢI PHẪU 3D CHUYÊN SÂU (PHONG CÁCH FA QUIZ)
    ========================================================================== */
 
-.bio-layout {
-  display: grid;
-  grid-template-columns: 180px auto 1fr;
-  gap: 1.25rem;
-  align-items: start;
-}
-
-/* System selector sidebar */
-.bio-selector-panel {
+.fa-biology-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 1.5rem;
 }
 
-.bio-system-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.6rem 0.85rem;
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  text-align: left;
-  width: 100%;
-}
-
-.bio-system-btn:hover {
-  border-color: var(--sys-color, var(--primary));
-  color: var(--sys-color, var(--primary));
-  transform: translateX(3px);
-}
-
-.bio-system-btn.active {
-  background: var(--sys-color, var(--primary));
-  color: #fff;
-  border-color: var(--sys-color, var(--primary));
-  box-shadow: 0 3px 12px rgba(0,0,0,0.2);
-}
-
-.bio-sys-icon {
-  font-size: 1.15rem;
-}
-
-.bio-sys-name {
-  font-size: 0.82rem;
-}
-
-/* Canvas panel */
-.bio-canvas-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
-}
-
-#bio-canvas {
+/* Header & Model Selector */
+.fa-bio-header {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-md);
-  cursor: grab;
-  display: block;
-  max-width: 100%;
-}
-
-#bio-canvas:active { cursor: grabbing; }
-
-.bio-canvas-overlay {
-  display: flex;
-  gap: 0.4rem;
-  margin-top: 0.25rem;
-}
-
-.bio-drag-hint {
-  font-size: 0.75rem;
-  color: var(--text-light);
-  text-align: center;
-}
-
-/* Info panel */
-.bio-info-panel {
+  padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.bio-info-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1.1rem;
-  border-radius: var(--radius-md);
-  background: rgba(0,60,113,0.06);
-  transition: background 0.3s ease;
+.fa-badge-pill {
+  display: inline-block;
+  background: rgba(141, 126, 247, 0.15);
+  color: #8D7EF7;
+  border: 1px solid rgba(141, 126, 247, 0.3);
+  padding: 0.25rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
 }
 
-.bio-info-icon {
-  font-size: 1.8rem;
-  line-height: 1;
-}
-
-.bio-info-header h3 {
+.fa-bio-title-group h2 {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.45rem;
+  font-weight: 800;
   color: var(--text-main);
+  margin-bottom: 0.35rem;
 }
 
-.bio-info-section {
-  background: var(--bg-surface-soft);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 0.9rem 1.1rem;
-}
-
-.bio-info-section h4 {
+.fa-bio-title-group p {
   font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 0.6rem;
-}
-
-.bio-info-section p {
-  font-size: 0.87rem;
   color: var(--text-muted);
-  line-height: 1.6;
-}
-
-.bio-organ-list {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0;
+  line-height: 1.55;
   margin: 0;
 }
 
-.bio-organ-list li {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
-  padding: 0.25rem 0.7rem;
-  font-size: 0.8rem;
-  color: var(--text-main);
-  font-weight: 500;
+.fa-model-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.bio-facts {
+.fa-model-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.fa-model-btn:hover {
+  border-color: #8D7EF7;
+  color: #8D7EF7;
+  transform: translateY(-1px);
+}
+
+.fa-model-btn.active {
+  background: #8D7EF7;
+  color: #fff;
+  border-color: #8D7EF7;
+  box-shadow: 0 4px 12px rgba(141, 126, 247, 0.3);
+}
+
+/* Grid: 3D Viewport (Trái) + Sidebar Info & Quiz (Phải) */
+.fa-bio-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Viewport Column */
+.fa-viewport-box {
+  background: #000;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
+}
+
+.fa-viewport-topbar {
+  background: #111827;
+  border-bottom: 1px solid #1f2937;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fa-active-model-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fa-model-tag {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.fa-active-model-info h3 {
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.fa-active-model-info small {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.78rem;
+}
+
+.fa-viewport-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fa-action-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fa-action-btn:hover,
+.fa-action-btn.active {
+  background: #8D7EF7;
+  color: #fff;
+  border-color: #8D7EF7;
+}
+
+.fa-3d-iframe-wrap {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  background: #090e1a;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#fa-3d-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.fa-iframe-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #090e1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  z-index: 5;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.fa-iframe-loader.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.fa-loader-text {
+  color: #c7d2fe;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.fa-clinical-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid #8D7EF7;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  transition: var(--transition);
+}
+
+.fa-clinical-card:hover {
+  border-color: #8D7EF7;
+  transform: translateX(2px);
+}
+
+.fa-clinical-card h5 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
   gap: 0.4rem;
 }
 
-.bio-fact-item {
-  font-size: 0.84rem;
+.fa-clinical-card p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3D ANATOMICAL PINS & LABELS OVERLAY (CHUẨN FA QUIZ)
+───────────────────────────────────────────────────────────── */
+.fa-pins-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+  transition: opacity 0.3s ease;
+}
+
+.fa-pins-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.fa-pin-item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fa-pin-item:hover,
+.fa-pin-item.active {
+  z-index: 30;
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+/* Pulsating Pin Beacon - Điểm ghim số nhỏ gọn, không che mô hình */
+.fa-pin-beacon {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #8D7EF7;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(141, 126, 247, 0.7), 0 2px 5px rgba(0, 0, 0, 0.5);
+  border: 1.5px solid #fff;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fa-pin-beacon::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  border: 1.5px solid #8D7EF7;
+  animation: faPinPulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  opacity: 0.75;
+}
+
+@keyframes faPinPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.fa-pin-item:hover .fa-pin-beacon,
+.fa-pin-item.active .fa-pin-beacon,
+.fa-pin-item.hover-preview .fa-pin-beacon {
+  background: #22c55e;
+  border-color: #fff;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.95);
+  transform: scale(1.15);
+}
+
+.fa-pin-item:hover .fa-pin-beacon::before,
+.fa-pin-item.active .fa-pin-beacon::before,
+.fa-pin-item.hover-preview .fa-pin-beacon::before {
+  border-color: #22c55e;
+}
+
+/* Pin Label Tag — MẶC ĐỊNH ẨN HOÀN TOÀN, CHỈ XUẤT HIỆN KHI CHẠM / HOVER */
+.fa-pin-tag {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid #8D7EF7;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 12px rgba(141, 126, 247, 0.35);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
+  z-index: 25;
+}
+
+/* Mũi tên nhỏ trỏ vào điểm ghim */
+.fa-pin-tag::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #8D7EF7 transparent transparent;
+}
+
+/* KHI RÊ CHUỘT / CHẠM VÀO ĐIỂM SỐ HOẶC KHI ĐƯỢC CHỌN -> MỚI HIỆN CHỮ */
+.fa-pin-item:hover .fa-pin-tag,
+.fa-pin-item.active .fa-pin-tag,
+.fa-pin-item.hover-preview .fa-pin-tag {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+  pointer-events: auto;
+}
+
+.fa-pin-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f3f4f6;
+  line-height: 1.25;
+}
+
+.fa-pin-latin {
+  font-size: 0.68rem;
+  color: #c7d2fe;
+  font-style: italic;
+  line-height: 1.25;
+}
+
+/* Tooltip Popup on Pin Click */
+.fa-pin-popover {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 260px;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid #8D7EF7;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(141, 126, 247, 0.25);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 50;
+  text-align: left;
+}
+
+.fa-pin-item.show-popover .fa-pin-popover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.fa-pin-popover::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #8D7EF7 transparent transparent transparent;
+}
+
+.fa-pop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fa-pop-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #8D7EF7;
+  text-transform: uppercase;
+}
+
+.fa-pop-close {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.fa-pop-close:hover {
+  color: #fff;
+}
+
+.fa-pop-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 0.15rem;
+}
+
+.fa-pop-latin {
+  font-size: 0.72rem;
+  font-style: italic;
+  color: #c7d2fe;
+  display: block;
+  margin-bottom: 0.45rem;
+}
+
+.fa-pop-desc {
+  font-size: 0.78rem;
+  color: #d1d5db;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Floating overlay toggle bar */
+.fa-overlay-toggle-bar {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+}
+
+.fa-toggle-btn {
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e5e7eb;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: var(--transition);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.fa-toggle-btn:hover {
+  background: #8D7EF7;
+  color: #fff;
+  border-color: #8D7EF7;
+}
+
+.fa-toggle-btn.active {
+  background: #8D7EF7;
+  color: #fff;
+  border-color: #8D7EF7;
+  box-shadow: 0 0 10px rgba(141, 126, 247, 0.5);
+}
+
+.fa-spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(141, 126, 247, 0.2);
+  border-top-color: #8D7EF7;
+  border-radius: 50%;
+  animation: faSpin 1s linear infinite;
+}
+
+@keyframes faSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Physiological HUD */
+.fa-bio-hud {
+  background: #111827;
+  border-top: 1px solid #1f2937;
+  padding: 0.6rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fa-hud-metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.fa-metric-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #9ca3af;
+  letter-spacing: 0.04em;
+}
+
+.fa-metric-val {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #22c55e;
+}
+
+.fa-hud-ecg-wrap {
+  flex: 1;
+  max-width: 240px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 0 4px;
+}
+
+#fa-ecg-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.fa-interaction-hint {
+  background: #0b0f19;
+  padding: 0.45rem 1rem;
+  font-size: 0.76rem;
+  color: #9ca3af;
+  text-align: center;
+  border-top: 1px solid #1f2937;
+}
+
+.fa-interaction-hint strong {
+  color: #d1d5db;
+}
+
+/* Sidebar Info & FA Quiz Panel */
+.fa-info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fa-sidebar-tabs {
+  display: flex;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 4px;
+}
+
+.fa-s-tab {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.fa-s-tab:hover {
+  color: #8D7EF7;
+}
+
+.fa-s-tab.active {
+  background: #8D7EF7;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(141, 126, 247, 0.25);
+}
+
+.fa-sidebar-panel {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fa-sidebar-panel.active {
+  display: flex;
+}
+
+.fa-desc-card {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+}
+
+.fa-desc-card h4 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.45rem;
+}
+
+.fa-desc-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Landmarks list */
+.fa-landmarks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.fa-landmark-item {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  transition: var(--transition);
+}
+
+.fa-landmark-item:hover {
+  border-color: #8D7EF7;
+  transform: translateX(2px);
+}
+
+.fa-landmark-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.fa-landmark-idx {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(141, 126, 247, 0.15);
+  color: #8D7EF7;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fa-landmark-names strong {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  display: block;
+}
+
+.fa-latin-sub {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.fa-landmark-desc {
+  font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.5;
-  padding: 0.35rem 0;
+  margin: 0;
+}
+
+/* FA Quiz Component */
+.fa-quiz-card {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+}
+
+.fa-quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.fa-quiz-header h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.fa-quiz-badge {
+  background: #FFBB001A;
+  color: #FFBB00;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+}
+
+.fa-quiz-item {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
   border-bottom: 1px dashed var(--border-light);
 }
 
-.bio-fact-item:last-child {
+.fa-quiz-item:last-child {
   border-bottom: none;
+  margin-bottom: 0;
 }
 
-/* --- Responsive for Circuit & Biology --- */
-@media (max-width: 900px) {
-  .circuit-layout {
+.fa-quiz-question {
+  font-size: 0.87rem;
+  color: var(--text-main);
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.fa-quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.fa-quiz-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.83rem;
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition);
+}
+
+.fa-quiz-opt:hover:not(:disabled) {
+  border-color: #8D7EF7;
+  background: rgba(141, 126, 247, 0.05);
+}
+
+.fa-opt-letter {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-surface-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.fa-quiz-opt.correct {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: #22c55e;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.fa-quiz-opt.correct .fa-opt-letter {
+  background: #22c55e;
+  color: #fff;
+}
+
+.fa-quiz-opt.wrong {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: #ef4444;
+  color: #dc2626;
+}
+
+.fa-quiz-opt.wrong .fa-opt-letter {
+  background: #ef4444;
+  color: #fff;
+}
+
+.fa-quiz-explain {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.fa-quiz-explain.exp-correct {
+  background: rgba(34, 197, 94, 0.08);
+  border-left: 3px solid #22c55e;
+  color: var(--text-main);
+}
+
+.fa-quiz-explain.exp-wrong {
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid #ef4444;
+  color: var(--text-main);
+}
+
+.fa-quiz-explain p {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+}
+
+@media (max-width: 1024px) {
+  .fa-bio-content-grid {
     grid-template-columns: 1fr;
   }
-  .bio-layout {
-    grid-template-columns: 1fr;
+  .fa-3d-iframe-wrap {
+    height: 420px;
   }
-  .bio-selector-panel {
-    flex-direction: row;
+}
+
+@media (max-width: 640px) {
+  .fa-bio-hud {
     flex-wrap: wrap;
   }
-  .bio-system-btn {
-    flex: 1 1 calc(33% - 0.5rem);
-    min-width: 130px;
-  }
-  .bio-canvas-panel {
-    width: 100%;
-  }
-  #bio-canvas {
-    width: 100%;
-    height: auto;
-  }
-}
-
-@media (max-width: 600px) {
-  .bio-system-btn {
-    flex: 1 1 calc(50% - 0.4rem);
-  }
-  .circuit-results {
-    grid-template-columns: repeat(2, 1fr);
+  .fa-3d-iframe-wrap {
+    height: 340px;
   }
 }
 

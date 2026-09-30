@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎬 Video Khởi Động: Lực và Biểu Diễn Lực (KHTN 6) | HCMUE</title>
+  <meta name="description" content="Video hoạt hình tương tác 3 phút dẫn dắt vào Bài 40: Lực và biểu diễn lực môn Khoa học tự nhiên 6 chuẩn GDPT 2018.">
+  
+  <link rel="icon" type="image/png" href="assets/images/logo-hcmue.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <style>
+    .video-page-hero {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(220, 38, 38, 0.08) 100%);
+      padding: 2.5rem 0 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .video-container-wrap {
+      max-width: 980px;
+      margin: 1.5rem auto 3rem;
+      padding: 0 1rem;
+    }
+    .video-player-card {
+      background: #0b1120;
+      border-radius: 1.25rem;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      border: 1px solid #1e293b;
+      position: relative;
+    }
+    #animationCanvas {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      display: block;
+      background: #0f172a;
+    }
+    /* Controls bar */
+    .player-controls {
+      background: #090d16;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-top: 1px solid #1e293b;
+      color: #f8fafc;
+      flex-wrap: wrap;
+    }
+    .btn-ctrl {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #ffffff;
+      border-radius: 0.5rem;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .btn-ctrl:hover {
+      background: #2563eb;
+      border-color: #3b82f6;
+    }
+    .btn-ctrl.btn-record {
+      background: #dc2626;
+      border-color: #ef4444;
+      margin-left: auto;
+    }
+    .btn-ctrl.btn-record:hover {
+      background: #b91c1c;
+    }
+    .btn-ctrl.btn-record.recording {
+      background: #10b981;
+      border-color: #34d399;
+      animation: pulseRecord 1s infinite alternate;
+    }
+    @keyframes pulseRecord {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+    .time-slider {
+      flex: 1;
+      min-width: 150px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+    .time-display {
+      font-family: monospace;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #94a3b8;
+      min-width: 95px;
+    }
+    /* Quiz Overlay on Canvas */
+    .quiz-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(11, 17, 32, 0.92);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      z-index: 20;
+      color: #ffffff;
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+    .quiz-overlay.active {
+      display: flex;
+    }
+    .quiz-box-card {
+      background: #1e293b;
+      border: 2px solid #3b82f6;
+      border-radius: 1.25rem;
+      padding: 1.75rem 2rem;
+      max-width: 640px;
+      width: 100%;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+    .quiz-title-tag {
+      display: inline-block;
+      background: #ef4444;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .quiz-q-text {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+    .quiz-opt-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 0.75rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz-opt-btn:hover {
+      background: #2563eb;
+      border-color: #60a5fa;
+    }
+    .quiz-feedback-box {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: none;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+    }
+    /* Subtitles bar */
+    .subtitles-banner {
+      background: rgba(15, 23, 42, 0.9);
+      color: #fef08a;
+      text-align: center;
+      padding: 0.75rem 1rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid #1e293b;
+    }
+    .script-guide-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 1.25rem;
+      padding: 2rem;
+      margin-top: 2rem;
+      color: var(--text-main);
+    }
+    .script-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.88rem;
+    }
+    .script-table th, .script-table td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+    .script-table th {
+      background: var(--bg-surface-soft);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .script-table td {
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="site-header">
+    <div class="container navbar">
+      <a href="index.html" class="nav-brand" title="Trường Đại học Sư phạm TP. Hồ Chí Minh">
+        <img src="assets/images/logo-hcmue.png" alt="Logo Trường Đại học Sư phạm TP.HCM" class="brand-logo-img">
+        <div class="brand-text">
+          <div class="brand-title-vn">
+            <span>TRƯỜNG ĐẠI HỌC SƯ PHẠM</span>
+            <span>THÀNH PHỐ HỒ CHÍ MINH</span>
+          </div>
+          <div class="brand-divider"></div>
+          <span class="brand-sub-en">Ho Chi Minh City University of Education</span>
+        </div>
+      </a>
+
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html" class="nav-link">Trang Chủ</a></li>
+        <li><a href="index.html#about" class="nav-link">Giới Thiệu</a></li>
+        <li><a href="skills.html" class="nav-link">Kỹ Năng</a></li>
+        <li><a href="lab.html" class="nav-link" id="nav-link-lab">Thí Nghiệm</a></li>
+        <li><a href="plickers.html" class="nav-link" id="nav-link-plickers">Plickers KHTN</a></li>
+        <li><a href="phieu-hoc-tap.html" class="nav-link" id="nav-link-pht">Phiếu Học Tập</a></li>
+        <li><a href="video-khoi-dong.html" class="nav-link active">Video Khởi Động</a></li>
+        <li><a href="contact.html" class="nav-link">Liên Hệ</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="theme-toggle-btn" id="themeToggle" title="Chuyển đổi chế độ Sáng / Tối" aria-label="Đổi giao diện">
+          <svg class="theme-icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg class="theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line></svg>
+        </button>
+        <a href="contact.html" class="btn-contact-nav">Liên Hệ</a>
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Mở Menu">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== BANNER ==================== -->
+  <section class="video-page-hero">
+    <div class="container">
+      <span class="pht-badge">🎬 DẠY HỌC TƯƠNG TÁC — VIDEO HOẠT HÌNH 3 PHÚT</span>
+      <h1 style="font-size: 2.1rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main);">
+        Video Khởi Động: Lực & Biểu Diễn Lực
+      </h1>
+      <p style="color: var(--text-muted); max-width: 680px; margin: 0 auto; font-size: 0.95rem;">
+        Hoạt hình mô phỏng tình huống thực tế sinh động, có lời thuyết minh tiếng Việt, phụ đề thời gian thực, điểm dừng trả lời câu hỏi và tính năng xuất video (.webm / .mp4).
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================== VIDEO PLAYER SECTION ==================== -->
+  <main class="video-container-wrap">
+    
+    <div class="video-player-card">
+      <!-- Khung Canvas Hoạt Họa -->
+      <canvas id="animationCanvas" width="1280" height="720"></canvas>
+
+      <!-- Phụ Đề Chạy Chữ Đồng Bộ -->
+      <div class="subtitles-banner" id="subtitleBox">
+        Chào mừng các em đến với Bài 40: Lực và biểu diễn lực (Khoa học tự nhiên 6)!
+      </div>
+
+      <!-- Khung Câu Hỏi Tương Tác Dừng Tại 00:50 -->
+      <div class="quiz-overlay" id="quizOverlay">
+        <div class="quiz-box-card">
+          <span class="quiz-title-tag">⏸️ ĐIỂM DỪNG TƯƠNG TÁC</span>
+          <div class="quiz-q-text">
+            "Theo em, điểm chung giữa các hành động như đẩy xe hàng, sút bóng, kéo thùng hàng hay kéo dây cung là gì?"
+          </div>
+          <button class="quiz-opt-btn" onclick="submitVideoAnswer('A')">
+            A. Đều là tác dụng đẩy hoặc kéo của vật này lên vật khác.
+          </button>
+          <button class="quiz-opt-btn" onclick="submitVideoAnswer('B')">
+            B. Đều chỉ làm cho vật đứng yên tại chỗ mà thôi.
+          </button>
+          <button class="quiz-opt-btn" onclick="submitVideoAnswer('C')">
+            C. Đều là các hành động không cần bất kỳ sự tiếp xúc nào.
+          </button>
+          <div class="quiz-feedback-box" id="quizFeedback"></div>
+        </div>
+      </div>
+
+      <!-- Thanh Điều Khiển Video Player -->
+      <div class="player-controls">
+        <button class="btn-ctrl" id="playBtn" onclick="togglePlay()">
+          <span id="playIcon">▶ Phát Video</span>
+        </button>
+        <button class="btn-ctrl" onclick="restartVideo()">
+          <span>↺ Xem lại</span>
+        </button>
+        <button class="btn-ctrl" id="voiceToggleBtn" onclick="toggleVoice()">
+          <span id="voiceIcon">🔊 Thuyết Minh: BẬT</span>
+        </button>
+
+        <span class="time-display" id="timeDisplay">00:00 / 03:00</span>
+        <input type="range" id="timeSlider" class="time-slider" min="0" max="180" step="0.5" value="0" oninput="seekVideo(this.value)">
+
+        <button class="btn-ctrl btn-record" id="recordBtn" onclick="toggleRecording()">
+          <span id="recordText">⏺ Xuất File Video (.webm)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BẢNG KỊCH BẢN PHÂN CẢNH VÀ THUYẾT MINH CHI TIẾT (ĐỂ GIẢNG VIÊN ĐÁNH GIÁ) -->
+    <div class="script-guide-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-main);">
+            KỊCH BẢN PHÂN CẢNH VÀ THUYẾT MINH VIDEO (3 PHÚT)
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Chủ đề: Bài 40 – Lực và biểu diễn lực (Khoa học tự nhiên 6 - GDPT 2018)
+          </p>
+        </div>
+        <a href="phieu-hoc-tap.html" class="btn-ctrl" style="background: #2563eb; color: #fff; text-decoration: none;">
+          📑 Đến trang Phiếu Học Tập
+        </a>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="script-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Phân cảnh & Thời lượng</th>
+              <th style="width: 30%;">Hình ảnh & Hoạt họa mô phỏng</th>
+              <th style="width: 35%;">Lời thuyết minh (Voice-over)</th>
+              <th style="width: 20%;">Phụ đề & Hiệu ứng</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cảnh 1</strong><br>(00:00 – 00:35)</td>
+              <td>
+                • Bạn nhỏ và mẹ đẩy xe hàng trong siêu thị.<br>
+                • Cầu thủ sút bóng bay vút vào khung thành.<br>
+                • Hiển thị vectơ mũi tên chỉ hướng đẩy đi ra xa.
+              </td>
+              <td>
+                "Chào các em! Hãy thử quan sát xung quanh chúng ta: Khi đi siêu thị mua sắm, làm sao để chiếc xe hàng di chuyển về phía trước? Khi một cầu thủ sút bóng, điều gì đã khiến quả bóng bay vút vào lưới?"
+              </td>
+              <td>
+                • Nhạc nền vui tươi.<br>
+                • Đóng khung chữ nổi bật: <strong>LỰC ĐẨY (PUSH)</strong>.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Cảnh 2</strong><br>(00:35 – 01:05)</td>
+              <td>
+                • Trận thi đấu kéo co sôi nổi của học sinh.<br>
+                • Cung thủ kéo căng dây cung chuẩn bị bắn.<br>
+                • Người thợ kéo thùng hàng bằng sợi dây cáp.
+              </td>
+              <td>
+                "Ở một hướng ngược lại, khi hai đội thi đấu kéo co, hay khi người thợ kéo một thùng hàng nặng, hoặc một cung thủ đang giương căng dây cung... các bạn ấy đang thực hiện hành động gì thế nhỉ?"
+              </td>
+              <td>
+                • Âm thanh kéo dây & tiếng còi.<br>
+                • Chữ nổi bật: <strong>LỰC KÉO (PULL)</strong>.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>⏸️ Dừng tương tác</strong><br>(01:05 – 01:50)</td>
+              <td>
+                • Video tạm dừng tự động.<br>
+                • Bảng câu hỏi xuất hiện trên màn hình yêu cầu học sinh click chọn đáp án A, B hoặc C.
+              </td>
+              <td>
+                "Chính xác! Tất cả những hành động đẩy, kéo đó trong khoa học đều được gọi chung bằng một khái niệm rất quen thuộc: LỰC!"
+              </td>
+              <td>
+                • Pháo hoa chúc mừng khi chọn đúng.<br>
+                • Nút tiếp tục bài học.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Cảnh 3</strong><br>(01:50 – 02:40)</td>
+              <td>
+                • Khối gỗ trên mặt sàn nằm ngang.<br>
+                • Mũi tên đỏ biểu diễn lực kéo F = 30 N xuất hiện từng bước: Điểm đặt ➔ Phương, Chiều ➔ Độ lớn tỉ xích (3 đoạn = 30 N).
+              </td>
+              <td>
+                "Đúng vậy, tác dụng đẩy, kéo của vật này lên vật khác được gọi là lực. Nhưng vì lực không có hình dáng cố định, vậy làm sao vẽ được lực chính xác nhất? Chúng ta dùng một mũi tên có gốc tại vật, có hướng và độ dài theo tỉ xích."
+              </td>
+              <td>
+                • Hiển thị 4 yếu tố: Điểm đặt, Phương, Chiều, Độ lớn.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Cảnh 4: Kết thúc</strong><br>(02:40 – 03:00)</td>
+              <td>
+                • Tiêu đề hoành tráng: <strong>BÀI 40: LỰC VÀ BIỂU DIỄN LỰC</strong>.<br>
+                • Lời kêu gọi sẵn sàng mở sách giáo khoa.
+              </td>
+              <td>
+                "Hãy cùng cô/thầy bước vào Bài 40: Lực và biểu diễn lực ngay sau đây nhé! Chúc các em có một tiết học thật hào hứng và bổ ích!"
+              </td>
+              <td>
+                • Nhạc kết chuyển tiết học.<br>
+                • Logo ĐHSP TP.HCM (HCMUE).
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <div class="brand-title-vn">TRƯỜNG ĐẠI HỌC SƯ PHẠM THÀNH PHỐ HỒ CHÍ MINH</div>
+        <p class="footer-desc">Ứng dụng CNTT trong Dạy học Phát triển Năng lực Khoa học Tự nhiên.</p>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Đỗ Văn Nhật Minh — HCMUE. Kịch bản & Sản phẩm Video Khởi Động KHTN 6.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Main scripts -->
+  <script src="assets/js/main.js"></script>
+
+  <!-- VIDEO ENGINE SCRIPT (CANVAS ANIMATION + AUDIO SYNTHESIS + RECORDING) -->
+  <script>
+    const canvas = document.getElementById('animationCanvas');
+    const ctx = canvas.getContext('2d');
+    const timeSlider = document.getElementById('timeSlider');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const subtitleBox = document.getElementById('subtitleBox');
+    const quizOverlay = document.getElementById('quizOverlay');
+    const quizFeedback = document.getElementById('quizFeedback');
+    const playBtn = document.getElementById('playBtn');
+    const playIcon = document.getElementById('playIcon');
+    const recordBtn = document.getElementById('recordBtn');
+    const recordText = document.getElementById('recordText');
+
+    let isPlaying = false;
+    let currentTime = 0;
+    const duration = 180; // 3 phút = 180 giây
+    let lastTimestamp = 0;
+    let animFrameId = null;
+    let voiceEnabled = true;
+    let quizAnswered = false;
+
+    // MediaRecorder cho tính năng Xuất file video
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    // Kịch bản lời thoại và phụ đề theo mốc thời gian
+    const scriptTimeline = [
+      { start: 0, end: 12, text: "Chào các em! Hãy thử quan sát các chuyển động quen thuộc xung quanh chúng ta mỗi ngày.", voice: "Chào các em! Hãy thử quan sát các chuyển động quen thuộc xung quanh chúng ta mỗi ngày." },
+      { start: 12, end: 24, text: "Khi đi siêu thị mua sắm, làm sao để chiếc xe chở hàng di chuyển về phía trước?", voice: "Khi đi siêu thị mua sắm, làm sao để chiếc xe chở hàng di chuyển về phía trước?" },
+      { start: 24, end: 35, text: "Và khi một cầu thủ vung chân sút bóng, điều gì đã khiến quả bóng bay vút vào lưới?", voice: "Và khi một cầu thủ vung chân sút bóng, điều gì đã khiến quả bóng bay vút vào lưới?" },
+      { start: 35, end: 46, text: "Đó chính là LỰC ĐẨY! Bàn tay hoặc bàn chân đã đẩy vật rời xa người tác dụng.", voice: "Đó chính là lực đẩy! Bàn tay hoặc bàn chân đã đẩy vật rời xa người tác dụng." },
+      { start: 46, end: 57, text: "Ở một hướng ngược lại, khi hai đội lớp mình thi đấu kéo co sôi nổi...", voice: "Ở một hướng ngược lại, khi hai đội lớp mình thi đấu kéo co sôi nổi..." },
+      { start: 57, end: 68, text: "Hay khi người thợ dùng dây kéo một thùng hàng nặng, cung thủ kéo căng dây cung...", voice: "Hay khi người thợ dùng dây kéo một thùng hàng nặng, cung thủ kéo căng dây cung..." },
+      { start: 68, end: 78, text: "Các bạn ấy đang tác dụng một LỰC KÉO, làm vật chuyển động lại gần mình!", voice: "Các bạn ấy đang tác dụng một lực kéo, làm vật chuyển động lại gần mình!" },
+      { start: 78, end: 95, text: "⏸️ Thử thách tương tác: Hãy trả lời câu hỏi hiện lên trên màn hình nhé!", voice: "Hãy dừng lại một chút để suy nghĩ và trả lời câu hỏi thử thách nhé!" },
+      { start: 95, end: 110, text: "Chính xác! Tất cả những tác dụng đẩy hoặc kéo đó được gọi chung là: LỰC!", voice: "Chính xác! Tất cả những tác dụng đẩy hoặc kéo đó được gọi chung là Lực!" },
+      { start: 110, end: 125, text: "Nhưng lực thì mắt ta không nhìn thấy được hình dạng cụ thể. Vậy làm sao để vẽ được lực?", voice: "Nhưng lực thì mắt ta không nhìn thấy được hình dạng cụ thể. Vậy làm sao để vẽ được lực?" },
+      { start: 125, end: 145, text: "Trong khoa học, ta biểu diễn lực bằng MŨI TÊN: có Điểm Đặt tại vật, có Phương và Chiều kéo/đẩy.", voice: "Trong khoa học, ta biểu diễn lực bằng một mũi tên: có điểm đặt tại vật chịu lực, có phương và chiều của lực." },
+      { start: 145, end: 165, text: "Độ dài mũi tên biểu thị ĐỘ LỚN của lực (đo bằng Niutơn - N) theo một tỉ xích quy định.", voice: "Độ dài mũi tên biểu thị độ lớn của lực đo bằng Niutơn theo một tỉ xích quy định, ví dụ 1 cm ứng với 10 Niutơn." },
+      { start: 165, end: 180, text: "BÀI 40: LỰC VÀ BIỂU DIỄN LỰC — Hãy cùng bắt đầu tiết học thật sôi nổi ngay bây giờ!", voice: "Chào mừng các em bước vào Bài 40: Lực và biểu diễn lực ngay sau đây nhé!" }
+    ];
+
+    let currentSpeechIndex = -1;
+
+    function speakText(text) {
+      if (!voiceEnabled || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'vi-VN';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.05;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function toggleVoice() {
+      voiceEnabled = !voiceEnabled;
+      const voiceIcon = document.getElementById('voiceIcon');
+      if (voiceEnabled) {
+        voiceIcon.innerText = "🔊 Thuyết Minh: BẬT";
+      } else {
+        voiceIcon.innerText = "🔇 Thuyết Minh: TẮT";
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Toggle Play / Pause
+    function togglePlay() {
+      if (isPlaying) {
+        pauseVideo();
+      } else {
+        playVideo();
+      }
+    }
+
+    function playVideo() {
+      isPlaying = true;
+      playIcon.innerText = "⏸ Tạm Dừng";
+      lastTimestamp = performance.now();
+      animFrameId = requestAnimationFrame(videoLoop);
+    }
+
+    function pauseVideo() {
+      isPlaying = false;
+      playIcon.innerText = "▶ Phát Video";
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    function restartVideo() {
+      pauseVideo();
+      currentTime = 0;
+      timeSlider.value = 0;
+      quizAnswered = false;
+      quizOverlay.classList.remove('active');
+      currentSpeechIndex = -1;
+      drawScene(0);
+      playVideo();
+    }
+
+    function seekVideo(val) {
+      currentTime = parseFloat(val);
+      quizOverlay.classList.remove('active');
+      drawScene(currentTime);
+    }
+
+    function submitVideoAnswer(opt) {
+      const feedback = document.getElementById('quizFeedback');
+      feedback.style.display = 'block';
+      if (opt === 'A') {
+        feedback.style.background = '#065f46';
+        feedback.style.color = '#34d399';
+        feedback.innerHTML = '🎉 HOÀN TOÀN CHÍNH XÁC! Lực chính là sự đẩy hoặc sự kéo của vật này lên vật khác.';
+        quizAnswered = true;
+        speakText("Chính xác! Lực chính là sự đẩy hoặc sự kéo của vật này lên vật khác.");
+        setTimeout(() => {
+          quizOverlay.classList.remove('active');
+          currentTime = 95; // Chuyển sang phần tiếp theo
+          playVideo();
+        }, 3200);
+      } else {
+        feedback.style.background = '#7f1d1d';
+        feedback.style.color = '#f87171';
+        feedback.innerHTML = '❌ Chưa đúng rồi! Điểm chung ở đây là các hành động ĐẨY hoặc KÉO. Hãy chọn lại đáp án A nhé!';
+      }
+    }
+
+    // VÒNG LẶP VIDEO ANIMATION
+    function videoLoop(timestamp) {
+      if (!isPlaying) return;
+      const delta = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      currentTime += delta;
+      if (currentTime >= duration) {
+        currentTime = duration;
+        pauseVideo();
+      }
+
+      // Kiểm tra điểm dừng tương tác ở giây thứ 78 (01:18)
+      if (currentTime >= 78 && currentTime < 94 && !quizAnswered) {
+        currentTime = 78;
+        pauseVideo();
+        quizOverlay.classList.add('active');
+      }
+
+      timeSlider.value = currentTime;
+      timeDisplay.innerText = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+
+      // Cập nhật phụ đề & Voice-over
+      updateSubtitlesAndVoice(currentTime);
+
+      // Vẽ phân cảnh lên Canvas
+      drawScene(currentTime);
+
+      if (isPlaying) {
+        animFrameId = requestAnimationFrame(videoLoop);
+      }
+    }
+
+    function updateSubtitlesAndVoice(t) {
+      const item = scriptTimeline.find(item => t >= item.start && t < item.end);
+      if (item) {
+        subtitleBox.innerText = item.text;
+        const index = scriptTimeline.indexOf(item);
+        if (index !== currentSpeechIndex) {
+          currentSpeechIndex = index;
+          speakText(item.voice);
+        }
+      }
+    }
+
+    // ==================== CÁC PHÂN CẢNH VẼ BẰNG CANVAS 2D ====================
+    function drawScene(t) {
+      ctx.clearRect(0, 0, 1280, 720);
+
+      // Nền Gradient chuyển động nhẹ
+      const bgGrad = ctx.createLinearGradient(0, 0, 1280, 720);
+      if (t < 40) {
+        bgGrad.addColorStop(0, '#0f172a');
+        bgGrad.addColorStop(1, '#0284c7');
+      } else if (t < 80) {
+        bgGrad.addColorStop(0, '#064e3b');
+        bgGrad.addColorStop(1, '#0f172a');
+      } else if (t < 110) {
+        bgGrad.addColorStop(0, '#312e81');
+        bgGrad.addColorStop(1, '#1e1b4b');
+      } else {
+        bgGrad.addColorStop(0, '#1e1b4b');
+        bgGrad.addColorStop(1, '#0f172a');
+      }
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 1280, 720);
+
+      // Mặt đất
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, 560);
+      ctx.lineTo(1280, 560);
+      ctx.stroke();
+
+      // CẢNH 1 (0s - 40s): LỰC ĐẨY (ĐẨY XE HÀNG & SÚT BÓNG)
+      if (t < 40) {
+        drawPushScene(t);
+      } 
+      // CẢNH 2 (40s - 80s): LỰC KÉO (KÉO CO & GIƯƠNG CUNG & KÉO THÙNG)
+      else if (t < 80) {
+        drawPullScene(t);
+      } 
+      // CẢNH 2.5 (80s - 110s): ĐIỂM DỪNG TƯƠNG TÁC
+      else if (t < 110) {
+        drawQuizScene(t);
+      } 
+      // CẢNH 3 (110s - 165s): GIẢI PHẪU MŨI TÊN VECTOR BIỂU DIỄN LỰC
+      else if (t < 165) {
+        drawVectorAnatomyScene(t);
+      } 
+      // CẢNH 4 (165s - 180s): DẪN VÀO BÀI 40 VÀ KẾT THÚC
+      else {
+        drawIntroTitleScene(t);
+      }
+    }
+
+    // Vẽ Cảnh 1: Lực đẩy (0 - 40s)
+    function drawPushScene(t) {
+      // Banner góc trái
+      drawPillBadge("CẢNH 1: KHƠI GỢI TÌNH HUỐNG THỰC TẾ", 40, 50, "#0284c7");
+      drawTitleText("LỰC LÀ SỰ ĐẨY (PUSH)", 40, 100, "#38bdf8");
+
+      // 1. Hoạt họa Người đẩy xe siêu thị
+      const cartX = 180 + Math.min(t * 15, 120);
+      
+      // Người đẩy xe
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(cartX - 90, 360, 30, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Thân & chân
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 10;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(cartX - 90, 390);
+      ctx.lineTo(cartX - 90, 470);
+      ctx.lineTo(cartX - 120, 550);
+      ctx.moveTo(cartX - 90, 470);
+      ctx.lineTo(cartX - 60, 550);
+      // Tay đẩy về trước
+      ctx.moveTo(cartX - 90, 420);
+      ctx.lineTo(cartX - 20, 420);
+      ctx.stroke();
+
+      // Xe siêu thị
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(cartX - 20, 400);
+      ctx.lineTo(cartX + 20, 480);
+      ctx.lineTo(cartX + 150, 480);
+      ctx.lineTo(cartX + 180, 390);
+      ctx.lineTo(cartX - 10, 390);
+      ctx.stroke();
+
+      // Bánh xe
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(cartX + 40, 520, 16, 0, Math.PI * 2);
+      ctx.arc(cartX + 130, 520, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mũi tên vectơ lực đẩy F
+      drawArrow(cartX - 20, 420, cartX + 140, 420, '#ef4444', 8, 'Lực đẩy F đẩy ➔');
+
+      // 2. Bên phải: Cầu thủ sút bóng
+      const ballX = 850 + Math.min(Math.max((t - 15) * 80, 0), 320);
+      const ballY = 530 - Math.sin(Math.min(Math.max((t - 15) * 4, 0), Math.PI)) * 120;
+
+      // Cầu thủ
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(750, 360, 30, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 10;
+      ctx.beginPath();
+      ctx.moveTo(750, 390);
+      ctx.lineTo(750, 470);
+      ctx.lineTo(730, 550);
+      ctx.moveTo(750, 470);
+      ctx.lineTo(800, 510); // Chân sút
+      ctx.stroke();
+
+      // Quả bóng
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, 24, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      if (t >= 15) {
+        drawArrow(790, 500, ballX - 30, ballY, '#f59e0b', 6, 'Lực sút bóng ➔');
+      }
+    }
+
+    // Vẽ Cảnh 2: Lực kéo (40s - 80s)
+    function drawPullScene(t) {
+      drawPillBadge("CẢNH 2: CÁC HÀNH ĐỘNG ĐỐI LẬP", 40, 50, "#059669");
+      drawTitleText("LỰC LÀ SỰ KÉO (PULL)", 40, 100, "#34d399");
+
+      // 1. Đội kéo co (bên trái)
+      const pullShift = Math.sin((t - 40) * 5) * 15;
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 12; // Dây thừng
+      ctx.beginPath();
+      ctx.moveTo(100, 460);
+      ctx.lineTo(750, 460);
+      ctx.stroke();
+
+      // Cờ đỏ ở giữa dây
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(425 + pullShift, 460, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Đội A ngả người kéo sang trái
+      for (let i = 0; i < 2; i++) {
+        const px = 220 + i * 110 + pullShift;
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(px, 360, 26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.moveTo(px, 386);
+        ctx.lineTo(px - 20, 460);
+        ctx.lineTo(px - 50, 550);
+        ctx.moveTo(px - 20, 460);
+        ctx.lineTo(px, 550);
+        ctx.stroke();
+      }
+
+      drawArrow(350, 410, 200, 410, '#34d399', 8, '⇦ F kéo (Đội A)');
+
+      // 2. Bên phải: Kéo thùng hàng bằng dây
+      const boxX = 880;
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(boxX, 420, 130, 130);
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(boxX, 420, 130, 130);
+
+      // Điểm đặt A đỏ trên thùng
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(boxX, 485, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Người công nhân kéo dây
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath();
+      ctx.arc(1140, 360, 26, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.moveTo(1140, 386);
+      ctx.lineTo(1150, 460);
+      ctx.lineTo(1180, 550);
+      ctx.moveTo(1150, 460);
+      ctx.lineTo(1120, 550);
+      ctx.stroke();
+
+      // Dây kéo từ người đến thùng
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(1120, 450);
+      ctx.lineTo(boxX, 485);
+      ctx.stroke();
+
+      drawArrow(boxX, 485, boxX + 160, 475, '#ef4444', 7, 'F kéo thùng ➔');
+    }
+
+    // Vẽ Cảnh tương tác dừng (80 - 110s)
+    function drawQuizScene(t) {
+      drawPillBadge("CẢNH TƯƠNG TÁC ĐẦU GIỜ", 40, 50, "#ef4444");
+      drawTitleText("BẢN CHẤT CỦA LỰC LÀ GÌ?", 40, 100, "#f87171");
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.fillRect(200, 160, 880, 360);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(200, 160, 880, 360);
+
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 36px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText("LỰC LÀ TÁC DỤNG ĐẨY HOẶC KÉO", 640, 280);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '24px "Be Vietnam Pro", sans-serif';
+      ctx.fillText("Khi vật này đẩy hoặc kéo vật kia, ta nói vật đó đã tác dụng lực!", 640, 340);
+      ctx.fillText("Đơn vị đo lực là Niutơn (ký hiệu: N)", 640, 400);
+      ctx.textAlign = 'left';
+    }
+
+    // Vẽ Cảnh 3: Giải phẫu biểu diễn mũi tên lực (110s - 165s)
+    function drawVectorAnatomyScene(t) {
+      drawPillBadge("CẢNH 3: DẪN NHẬP NỘI DUNG TRỌNG TÂM", 40, 50, "#8b5cf6");
+      drawTitleText("CÁCH BIỂU DIỄN MỘT LỰC BẰNG MŨI TÊN", 40, 100, "#c084fc");
+
+      // Khối gỗ trên sàn
+      const woodX = 260;
+      const woodY = 360;
+      ctx.fillStyle = '#fde68a';
+      ctx.fillRect(woodX, woodY, 180, 160);
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(woodX, woodY, 180, 160);
+
+      ctx.fillStyle = '#92400e';
+      ctx.font = 'bold 22px "Be Vietnam Pro"';
+      ctx.textAlign = 'center';
+      ctx.fillText("VẬT (Khối gỗ)", woodX + 90, woodY + 90);
+
+      // Điểm đặt A
+      const originX = woodX + 180;
+      const originY = woodY + 80;
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(originX, originY, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hiệu ứng mũi tên dài ra theo thời gian
+      const progress = Math.min((t - 115) / 15, 1);
+      const arrowLength = 360 * progress;
+
+      if (arrowLength > 0) {
+        drawArrow(originX, originY, originX + arrowLength, originY, '#ef4444', 10, '');
+      }
+
+      // Vạch tỉ xích
+      if (progress >= 0.8) {
+        // Chia 3 đoạn (mỗi đoạn 120px = 10N)
+        for (let i = 1; i <= 3; i++) {
+          const vx = originX + i * 120;
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(vx, originY - 15);
+          ctx.lineTo(vx, originY + 15);
+          ctx.stroke();
+
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 18px monospace';
+          ctx.fillText("10N", vx - 60, originY + 45);
+        }
+
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold 32px "Plus Jakarta Sans"';
+        ctx.fillText("F = 30 N", originX + 440, originY + 10);
+      }
+
+      // 4 Hộp yếu tố nổi bật
+      drawFeatureBox(1, "ĐIỂM ĐẶT", "Tại vật chịu tác dụng lực", 120, 580);
+      drawFeatureBox(2, "PHƯƠNG", "Nằm ngang", 420, 580);
+      drawFeatureBox(3, "CHIỀU", "Từ trái sang phải ➔", 720, 580);
+      drawFeatureBox(4, "ĐỘ LỚN", "30 N (1cm = 10N)", 1000, 580);
+
+      ctx.textAlign = 'left';
+    }
+
+    // Vẽ Cảnh 4: Tiêu đề bài học và sẵn sàng vào bài (165s - 180s)
+    function drawIntroTitleScene(t) {
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      
+      ctx.font = 'bold 24px "Plus Jakarta Sans"';
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText("KHOA HỌC TỰ NHIÊN 6 • CHỦ ĐỀ: LỰC", 640, 240);
+
+      ctx.font = '900 52px "Plus Jakarta Sans"';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText("BÀI 40: LỰC VÀ BIỂU DIỄN LỰC", 640, 320);
+
+      ctx.font = '22px "Be Vietnam Pro"';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText("Bộ sách: Kết nối tri thức với cuộc sống (NXB Giáo dục Việt Nam)", 640, 380);
+
+      // Nút sẵn sàng
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.roundRect(460, 440, 360, 65, 32);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px "Be Vietnam Pro"';
+      ctx.fillText("🚀 BẮT ĐẦU TIẾT HỌC NGAY", 640, 482);
+
+      ctx.textAlign = 'left';
+    }
+
+    // Helper: Vẽ mũi tên có đầu nhọn
+    function drawArrow(x1, y1, x2, y2, color, width, label) {
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      // Đầu mũi tên
+      const headlen = 22;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      if (label) {
+        ctx.font = 'bold 22px "Be Vietnam Pro"';
+        ctx.fillText(label, (x1 + x2) / 2 - 40, y1 - 25);
+      }
+    }
+
+    function drawPillBadge(text, x, y, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(x, y - 22, text.length * 10 + 24, 30, 15);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 13px "Plus Jakarta Sans"';
+      ctx.fillText(text, x + 12, y);
+    }
+
+    function drawTitleText(text, x, y, color) {
+      ctx.fillStyle = color;
+      ctx.font = '900 32px "Plus Jakarta Sans"';
+      ctx.fillText(text, x, y);
+    }
+
+    function drawFeatureBox(num, title, val, x, y) {
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
+      ctx.beginPath();
+      ctx.roundRect(x - 100, y - 40, 220, 95, 12);
+      ctx.fill();
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#60a5fa';
+      ctx.font = 'bold 15px "Plus Jakarta Sans"';
+      ctx.fillText(`[${num}] ${title}`, x - 85, y - 12);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '14px "Be Vietnam Pro"';
+      ctx.fillText(val, x - 85, y + 18);
+    }
+
+    // ==================== TÍNH NĂNG XUẤT VIDEO (MEDIA RECORDER) ====================
+    function toggleRecording() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+
+    function startRecording() {
+      recordedChunks = [];
+      const stream = canvas.captureStream(30); // 30 FPS
+      
+      const options = { mimeType: 'video/webm;codecs=vp9' };
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (e) {
+        mediaRecorder = new MediaRecorder(stream);
+      }
+
+      mediaRecorder.ondataavailable = function(e) {
+        if (e.data.size > 0) {
+          recordedChunks.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = function() {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'video-khoi-dong-luc-khtn6-hcmue.webm';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      };
+
+      mediaRecorder.start();
+      isRecording = true;
+      recordBtn.classList.add('recording');
+      recordText.innerText = "⏹ Đang ghi... Nhấn để Dừng & Tải về";
+      restartVideo();
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      isRecording = false;
+      recordBtn.classList.remove('recording');
+      recordText.innerText = "⏺ Xuất File Video (.webm)";
+      pauseVideo();
+    }
+
+    // Khởi động ban đầu
+    drawScene(0);
+  </script>
+</body>
+</html>

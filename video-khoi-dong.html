@@ -620,14 +620,14 @@
       }
     }
 
-    // ==================== CÁC PHÂN CẢNH VẼ BẰNG CANVAS 2D ====================
+    // ==================== CÁC PHÂN CẢNH VẼ BẰNG CANVAS 2D CHUẨN ĐỒ HOẠ CAO CẤP ====================
     function drawScene(t) {
       ctx.clearRect(0, 0, 1280, 720);
 
-      // Nền Gradient chuyển động nhẹ
+      // Nền Gradient chuyển động mượt mà
       const bgGrad = ctx.createLinearGradient(0, 0, 1280, 720);
       if (t < 40) {
-        bgGrad.addColorStop(0, '#0f172a');
+        bgGrad.addColorStop(0, '#091e3a');
         bgGrad.addColorStop(1, '#0284c7');
       } else if (t < 80) {
         bgGrad.addColorStop(0, '#064e3b');
@@ -636,25 +636,18 @@
         bgGrad.addColorStop(0, '#312e81');
         bgGrad.addColorStop(1, '#1e1b4b');
       } else {
-        bgGrad.addColorStop(0, '#1e1b4b');
-        bgGrad.addColorStop(1, '#0f172a');
+        bgGrad.addColorStop(0, '#0f172a');
+        bgGrad.addColorStop(0.5, '#1e1b4b');
+        bgGrad.addColorStop(1, '#0b1120');
       }
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, 1280, 720);
 
-      // Mặt đất
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(0, 560);
-      ctx.lineTo(1280, 560);
-      ctx.stroke();
-
-      // CẢNH 1 (0s - 40s): LỰC ĐẨY (ĐẨY XE HÀNG & SÚT BÓNG)
+      // CẢNH 1 (0s - 40s): LỰC ĐẨY
       if (t < 40) {
         drawPushScene(t);
       } 
-      // CẢNH 2 (40s - 80s): LỰC KÉO (KÉO CO & GIƯƠNG CUNG & KÉO THÙNG)
+      // CẢNH 2 (40s - 80s): LỰC KÉO
       else if (t < 80) {
         drawPullScene(t);
       } 
@@ -672,290 +665,488 @@
       }
     }
 
-    // Vẽ Cảnh 1: Lực đẩy (0 - 40s)
+    // ==================== CẢNH 1: LỰC ĐẨY (PUSH) ====================
     function drawPushScene(t) {
-      // Banner góc trái
-      drawPillBadge("CẢNH 1: KHƠI GỢI TÌNH HUỐNG THỰC TẾ", 40, 50, "#0284c7");
-      drawTitleText("LỰC LÀ SỰ ĐẨY (PUSH)", 40, 100, "#38bdf8");
+      drawPillBadge("CẢNH 1: KHƠI GỢI TÌNH HUỐNG THỰC TẾ", 60, 45, "#0284c7");
+      drawTitleText("LỰC LÀ SỰ ĐẨY (PUSH)", 60, 95, "#38bdf8");
 
-      // 1. Hoạt họa Người đẩy xe siêu thị
-      const cartX = 180 + Math.min(t * 15, 120);
-      
-      // Người đẩy xe
-      ctx.fillStyle = '#38bdf8';
+      // Mặt sàn siêu thị / sân cỏ
+      drawFloor(500);
+
+      // 1. Phân cảnh Đẩy xe hàng siêu thị (bên trái)
+      const walkCycle = Math.sin(t * 8) * 12;
+      const cartX = 140 + Math.min(t * 18, 120);
+
+      // Kệ hàng siêu thị phía sau mờ
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.fillRect(80, 220, 480, 280);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(80, 220, 480, 280);
+      for (let y = 280; y <= 450; y += 60) {
+        ctx.beginPath();
+        ctx.moveTo(80, y);
+        ctx.lineTo(560, y);
+        ctx.stroke();
+      }
+
+      // Người đẩy xe (bạn học sinh)
+      const personX = cartX - 80;
+      // Đầu
+      ctx.fillStyle = '#fed7aa';
       ctx.beginPath();
-      ctx.arc(cartX - 90, 360, 30, 0, Math.PI * 2);
+      ctx.arc(personX, 330, 25, 0, Math.PI * 2);
+      ctx.fill();
+      // Mái tóc
+      ctx.fillStyle = '#451a03';
+      ctx.beginPath();
+      ctx.arc(personX, 322, 26, Math.PI * 1.1, Math.PI * 2.1);
       ctx.fill();
 
-      // Thân & chân
-      ctx.strokeStyle = '#38bdf8';
+      // Thân áo đồng phục xanh
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.roundRect(personX - 18, 355, 36, 75, 8);
+      ctx.fill();
+
+      // Quần & Chân chuyển động bước đi
+      ctx.strokeStyle = '#1e293b';
       ctx.lineWidth = 10;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(cartX - 90, 390);
-      ctx.lineTo(cartX - 90, 470);
-      ctx.lineTo(cartX - 120, 550);
-      ctx.moveTo(cartX - 90, 470);
-      ctx.lineTo(cartX - 60, 550);
-      // Tay đẩy về trước
-      ctx.moveTo(cartX - 90, 420);
-      ctx.lineTo(cartX - 20, 420);
+      ctx.moveTo(personX - 8, 430);
+      ctx.lineTo(personX - 15 - walkCycle, 495); // chân trái
+      ctx.moveTo(personX + 8, 430);
+      ctx.lineTo(personX + 15 + walkCycle, 495); // chân phải
       ctx.stroke();
 
-      // Xe siêu thị
+      // Tay đẩy hướng dốc vào xe
+      ctx.strokeStyle = '#fed7aa';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(personX, 375);
+      ctx.lineTo(cartX + 10, 395);
+      ctx.stroke();
+
+      // Chiếc xe đẩy siêu thị kim loại
       ctx.strokeStyle = '#94a3b8';
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(cartX - 20, 400);
-      ctx.lineTo(cartX + 20, 480);
-      ctx.lineTo(cartX + 150, 480);
-      ctx.lineTo(cartX + 180, 390);
-      ctx.lineTo(cartX - 10, 390);
+      ctx.moveTo(cartX + 10, 390); // tay cầm
+      ctx.lineTo(cartX + 25, 410);
+      ctx.lineTo(cartX + 160, 410);
+      ctx.lineTo(cartX + 185, 340);
+      ctx.lineTo(cartX + 30, 340);
+      ctx.closePath();
+      ctx.stroke();
+      // Lưới xe
+      for (let lx = cartX + 55; lx <= cartX + 160; lx += 25) {
+        ctx.beginPath();
+        ctx.moveTo(lx, 340);
+        ctx.lineTo(lx - 15, 410);
+        ctx.stroke();
+      }
+      // Hàng hóa trong xe (hộp quà, hoa quả)
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(cartX + 45, 355, 35, 35);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(cartX + 90, 345, 45, 45);
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(cartX + 140, 360, 30, 30);
+
+      // Khung chân xe & 2 bánh xe xoay tròn
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(cartX + 40, 410);
+      ctx.lineTo(cartX + 50, 485);
+      ctx.moveTo(cartX + 145, 410);
+      ctx.lineTo(cartX + 145, 485);
       ctx.stroke();
 
-      // Bánh xe
-      ctx.fillStyle = '#f8fafc';
+      ctx.fillStyle = '#334155';
       ctx.beginPath();
-      ctx.arc(cartX + 40, 520, 16, 0, Math.PI * 2);
-      ctx.arc(cartX + 130, 520, 16, 0, Math.PI * 2);
+      ctx.arc(cartX + 50, 485, 15, 0, Math.PI * 2);
+      ctx.arc(cartX + 145, 485, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.beginPath();
+      ctx.arc(cartX + 50, 485, 6, 0, Math.PI * 2);
+      ctx.arc(cartX + 145, 485, 6, 0, Math.PI * 2);
       ctx.fill();
 
-      // Mũi tên vectơ lực đẩy F
-      drawArrow(cartX - 20, 420, cartX + 140, 420, '#ef4444', 8, 'Lực đẩy F đẩy ➔');
+      // Mũi tên Lực đẩy F đẩy
+      drawArrow(cartX + 10, 395, cartX + 175, 395, '#ef4444', 8, 'Lực đẩy F đẩy ➔');
 
-      // 2. Bên phải: Cầu thủ sút bóng
-      const ballX = 850 + Math.min(Math.max((t - 15) * 80, 0), 320);
-      const ballY = 530 - Math.sin(Math.min(Math.max((t - 15) * 4, 0), Math.PI)) * 120;
+      // 2. Phân cảnh Cầu thủ sút bóng (bên phải)
+      const kickerX = 760;
+      // Khung thành bóng đá bên phải
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(1160, 260);
+      ctx.lineTo(1240, 260);
+      ctx.lineTo(1240, 500);
+      ctx.moveTo(1160, 260);
+      ctx.lineTo(1160, 500);
+      ctx.stroke();
+      // Lưới khung thành
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1.5;
+      for (let gy = 280; gy <= 480; gy += 30) {
+        ctx.beginPath();
+        ctx.moveTo(1160, gy);
+        ctx.lineTo(1240, gy);
+        ctx.stroke();
+      }
 
-      // Cầu thủ
+      // Cầu thủ áo vàng sút bóng
+      ctx.fillStyle = '#fed7aa';
+      ctx.beginPath();
+      ctx.arc(kickerX, 320, 24, 0, Math.PI * 2);
+      ctx.fill();
+      // Áo thi đấu vàng số 10
       ctx.fillStyle = '#f59e0b';
       ctx.beginPath();
-      ctx.arc(750, 360, 30, 0, Math.PI * 2);
+      ctx.roundRect(kickerX - 18, 344, 36, 75, 6);
       ctx.fill();
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 10;
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 16px "Plus Jakarta Sans"';
+      ctx.textAlign = 'center';
+      ctx.fillText("10", kickerX, 385);
+
+      // Chân trụ và chân vung sút
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 9;
       ctx.beginPath();
-      ctx.moveTo(750, 390);
-      ctx.lineTo(750, 470);
-      ctx.lineTo(730, 550);
-      ctx.moveTo(750, 470);
-      ctx.lineTo(800, 510); // Chân sút
+      ctx.moveTo(kickerX - 6, 419);
+      ctx.lineTo(kickerX - 25, 495); // chân trụ
+      ctx.moveTo(kickerX + 6, 419);
+      const kickAngle = Math.min((t - 15) * 5, 1.2);
+      if (t >= 15) {
+        ctx.lineTo(kickerX + 50, 440); // chân vung cao
+      } else {
+        ctx.lineTo(kickerX + 25, 495);
+      }
       ctx.stroke();
 
-      // Quả bóng
+      // Quả bóng bay vút vào lưới
+      let ballX = kickerX + 45;
+      let ballY = 480;
+      if (t >= 15) {
+        const flightTime = Math.min((t - 15) * 1.5, 1);
+        ballX = kickerX + 45 + flightTime * 340;
+        ballY = 480 - Math.sin(flightTime * Math.PI) * 160 - flightTime * 60;
+      }
+      // Vẽ bóng tròn có vân đen trắng
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.arc(ballX, ballY, 24, 0, Math.PI * 2);
+      ctx.arc(ballX, ballY, 20, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#0f172a';
       ctx.lineWidth = 3;
       ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+      ctx.fill();
 
       if (t >= 15) {
-        drawArrow(790, 500, ballX - 30, ballY, '#f59e0b', 6, 'Lực sút bóng ➔');
+        drawArrow(kickerX + 45, 460, ballX - 25, ballY, '#f59e0b', 7, 'F đá bóng ➔');
       }
-    }
-
-    // Vẽ Cảnh 2: Lực kéo (40s - 80s)
-    function drawPullScene(t) {
-      drawPillBadge("CẢNH 2: CÁC HÀNH ĐỘNG ĐỐI LẬP", 40, 50, "#059669");
-      drawTitleText("LỰC LÀ SỰ KÉO (PULL)", 40, 100, "#34d399");
-
-      // 1. Đội kéo co (bên trái)
-      const pullShift = Math.sin((t - 40) * 5) * 15;
-      ctx.strokeStyle = '#d97706';
-      ctx.lineWidth = 12; // Dây thừng
-      ctx.beginPath();
-      ctx.moveTo(100, 460);
-      ctx.lineTo(750, 460);
-      ctx.stroke();
-
-      // Cờ đỏ ở giữa dây
-      ctx.fillStyle = '#ef4444';
-      ctx.beginPath();
-      ctx.arc(425 + pullShift, 460, 14, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Đội A ngả người kéo sang trái
-      for (let i = 0; i < 2; i++) {
-        const px = 220 + i * 110 + pullShift;
-        ctx.fillStyle = '#10b981';
-        ctx.beginPath();
-        ctx.arc(px, 360, 26, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 9;
-        ctx.beginPath();
-        ctx.moveTo(px, 386);
-        ctx.lineTo(px - 20, 460);
-        ctx.lineTo(px - 50, 550);
-        ctx.moveTo(px - 20, 460);
-        ctx.lineTo(px, 550);
-        ctx.stroke();
-      }
-
-      drawArrow(350, 410, 200, 410, '#34d399', 8, '⇦ F kéo (Đội A)');
-
-      // 2. Bên phải: Kéo thùng hàng bằng dây
-      const boxX = 880;
-      ctx.fillStyle = '#b45309';
-      ctx.fillRect(boxX, 420, 130, 130);
-      ctx.strokeStyle = '#78350f';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(boxX, 420, 130, 130);
-
-      // Điểm đặt A đỏ trên thùng
-      ctx.fillStyle = '#ef4444';
-      ctx.beginPath();
-      ctx.arc(boxX, 485, 10, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Người công nhân kéo dây
-      ctx.fillStyle = '#3b82f6';
-      ctx.beginPath();
-      ctx.arc(1140, 360, 26, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 9;
-      ctx.beginPath();
-      ctx.moveTo(1140, 386);
-      ctx.lineTo(1150, 460);
-      ctx.lineTo(1180, 550);
-      ctx.moveTo(1150, 460);
-      ctx.lineTo(1120, 550);
-      ctx.stroke();
-
-      // Dây kéo từ người đến thùng
-      ctx.strokeStyle = '#d97706';
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(1120, 450);
-      ctx.lineTo(boxX, 485);
-      ctx.stroke();
-
-      drawArrow(boxX, 485, boxX + 160, 475, '#ef4444', 7, 'F kéo thùng ➔');
-    }
-
-    // Vẽ Cảnh tương tác dừng (80 - 110s)
-    function drawQuizScene(t) {
-      drawPillBadge("CẢNH TƯƠNG TÁC ĐẦU GIỜ", 40, 50, "#ef4444");
-      drawTitleText("BẢN CHẤT CỦA LỰC LÀ GÌ?", 40, 100, "#f87171");
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.fillRect(200, 160, 880, 360);
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(200, 160, 880, 360);
-
-      ctx.fillStyle = '#fef08a';
-      ctx.font = 'bold 36px "Plus Jakarta Sans", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText("LỰC LÀ TÁC DỤNG ĐẨY HOẶC KÉO", 640, 280);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '24px "Be Vietnam Pro", sans-serif';
-      ctx.fillText("Khi vật này đẩy hoặc kéo vật kia, ta nói vật đó đã tác dụng lực!", 640, 340);
-      ctx.fillText("Đơn vị đo lực là Niutơn (ký hiệu: N)", 640, 400);
       ctx.textAlign = 'left';
     }
 
-    // Vẽ Cảnh 3: Giải phẫu biểu diễn mũi tên lực (110s - 165s)
-    function drawVectorAnatomyScene(t) {
-      drawPillBadge("CẢNH 3: DẪN NHẬP NỘI DUNG TRỌNG TÂM", 40, 50, "#8b5cf6");
-      drawTitleText("CÁCH BIỂU DIỄN MỘT LỰC BẰNG MŨI TÊN", 40, 100, "#c084fc");
+    // ==================== CẢNH 2: LỰC KÉO (PULL) ====================
+    function drawPullScene(t) {
+      drawPillBadge("CẢNH 2: CÁC HÀNH ĐỘNG ĐỐI LẬP", 60, 45, "#059669");
+      drawTitleText("LỰC LÀ SỰ KÉO (PULL)", 60, 95, "#34d399");
 
-      // Khối gỗ trên sàn
-      const woodX = 260;
-      const woodY = 360;
+      drawFloor(500);
+
+      // 1. Hoạt họa Kéo Co (bên trái)
+      const pullShift = Math.sin((t - 40) * 4) * 20;
+
+      // Sợi dây thừng bện nâu
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 14;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(80, 410);
+      ctx.lineTo(680, 410);
+      ctx.stroke();
+
+      // Vạch trung tâm màu đỏ
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(380 + pullShift, 410, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(376 + pullShift, 410, 8, 45); // cờ rủ
+
+      // Đội đỏ (ngả người kéo sang trái)
+      for (let i = 0; i < 2; i++) {
+        const px = 180 + i * 110 + pullShift;
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath();
+        ctx.arc(px, 320, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ef4444'; // áo đỏ
+        ctx.beginPath();
+        ctx.roundRect(px - 16, 342, 32, 68, 6);
+        ctx.fill();
+
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(px - 10, 410);
+        ctx.lineTo(px - 45, 495);
+        ctx.moveTo(px + 8, 410);
+        ctx.lineTo(px - 15, 495);
+        ctx.stroke();
+      }
+      drawArrow(350, 350, 180, 350, '#34d399', 8, '⇦ Lực kéo Đội A');
+
+      // 2. Kéo thùng hàng bằng dây (bên phải)
+      const crateX = 760;
+      // Thùng gỗ chắc chắn
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(crateX, 360, 140, 130);
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(crateX, 360, 140, 130);
+      // Nẹp chéo kim loại
+      ctx.strokeStyle = '#92400e';
+      ctx.beginPath();
+      ctx.moveTo(crateX, 360);
+      ctx.lineTo(crateX + 140, 490);
+      ctx.moveTo(crateX, 490);
+      ctx.lineTo(crateX + 140, 360);
+      ctx.stroke();
+
+      // Điểm đặt A trên móc thùng
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(crateX + 140, 425, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Người thợ kéo dây
+      const workerX = 1120;
+      ctx.fillStyle = '#fed7aa';
+      ctx.beginPath();
+      ctx.arc(workerX, 320, 24, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#2563eb'; // áo bảo hộ xanh
+      ctx.beginPath();
+      ctx.roundRect(workerX - 16, 344, 32, 70, 6);
+      ctx.fill();
+
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(workerX - 8, 414);
+      ctx.lineTo(workerX - 35, 495);
+      ctx.moveTo(workerX + 8, 414);
+      ctx.lineTo(workerX + 20, 495);
+      ctx.stroke();
+
+      // Dây cáp căng từ người đến thùng
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(workerX - 12, 385);
+      ctx.lineTo(crateX + 140, 425);
+      ctx.stroke();
+
+      drawArrow(crateX + 140, 425, crateX + 280, 410, '#ef4444', 8, 'Lực kéo F ➔');
+    }
+
+    // ==================== CẢNH 2.5: BẢNG TƯƠNG TÁC DẪN DẮT ====================
+    function drawQuizScene(t) {
+      drawPillBadge("CẢNH TƯƠNG TÁC ĐẦU GIỜ", 60, 45, "#ef4444");
+      drawTitleText("BẢN CHẤT CỦA LỰC LÀ GÌ?", 60, 95, "#f87171");
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.beginPath();
+      ctx.roundRect(140, 160, 1000, 360, 20);
+      ctx.fill();
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 38px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText("LỰC LÀ TÁC DỤNG ĐẨY HOẶC KÉO", 640, 260);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '22px "Be Vietnam Pro", sans-serif';
+      ctx.fillText("Khi vật này đẩy hoặc kéo vật kia, ta nói vật đó đã tác dụng lực lên vật!", 640, 325);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText("Ký hiệu lực: F • Đơn vị đo lường: Niutơn (N)", 640, 395);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'italic 18px "Be Vietnam Pro", sans-serif';
+      ctx.fillText("(Theo nhà bác học vĩ đại Isaac Newton)", 640, 440);
+      ctx.textAlign = 'left';
+    }
+
+    // ==================== CẢNH 3: GIẢI PHẪU MŨI TÊN VECTOR BIỂU DIỄN LỰC ====================
+    function drawVectorAnatomyScene(t) {
+      drawPillBadge("CẢNH 3: DẪN NHẬP NỘI DUNG TRỌNG TÂM", 60, 45, "#8b5cf6");
+      drawTitleText("CÁCH BIỂU DIỄN MỘT LỰC BẰNG MŨI TÊN", 60, 95, "#c084fc");
+
+      // Mặt sàn chính xác ở y = 480
+      drawFloor(480);
+
+      // Khối gỗ nằm CHÍNH XÁC trên mặt sàn (bottom = 480)
+      const woodX = 180;
+      const woodY = 280;
+      const woodW = 190;
+      const woodH = 200;
+
+      // Nền khối gỗ vân gỗ vàng cam
       ctx.fillStyle = '#fde68a';
-      ctx.fillRect(woodX, woodY, 180, 160);
+      ctx.fillRect(woodX, woodY, woodW, woodH);
       ctx.strokeStyle = '#d97706';
       ctx.lineWidth = 4;
-      ctx.strokeRect(woodX, woodY, 180, 160);
+      ctx.strokeRect(woodX, woodY, woodW, woodH);
 
-      ctx.fillStyle = '#92400e';
-      ctx.font = 'bold 22px "Be Vietnam Pro"';
+      // Chữ trong khối gỗ
       ctx.textAlign = 'center';
-      ctx.fillText("VẬT (Khối gỗ)", woodX + 90, woodY + 90);
+      ctx.fillStyle = '#78350f';
+      ctx.font = '900 24px "Plus Jakarta Sans"';
+      ctx.fillText("VẬT", woodX + woodW / 2, woodY + 95);
+      ctx.font = '600 18px "Be Vietnam Pro"';
+      ctx.fillText("(Khối gỗ)", woodX + woodW / 2, woodY + 128);
 
-      // Điểm đặt A
-      const originX = woodX + 180;
-      const originY = woodY + 80;
+      // Điểm đặt A tại mép phải khối gỗ
+      const originX = woodX + woodW; // 370
+      const originY = woodY + 100;   // 380
+
+      // Hiệu ứng mũi tên vươn dài mượt mà
+      const progress = Math.min((t - 115) / 12, 1);
+      const totalArrowLength = 390; // 3 đoạn x 130px
+      const currentLength = totalArrowLength * Math.max(progress, 0);
+
+      if (currentLength > 10) {
+        drawArrow(originX, originY, originX + currentLength, originY, '#ef4444', 10, '');
+      }
+
+      // Điểm đặt A đỏ rực rỡ có vòng hào quang
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+      ctx.beginPath();
+      ctx.arc(originX, originY, 20, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.fillStyle = '#ef4444';
       ctx.beginPath();
       ctx.arc(originX, originY, 12, 0, Math.PI * 2);
       ctx.fill();
 
-      // Hiệu ứng mũi tên dài ra theo thời gian
-      const progress = Math.min((t - 115) / 15, 1);
-      const arrowLength = 360 * progress;
+      // Chú thích Điểm đặt bằng thẻ bảng nổi
+      drawCalloutBadge("➊ Điểm đặt A (tại vật)", originX, originY, originX, originY - 75, '#ef4444');
 
-      if (arrowLength > 0) {
-        drawArrow(originX, originY, originX + arrowLength, originY, '#ef4444', 10, '');
-      }
-
-      // Vạch tỉ xích
-      if (progress >= 0.8) {
-        // Chia 3 đoạn (mỗi đoạn 120px = 10N)
+      // Vạch chia tỉ xích (3 đoạn = 30N) khi mũi tên đã vẽ xong
+      if (progress >= 0.75) {
+        // Chia 3 đoạn x 130px
         for (let i = 1; i <= 3; i++) {
-          const vx = originX + i * 120;
+          const vx = originX + i * 130;
           ctx.strokeStyle = '#38bdf8';
           ctx.lineWidth = 4;
           ctx.beginPath();
-          ctx.moveTo(vx, originY - 15);
-          ctx.lineTo(vx, originY + 15);
+          ctx.moveTo(vx, originY - 14);
+          ctx.lineTo(vx, originY + 14);
           ctx.stroke();
 
+          // Chữ 10N căn giữa từng đoạn
           ctx.fillStyle = '#38bdf8';
-          ctx.font = 'bold 18px monospace';
-          ctx.fillText("10N", vx - 60, originY + 45);
+          ctx.font = 'bold 18px "Plus Jakarta Sans"';
+          ctx.textAlign = 'center';
+          ctx.fillText("10 N", vx - 65, originY + 42);
         }
 
+        // Chú thích Phương và Chiều
+        drawCalloutBadge("➋ Phương ngang, Chiều sang phải ➔", originX + 195, originY, originX + 195, originY - 75, '#6366f1');
+
+        // Chữ F = 30 N nổi bật bên phải mũi tên
         ctx.fillStyle = '#ef4444';
-        ctx.font = 'bold 32px "Plus Jakarta Sans"';
-        ctx.fillText("F = 30 N", originX + 440, originY + 10);
+        ctx.font = '900 36px "Plus Jakarta Sans"';
+        ctx.textAlign = 'left';
+        ctx.fillText("F = 30 N", originX + totalArrowLength + 25, originY + 12);
       }
 
-      // 4 Hộp yếu tố nổi bật
-      drawFeatureBox(1, "ĐIỂM ĐẶT", "Tại vật chịu tác dụng lực", 120, 580);
-      drawFeatureBox(2, "PHƯƠNG", "Nằm ngang", 420, 580);
-      drawFeatureBox(3, "CHIỀU", "Từ trái sang phải ➔", 720, 580);
-      drawFeatureBox(4, "ĐỘ LỚN", "30 N (1cm = 10N)", 1000, 580);
+      // 4 HỘP YẾU TỐ Ở DƯỚI ĐÁY CANVAS (y = 540) - BỐ TRÍ CĂN ĐỀU RỘNG RÃI
+      drawFeatureBox(1, "ĐIỂM ĐẶT", "Tại vật chịu tác dụng (khối gỗ)", 70, 545);
+      drawFeatureBox(2, "PHƯƠNG", "Phương nằm ngang", 365, 545);
+      drawFeatureBox(3, "CHIỀU", "Từ trái sang phải ➔", 660, 545);
+      drawFeatureBox(4, "ĐỘ LỚN", "F = 30 N (1 cm = 10 N)", 955, 545);
 
       ctx.textAlign = 'left';
     }
 
-    // Vẽ Cảnh 4: Tiêu đề bài học và sẵn sàng vào bài (165s - 180s)
+    // ==================== CẢNH 4: DẪN NHẬP BÀI HỌC VÀ KẾT THÚC ====================
     function drawIntroTitleScene(t) {
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
+
+      // Logo huy hiệu bài học
+      ctx.fillStyle = 'rgba(37, 99, 235, 0.2)';
+      ctx.beginPath();
+      ctx.arc(640, 180, 70, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#60a5fa';
+      ctx.font = '54px sans-serif';
+      ctx.fillText("⚡", 640, 200);
       
-      ctx.font = 'bold 24px "Plus Jakarta Sans"';
+      ctx.font = 'bold 22px "Plus Jakarta Sans"';
       ctx.fillStyle = '#38bdf8';
-      ctx.fillText("KHOA HỌC TỰ NHIÊN 6 • CHỦ ĐỀ: LỰC", 640, 240);
+      ctx.fillText("KHOA HỌC TỰ NHIÊN 6 • CHỦ ĐỀ: LỰC", 640, 280);
 
-      ctx.font = '900 52px "Plus Jakarta Sans"';
+      ctx.font = '900 50px "Plus Jakarta Sans"';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText("BÀI 40: LỰC VÀ BIỂU DIỄN LỰC", 640, 320);
+      ctx.fillText("BÀI 40: LỰC VÀ BIỂU DIỄN LỰC", 640, 350);
 
-      ctx.font = '22px "Be Vietnam Pro"';
+      ctx.font = '20px "Be Vietnam Pro"';
       ctx.fillStyle = '#cbd5e1';
-      ctx.fillText("Bộ sách: Kết nối tri thức với cuộc sống (NXB Giáo dục Việt Nam)", 640, 380);
+      ctx.fillText("Chương trình GDPT 2018 • Bộ sách Kết nối tri thức với cuộc sống", 640, 410);
 
-      // Nút sẵn sàng
+      // Nút sẵn sàng vào bài
       ctx.fillStyle = '#2563eb';
       ctx.beginPath();
-      ctx.roundRect(460, 440, 360, 65, 32);
+      ctx.roundRect(440, 470, 400, 65, 32);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 24px "Be Vietnam Pro"';
-      ctx.fillText("🚀 BẮT ĐẦU TIẾT HỌC NGAY", 640, 482);
+      ctx.font = 'bold 22px "Be Vietnam Pro"';
+      ctx.fillText("🚀 SẴN SÀNG VÀO TIẾT HỌC NGAY", 640, 510);
 
       ctx.textAlign = 'left';
     }
 
-    // Helper: Vẽ mũi tên có đầu nhọn
+    // ==================== CÁC HÀM TIỆN ÍCH HỖ TRỢ VẼ CHUẨN ====================
+    function drawFloor(floorY) {
+      // Đường sàn chính
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(40, floorY);
+      ctx.lineTo(1240, floorY);
+      ctx.stroke();
+
+      // Vạch gạch chéo sàn (hatching)
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      for (let x = 60; x <= 1220; x += 30) {
+        ctx.beginPath();
+        ctx.moveTo(x, floorY);
+        ctx.lineTo(x - 14, floorY + 16);
+        ctx.stroke();
+      }
+    }
+
     function drawArrow(x1, y1, x2, y2, color, width, label) {
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
@@ -967,8 +1158,8 @@
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      // Đầu mũi tên
-      const headlen = 22;
+      // Đầu mũi tên cân xứng
+      const headlen = 24;
       const angle = Math.atan2(y2 - y1, x2 - x1);
       ctx.beginPath();
       ctx.moveTo(x2, y2);
@@ -978,20 +1169,22 @@
       ctx.fill();
 
       if (label) {
-        ctx.font = 'bold 22px "Be Vietnam Pro"';
-        ctx.fillText(label, (x1 + x2) / 2 - 40, y1 - 25);
+        ctx.font = 'bold 20px "Plus Jakarta Sans"';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, (x1 + x2) / 2, y1 - 20);
+        ctx.textAlign = 'left';
       }
     }
 
     function drawPillBadge(text, x, y, color) {
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.roundRect(x, y - 22, text.length * 10 + 24, 30, 15);
+      ctx.roundRect(x, y - 22, text.length * 9.5 + 24, 30, 15);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 13px "Plus Jakarta Sans"';
-      ctx.fillText(text, x + 12, y);
+      ctx.font = 'bold 12px "Plus Jakarta Sans"';
+      ctx.fillText(text, x + 12, y - 2);
     }
 
     function drawTitleText(text, x, y, color) {
@@ -1000,22 +1193,51 @@
       ctx.fillText(text, x, y);
     }
 
-    function drawFeatureBox(num, title, val, x, y) {
-      ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
+    function drawCalloutBadge(text, lineStartX, lineStartY, badgeX, badgeY, color) {
+      // Đường chỉ hướng dóng lên
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.roundRect(x - 100, y - 40, 220, 95, 12);
+      ctx.moveTo(lineStartX, lineStartY);
+      ctx.lineTo(badgeX, badgeY + 16);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Khung pill
+      const badgeW = text.length * 8.5 + 24;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(badgeX - badgeW / 2, badgeY - 16, badgeW, 32, 16);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 13px "Plus Jakarta Sans"';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, badgeX, badgeY + 5);
+      ctx.textAlign = 'left';
+    }
+
+    function drawFeatureBox(num, title, val, x, y) {
+      ctx.textAlign = 'left';
+      // Khung kính nền tối bo góc
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      ctx.beginPath();
+      ctx.roundRect(x, y, 260, 105, 14);
       ctx.fill();
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
       ctx.stroke();
 
+      // Tiêu đề số thứ tự
       ctx.fillStyle = '#60a5fa';
-      ctx.font = 'bold 15px "Plus Jakarta Sans"';
-      ctx.fillText(`[${num}] ${title}`, x - 85, y - 12);
+      ctx.font = 'bold 16px "Plus Jakarta Sans"';
+      ctx.fillText(`[${num}] ${title}`, x + 18, y + 34);
 
+      // Nội dung giải thích
       ctx.fillStyle = '#f8fafc';
-      ctx.font = '14px "Be Vietnam Pro"';
-      ctx.fillText(val, x - 85, y + 18);
+      ctx.font = '600 14px "Be Vietnam Pro"';
+      ctx.fillText(val, x + 18, y + 68);
     }
 
     // ==================== TÍNH NĂNG XUẤT VIDEO (MEDIA RECORDER) ====================

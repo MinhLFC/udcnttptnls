@@ -4431,3 +4431,1091 @@ body.plk-landscape-scanner .plk-mobile-scan-fab {
   color: #ffffff !important;
   font-weight: 700;
 }
+
+/* ==========================================================================
+   PHYSICS SUBTABS NAVIGATION & BUOYANCY SIMULATION (KHTN 8)
+   ========================================================================== */
+
+/* Physics Sub-Navigation Switcher */
+.physics-subtabs-nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  background: var(--bg-surface-soft);
+  padding: 0.5rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  width: fit-content;
+}
+
+.physics-subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.physics-subtab-btn:hover {
+  color: var(--primary-color);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.physics-subtab-btn.active {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.subtab-badge {
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Buoyancy Main Wrapper */
+.buoyancy-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* 4-Step Pedagogical POE Workflow Tracker */
+.buoyancy-poe-tracker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem;
+}
+
+.poe-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.poe-step-item:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.poe-step-item.active {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+
+.poe-step-item.completed {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: #10b981;
+}
+
+.poe-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-surface-soft);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+}
+
+.poe-step-item.active .poe-step-num {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+.poe-step-item.completed .poe-step-num {
+  background: #10b981;
+  color: #fff;
+  border-color: #10b981;
+}
+
+.poe-step-text h4 {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+  line-height: 1.25;
+}
+
+.poe-step-text small {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Two-column Lab layout */
+.buoyancy-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Left: Simulation Canvas Box */
+.buoyancy-canvas-box {
+  background: #0f172a;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.buoyancy-canvas-topbar {
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  padding: 0.65rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.buoyancy-active-pair-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.buoyancy-pair-badge {
+  font-size: 1.25rem;
+}
+
+.buoyancy-pair-title {
+  color: #f8fafc;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.buoyancy-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.buoyancy-action-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.buoyancy-action-btn:hover,
+.buoyancy-action-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+/* Canvas Wrap */
+.buoyancy-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0f172a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#buoyancy-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+
+#buoyancy-canvas:active {
+  cursor: grabbing;
+}
+
+/* Bottom Canvas HUD */
+.buoyancy-canvas-hud {
+  background: #1e293b;
+  border-top: 1px solid #334155;
+  padding: 0.65rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+}
+
+.buoyancy-hud-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.buoyancy-hud-val {
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+/* Right Sidebar: Instructions, Plickers Quiz, Science Explanation */
+.buoyancy-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Object Selector Card */
+.buoyancy-card {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+}
+
+.buoyancy-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.buoyancy-card-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* Object switcher pills */
+.buoyancy-pairs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.buoyancy-pair-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text-main);
+  font-weight: 600;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.buoyancy-pair-btn:hover {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.buoyancy-pair-btn.active {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  font-weight: 700;
+}
+
+/* POE Question Box */
+.poe-interactive-card {
+  background: var(--bg-surface);
+  border: 1.5px solid #2563eb;
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+}
+
+.poe-q-badge {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  margin-bottom: 0.4rem;
+}
+
+.poe-q-text {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.75rem;
+  line-height: 1.45;
+}
+
+.poe-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.poe-opt-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  font-size: 0.82rem;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.poe-opt-btn:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.poe-opt-letter {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.poe-opt-btn.selected {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.poe-opt-btn.selected .poe-opt-letter {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+/* Cognitive Conflict Alert Banner */
+.conflict-alert-card {
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  border-radius: var(--radius-sm);
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 4px solid #f59e0b;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.conflict-alert-card strong {
+  color: #b45309;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* Science Data Table */
+.density-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  margin-top: 0.5rem;
+}
+
+.density-data-table th,
+.density-data-table td {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-light);
+  text-align: left;
+}
+
+.density-data-table th {
+  background: var(--bg-surface-soft);
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.density-data-table tr.highlight {
+  background: rgba(37, 99, 235, 0.06);
+  font-weight: 700;
+}
+
+/* Magnifying Glass Detail Callout */
+.peel-structure-card {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.95rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.peel-structure-card h5 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #059669;
+  margin: 0 0 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+@media (max-width: 992px) {
+  .buoyancy-grid {
+    grid-template-columns: 1fr;
+  }
+  .buoyancy-poe-tracker {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .buoyancy-poe-tracker {
+    grid-template-columns: 1fr;
+  }
+  .buoyancy-canvas-wrap {
+    height: 380px;
+  }
+}
+
+/* ==========================================================================
+   BỐI CẢNH DẠY HỌC & KẾ HOẠCH BÀI DẠY BÀI 17: LỰC ĐẨY ARCHIMEDES
+   ========================================================================== */
+
+.buoyancy-section-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: var(--bg-surface-soft);
+  padding: 0.4rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.b-nav-btn {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.b-nav-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.b-nav-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Phần 1: Bối Cảnh Dạy Học */
+.buoyancy-context-container {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.context-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 0.6rem;
+}
+
+.context-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.buoyancy-story-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.story-card {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  transition: var(--transition);
+}
+
+.story-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+}
+
+.story-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.story-card h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.4rem;
+}
+
+.story-card p {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.misconception-focus-box {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%);
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.misconception-focus-box h4 {
+  color: #dc2626;
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.misconception-focus-box p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #475569;
+  margin-bottom: 0.75rem;
+}
+
+.misconception-tag {
+  display: inline-block;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.context-cta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed #cbd5e1;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.context-cta-btn {
+  background: #2563eb;
+  color: #ffffff;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+}
+
+.context-cta-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* Phần 3: Kế Hoạch Bài Dạy Bài 17 */
+.buoyancy-lesson-container {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-top: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.lesson-top-banner {
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.lesson-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.lesson-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.lesson-meta {
+  display: flex;
+  gap: 1rem;
+  color: #64748b;
+  font-size: 0.82rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.lesson-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-lesson-action {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: var(--transition);
+}
+
+.btn-lesson-action:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Các Khối Mục Tiêu & YCCĐ */
+.lesson-yccd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.yccd-card {
+  border-radius: var(--radius-md);
+  padding: 1.15rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-light);
+}
+
+.yccd-card h5 {
+  font-size: 0.92rem;
+  font-weight: 800;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.yccd-card.yccd-know {
+  border-left: 4px solid #3b82f6;
+}
+.yccd-card.yccd-know h5 { color: #1d4ed8; }
+
+.yccd-card.yccd-skills {
+  border-left: 4px solid #10b981;
+}
+.yccd-card.yccd-skills h5 { color: #047857; }
+
+.yccd-card.yccd-attitude {
+  border-left: 4px solid #f59e0b;
+}
+.yccd-card.yccd-attitude h5 { color: #b45309; }
+
+.yccd-card ul {
+  padding-left: 1.1rem;
+  margin: 0;
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.yccd-card ul li {
+  margin-bottom: 0.4rem;
+}
+
+/* Tiến Trình Dạy Học (5 Hoạt Động) */
+.lesson-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.lesson-act-box {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.lesson-act-header {
+  background: #f8fafc;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.act-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.act-pill {
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.act-pill.orange { background: #ea580c; }
+.act-pill.green { background: #16a34a; }
+.act-pill.purple { background: #9333ea; }
+.act-pill.amber { background: #d97706; }
+
+.act-heading {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.act-time {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.lesson-act-body {
+  padding: 1.25rem;
+  background: #ffffff;
+}
+
+.act-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 0.75rem;
+}
+
+.act-table th, .act-table td {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.55;
+}
+
+.act-table th {
+  background: #f1f5f9;
+  font-weight: 700;
+  color: #334155;
+  width: 50%;
+}
+
+.act-table strong {
+  color: #0f172a;
+}
+
+/* Formula Showcase Box */
+.formula-showcase {
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.formula-main {
+  font-size: 1.35rem;
+  font-family: 'Cambria Math', 'Times New Roman', serif;
+  color: #38bdf8;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.formula-desc {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.formula-desc span {
+  color: #fde047;
+  font-weight: 700;
+}
+
+/* Worksheet Box */
+.worksheet-panel {
+  background: #f0fdf4;
+  border: 1.5px dashed #22c55e;
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.worksheet-panel h4 {
+  color: #15803d;
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.worksheet-panel ol {
+  padding-left: 1.2rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: #166534;
+  line-height: 1.6;
+}
+
+.worksheet-panel ol li {
+  margin-bottom: 0.5rem;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .buoyancy-lesson-container, .buoyancy-lesson-container * {
+    visibility: visible;
+  }
+  .buoyancy-lesson-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+  .lesson-actions, .buoyancy-section-nav {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   KÝ HIỆU TOÁN HỌC DẠNG CHỮ THƯỜNG (thay cho LaTeX, chạy offline)
+   ========================================================================== */
+.m-inline {
+  font-family: 'Cambria Math', 'Cambria', 'Times New Roman', serif;
+  font-style: italic;
+  white-space: nowrap;
+}
+.m-inline sub {
+  font-style: normal;
+  font-size: 0.72em;
+}
+.formula-main .m-inline { white-space: normal; }
+.m-vec {
+  position: relative;
+  display: inline-block;
+}
+.m-vec::before {
+  content: '→';
+  position: absolute;
+  top: -0.75em;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7em;
+  font-style: normal;
+}
+
+/* ==========================================================================
+   SỬA TƯƠNG PHẢN CHẾ ĐỘ TỐI — Bối cảnh & Bài dạy Bài 17
+   ========================================================================== */
+[data-theme="dark"] .b-nav-btn:hover { background: rgba(255, 255, 255, 0.06); }
+[data-theme="dark"] .b-nav-btn.active { background: var(--bg-surface); color: #60a5fa; }
+
+[data-theme="dark"] .buoyancy-context-container,
+[data-theme="dark"] .buoyancy-lesson-container,
+[data-theme="dark"] .lesson-act-body {
+  background: var(--bg-surface);
+}
+
+[data-theme="dark"] .context-section-title,
+[data-theme="dark"] .story-card h4,
+[data-theme="dark"] .lesson-title,
+[data-theme="dark"] .act-heading,
+[data-theme="dark"] .buoyancy-lesson-container h4,
+[data-theme="dark"] .act-table strong {
+  color: var(--text-main) !important;
+}
+
+[data-theme="dark"] .story-card p,
+[data-theme="dark"] .misconception-focus-box p,
+[data-theme="dark"] .yccd-card ul,
+[data-theme="dark"] .lesson-meta,
+[data-theme="dark"] .act-time,
+[data-theme="dark"] .buoyancy-lesson-container p,
+[data-theme="dark"] .buoyancy-lesson-container div[style*="color: #475569"],
+[data-theme="dark"] .buoyancy-lesson-container div[style*="color: #334155"] {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .context-cta-bar,
+[data-theme="dark"] .yccd-card,
+[data-theme="dark"] .lesson-act-header,
+[data-theme="dark"] .buoyancy-lesson-container div[style*="background: #f8fafc"] {
+  background: var(--bg-surface-soft) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .lesson-top-banner { border-bottom-color: var(--border-color); }
+[data-theme="dark"] .lesson-act-box { border-color: var(--border-color); }
+
+[data-theme="dark"] .act-table th {
+  background: var(--bg-surface-soft);
+  color: var(--text-main);
+}
+[data-theme="dark"] .act-table th,
+[data-theme="dark"] .act-table td {
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .btn-lesson-action {
+  background: var(--bg-surface-soft);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .lesson-badge {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .yccd-card.yccd-know h5 { color: #93c5fd; }
+[data-theme="dark"] .yccd-card.yccd-skills h5 { color: #6ee7b7; }
+[data-theme="dark"] .yccd-card.yccd-attitude h5 { color: #fcd34d; }
+[data-theme="dark"] .misconception-focus-box h4 { color: #f87171; }
+[data-theme="dark"] .misconception-tag { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+
+[data-theme="dark"] .worksheet-panel { background: rgba(34, 197, 94, 0.08); }
+[data-theme="dark"] .worksheet-panel h4 { color: #4ade80 !important; }
+[data-theme="dark"] .worksheet-panel ol,
+[data-theme="dark"] .worksheet-panel p { color: #bbf7d0 !important; }
+
+[data-theme="dark"] .buoyancy-lesson-container div[style*="color: #065f46"] { color: #a7f3d0 !important; }

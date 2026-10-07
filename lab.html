@@ -109,7 +109,7 @@
           <span class="tab-icon">🔬</span> Phân Tử 3D
         </button>
         <button class="lab-tab-btn" data-tab="circuit" onclick="switchTab('circuit')">
-          <span class="tab-icon">⚡</span> Mạch Điện
+          <span class="tab-icon">⚡</span> Vật Lý (Mạch Điện & Sự Nổi)
         </button>
         <button class="lab-tab-btn" data-tab="biology" onclick="switchTab('biology')">
           <span class="tab-icon">🧬</span> Hệ Cơ Quan
@@ -154,16 +154,388 @@
           </div>
         </div>
       </div>
-      <!-- Experiment 4: Physics Circuit -->
+      <!-- Experiment 4: Physics (Circuit & Buoyancy) -->
       <div class="experiment-panel" id="panel-circuit">
         <div class="experiment-container">
-          <div class="experiment-header">
-            <h2>⚡ Phòng Thí Nghiệm Mạch Điện Tương Tác (PhET DC Circuit Kit)</h2>
-            <p>Mô phỏng mạch điện trực quan theo phong cách PhET (Colorado): Kéo thả que đo Vôn kế, quan sát dòng electron trôi, gạt công tắc và khám phá định luật Ohm.</p>
+          <!-- Physics Sub-Navigation Switcher -->
+          <div class="physics-subtabs-nav">
+            <button class="physics-subtab-btn active" id="btn-sub-circuit" onclick="switchPhysicsSubtab('circuit')">
+              <span class="subtab-icon">⚡</span> Mạch Điện Tương Tác (PhET DC Kit)
+            </button>
+            <button class="physics-subtab-btn" id="btn-sub-buoyancy" onclick="switchPhysicsSubtab('buoyancy')">
+              <span class="subtab-icon">🍊</span> Sự Chìm Nổi & Quả Cam (Phá Vỡ Quan Niệm Sai Lầm)
+              <span class="subtab-badge">Mới</span>
+            </button>
           </div>
-          <div id="experiment-circuit">
-            <!-- Nội dung sẽ được tạo bởi lab-circuit.js -->
+
+          <!-- Sub-panel 1: DC Circuit Kit -->
+          <div id="subpanel-circuit" class="physics-subpanel active">
+            <div class="experiment-header">
+              <h2>⚡ Phòng Thí Nghiệm Mạch Điện Tương Tác (PhET DC Circuit Kit)</h2>
+              <p>Mô phỏng mạch điện trực quan theo phong cách PhET (Colorado): Kéo thả que đo Vôn kế, quan sát dòng electron trôi, gạt công tắc và khám phá định luật Ohm.</p>
+            </div>
+            <div id="experiment-circuit">
+              <!-- Nội dung sẽ được tạo bởi lab-circuit.js -->
+            </div>
           </div>
+
+          <!-- Sub-panel 2: Buoyancy & Archimedes (Orange Misconception Lesson) -->
+          <div id="subpanel-buoyancy" class="physics-subpanel" style="display: none;">
+            
+            <!-- Thanh điều hướng 3 phần sư phạm -->
+            <div class="buoyancy-section-nav">
+              <button class="b-nav-btn active" id="btn-nav-context" onclick="scrollToBuoyancyPart('buoyancy-context-sec')">
+                📖 1. Bối Cảnh Thực Tế & Đặt Vấn Đề
+              </button>
+              <button class="b-nav-btn" id="btn-nav-exp" onclick="scrollToBuoyancyPart('buoyancy-exp-sec')">
+                🧪 2. Thí Nghiệm Tương Tác 4 Bước (POE)
+              </button>
+              <button class="b-nav-btn" id="btn-nav-lesson" onclick="scrollToBuoyancyPart('buoyancy-lesson-sec')">
+                📋 3. Kế Hoạch Bài Dạy Bài 17 (KHTN 8)
+              </button>
+            </div>
+
+            <!-- ========================================================
+                 PHẦN 1: BỐI CẢNH DẠY HỌC & TÌNH HUỐNG XUẤT PHÁT
+                 ======================================================== -->
+            <div id="buoyancy-context-sec" class="buoyancy-context-container">
+              <div class="context-section-title">
+                <span>📖</span> I. BỐI CẢNH DẠY HỌC & TÌNH HUỐNG XUẤT PHÁT
+              </div>
+              <div class="context-subtitle">
+                Gợi mở nghịch lý từ thế giới tự nhiên và đời sống thường nhật để khơi dậy sự tò mò khoa học của học sinh Lớp 8.
+              </div>
+
+              <!-- 3 Thẻ Bối Cảnh Đời Sống Thực Tiễn -->
+              <div class="buoyancy-story-grid">
+                <div class="story-card">
+                  <span class="story-icon">🚢</span>
+                  <h4>Nghịch Lý Tàu Thép & Viên Sỏi</h4>
+                  <p>Một con tàu chở hàng bằng thép siêu trọng tải nặng hàng chục vạn tấn vẫn kiêu hãnh rẽ sóng trên đại dương, nhưng một viên sỏi hay chiếc kim sắt chỉ nặng vài gam rơi xuống nước lại chìm ngay lập tức!</p>
+                </div>
+
+                <div class="story-card">
+                  <span class="story-icon">🏊</span>
+                  <h4>Cảm Giác Nhẹ Nhõm Dưới Nước</h4>
+                  <p>Khi bước xuống hồ bơi hay ngâm mình trong bồn tắm, ta cảm thấy cơ thể nhẹ bẫng đi lạ kỳ. Một bạn nhỏ có thể dễ dàng nhấc bổng người bạn nặng 50kg trong nước mà trên cạn không thể làm được.</p>
+                </div>
+
+                <div class="story-card">
+                  <span class="story-icon">🍊</span>
+                  <h4>Thử Thách Gian Bếp: Hai Quả Cam</h4>
+                  <p>Giáo viên mang đến 2 quả cam cùng một cây: 1 quả để nguyên vỏ và 1 quả bóc sạch vỏ. Đặt lên cân điện tử: Quả nguyên vỏ nặng hơn (260g) so với quả bóc vỏ (210g). Nếu thả cả hai vào nước, quả nào sẽ chìm, quả nào sẽ nổi?</p>
+                </div>
+              </div>
+
+              <!-- Hộp Tiêu Điểm: Quan Niệm Sai Lầm Mục Tiêu -->
+              <div class="misconception-focus-box">
+                <h4>⚠️ Rào Cản Nhận Thức: Quan Niệm Sai Lầm Kinh Điển Của Học Sinh</h4>
+                <p>
+                  <span class="misconception-tag">Quan niệm sai:</span> <strong>"Vật nặng thì chìm, vật nhẹ thì nổi trong nước."</strong><br>
+                  Đa số học sinh THCS mặc định khối lượng (<span class="m-inline">m</span>) là yếu tố duy nhất quyết định sự chìm hay nổi. Khi giữ quan niệm cảm tính này, các em hoàn toàn bế tắc trước câu hỏi vì sao tàu thép khổng lồ lại nổi, và không thể lĩnh hội được bản chất của <strong>Khối lượng riêng (<span class="m-inline">D = m/V</span>)</strong> cùng <strong>Lực đẩy Archimedes (<span class="m-inline">F<sub>A</sub></span>)</strong> theo YCCĐ của Chương trình GDPT 2018.
+                </p>
+              </div>
+
+              <!-- Thanh Kêu Gọi Hành Động (Call to Action) -->
+              <div class="context-cta-bar">
+                <div>
+                  <strong>💡 Thách thức đặt ra cho học sinh:</strong> Dự đoán quả cam nào chìm, quả nào nổi và kiểm chứng trực tiếp bằng mắt thấy tai nghe!
+                </div>
+                <button class="context-cta-btn" onclick="scrollToBuoyancyPart('buoyancy-exp-sec')">
+                  🧪 Tiến Hành Thí Nghiệm Kiểm Chứng Ngay ➔
+                </button>
+              </div>
+            </div>
+
+            <!-- ========================================================
+                 PHẦN 2: THÍ NGHIỆM ẢO MÔ PHỎNG TƯƠNG TÁC (QUY TRÌNH 4 BƯỚC POE)
+                 ======================================================== -->
+            <div id="buoyancy-exp-sec">
+              <div class="experiment-header">
+                <h2>🍊 Thí Nghiệm Ảo: Sự Chìm Nổi & Bí Ẩn Quả Cam (Tiến Trình POE)</h2>
+                <p>Quy trình thực nghiệm 4 bước: <strong>(1) Cân dữ kiện ➔ (2) Dự đoán Plickers ➔ (3) Thả nước & Xung đột nhận thức ➔ (4) Kính lúp & Bản chất Archimedes</strong>.</p>
+              </div>
+              <div id="experiment-buoyancy">
+                <!-- Nội dung thí nghiệm động và Canvas sẽ được tạo bởi lab-buoyancy.js -->
+              </div>
+            </div>
+
+            <!-- ========================================================
+                 PHẦN 3: KẾ HOẠCH BÀI DẠY: BÀI 17 — LỰC ĐẨY ARCHIMEDES (KHTN 8)
+                 ======================================================== -->
+            <div id="buoyancy-lesson-sec" class="buoyancy-lesson-container">
+              
+              <!-- Banner Tiêu Đề Bài Dạy -->
+              <div class="lesson-top-banner">
+                <div>
+                  <span class="lesson-badge">📘 Kế Hoạch Bài Dạy Chuẩn CTGDPT 2018</span>
+                  <h3 class="lesson-title">BÀI 17: LỰC ĐẨY ARCHIMEDES (MÔN KHTN 8 — VẬT LÝ)</h3>
+                  <div class="lesson-meta">
+                    <span>⏱️ Thời lượng: <strong>02 tiết (90 phút)</strong></span>
+                    <span>🏫 Phân môn: <strong>Khoa học tự nhiên 8 (Vật lý)</strong></span>
+                    <span>📚 Thiết kế theo: <strong>Công văn 5512/BGDĐT</strong></span>
+                  </div>
+                </div>
+                <div class="lesson-actions">
+                  <button class="btn-lesson-action" onclick="window.print()" title="In hoặc lưu giáo án dạng PDF">
+                    🖨️ In / Xuất PDF
+                  </button>
+                </div>
+              </div>
+
+              <!-- I. Mục Tiêu Bài Học (YCCĐ) -->
+              <div style="margin-bottom: 1.5rem;">
+                <h4 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem;">
+                  I. YÊU CẦU CẦN ĐẠT (MỤC TIÊU BÀI DẠY)
+                </h4>
+                <div class="lesson-yccd-grid">
+                  <div class="yccd-card yccd-know">
+                    <h5>🎯 1. Kiến Thức Trọng Tâm</h5>
+                    <ul>
+                      <li>Nêu được sự tồn tại của lực đẩy do chất lỏng tác dụng lên vật nhúng trong nó (Lực đẩy Ác-si-mét).</li>
+                      <li>Nêu được điểm đặt (trên vật), phương (thẳng đứng), chiều (từ dưới lên trên) của lực đẩy Archimedes.</li>
+                      <li>Viết được công thức tính độ lớn lực đẩy Archimedes: <strong><span class="m-inline">F<sub>A</sub> = d · V</span></strong> (hoặc <span class="m-inline">F<sub>A</sub> = ρ · g · V</span>).</li>
+                      <li>Giải thích được điều kiện chìm, nổi của vật bằng cách so sánh giữa <span class="m-inline">P</span> và <span class="m-inline">F<sub>A</sub></span> (hoặc <span class="m-inline">D<sub>vật</sub></span> và <span class="m-inline">D<sub>chất lỏng</sub></span>).</li>
+                    </ul>
+                  </div>
+
+                  <div class="yccd-card yccd-skills">
+                    <h5>⚡ 2. Năng Lực Cần Phát Triển</h5>
+                    <ul>
+                      <li><strong>Năng lực KHTN:</strong> Quan sát, thu thập dữ liệu cân, thực hiện thao tác trên phòng thí nghiệm ảo tương tác.</li>
+                      <li><strong>Giải thích khoa học:</strong> Vận dụng kiến thức lực đẩy Archimedes để giải thích vì sao quả cam nguyên vỏ nổi, con tàu thép vạn tấn nổi.</li>
+                      <li><strong>Năng lực chung:</strong> Tự chủ tự học công nghệ số; Giao tiếp và hợp tác nhóm khi thảo luận phiếu học tập.</li>
+                    </ul>
+                  </div>
+
+                  <div class="yccd-card yccd-attitude">
+                    <h5>❤️ 3. Phẩm Chất Khoa Học</h5>
+                    <ul>
+                      <li><strong>Trung thực:</strong> Khách quan ghi nhận kết quả đo thực tế, không uốn nắn dữ liệu theo suy nghĩ chủ quan.</li>
+                      <li><strong>Tư duy phản biện:</strong> Sẵn sàng từ bỏ quan niệm sai lầm cũ khi có bằng chứng thực nghiệm rõ ràng.</li>
+                      <li><strong>Hứng thú & Trách nhiệm:</strong> Tích cực tham gia các thử thách STEM chế tạo thực tiễn.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- II. Thiết Bị & Học Liệu Số -->
+              <div style="margin-bottom: 2rem;">
+                <h4 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem;">
+                  II. THIẾT BỊ DẠY HỌC & HỌC LIỆU SỐ
+                </h4>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem 1.25rem; font-size: 0.85rem; line-height: 1.6; color: #334155;">
+                  <strong>1. Dành cho Giáo viên:</strong> Máy chiếu/Tivi kết nối Internet; Nền tảng học liệu số trực tuyến (Phòng thí nghiệm ảo <code>lab.html</code>); Bộ đồ dùng thực nghiệm: 2 quả cam (1 nguyên vỏ, 1 bóc vỏ), cân điện tử hiện số, bình nước lớn, lực kế lò xo (5N), cốc tràn, quả nặng kim loại.<br>
+                  <strong>2. Dành cho Học sinh:</strong> Thẻ quét trắc nghiệm Plickers cá nhân; Điện thoại thông minh/máy tính bảng nhóm (nếu có); Phiếu học tập số 1 & số 2.
+                </div>
+              </div>
+
+              <!-- III. Tiến Trình Dạy Học (5 Hoạt Động Sư Phạm) -->
+              <div style="margin-bottom: 2rem;">
+                <h4 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">
+                  III. TIẾN TRÌNH DẠY HỌC CHI TIẾT (5 HOẠT ĐỘNG SƯ PHẠM — CV 5512)
+                </h4>
+
+                <div class="lesson-timeline">
+                  
+                  <!-- HOẠT ĐỘNG 1: KHỞI ĐỘNG -->
+                  <div class="lesson-act-box">
+                    <div class="lesson-act-header">
+                      <div class="act-title-wrap">
+                        <span class="act-pill orange">Hoạt động 1</span>
+                        <h5 class="act-heading">Khởi Động: Tạo Xung Đột Nhận Thức Qua Thí Nghiệm Quả Cam (POE)</h5>
+                      </div>
+                      <span class="act-time">⏱️ 10 phút</span>
+                    </div>
+                    <div class="lesson-act-body">
+                      <table class="act-table">
+                        <tr>
+                          <th>Mục Tiêu & Chuyển Giao Nhiệm Vụ (GV)</th>
+                          <th>Thực Hiện & Sản Phẩm Nhận Thức (HS)</th>
+                        </tr>
+                        <tr>
+                          <td>
+                            <strong>Mục tiêu:</strong> Bộc lộ quan niệm sai <em>"vật nặng chìm, vật nhẹ nổi"</em> và tạo sự bất ngờ nhận thức.<br><br>
+                            <strong>Tiến trình:</strong><br>
+                            1. GV cho HS quan sát cân 2 quả cam trên cân điện tử ảo: Quả nguyên vỏ (<span class="m-inline">m<sub>1</sub> ≈ 260g</span>), quả bóc vỏ (<span class="m-inline">m<sub>2</sub> ≈ 210g</span>).<br>
+                            2. GV đặt câu hỏi Plickers: <em>"Khi thả vào nước, hiện tượng gì sẽ xảy ra?"</em> Khóa lựa chọn của HS.<br>
+                            3. GV tiến hành thả 2 quả cam vào nước (hoặc cho HS kéo thả trên màn hình cảm ứng).
+                          </td>
+                          <td>
+                            <strong>Dự đoán ban đầu:</strong> Đa số HS chọn phương án A (Quả cam nguyên vỏ nặng hơn sẽ chìm, quả nhẹ hơn sẽ nổi).<br><br>
+                            <strong>Quan sát thực tế:</strong> Quả nặng nguyên vỏ NỔI bồng bềnh, quả nhẹ bóc vỏ CHÌM nghỉm xuống đáy!<br><br>
+                            <strong>Xung đột nhận thức:</strong> HS ngạc nhiên và thắc mắc sâu sắc: <em>"Tại sao vật nhẹ hơn lại chìm, còn vật nặng hơn lại nổi? Liệu khối lượng có phải yếu tố duy nhất quyết định?"</em>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- HOẠT ĐỘNG 2: TÁC DỤNG CỦA CHẤT LỎNG -->
+                  <div class="lesson-act-box">
+                    <div class="lesson-act-header">
+                      <div class="act-title-wrap">
+                        <span class="act-pill">Hoạt động 2</span>
+                        <h5 class="act-heading">Hình Thành Kiến Thức 1: Tìm Hiểu Tác Dụng Của Chất Lỏng Lên Vật Nhúng Trong Nó</h5>
+                      </div>
+                      <span class="act-time">⏱️ 15 phút</span>
+                    </div>
+                    <div class="lesson-act-body">
+                      <table class="act-table">
+                        <tr>
+                          <th>Mục Tiêu & Chuyển Giao Nhiệm Vụ (GV)</th>
+                          <th>Thực Hiện & Sản Phẩm Nhận Thức (HS)</th>
+                        </tr>
+                        <tr>
+                          <td>
+                            <strong>Mục tiêu:</strong> Nhận biết sự tồn tại, phương và chiều của lực đẩy Archimedes.<br><br>
+                            <strong>Tiến trình thực nghiệm:</strong><br>
+                            1. Treo quả nặng vào lực kế trong không khí, đọc số chỉ: <span class="m-inline">P = 2,5 N</span>.<br>
+                            2. Nhúng quả nặng chìm vào nước, đọc số chỉ mới: <span class="m-inline">P' = 1,8 N</span>.<br>
+                            3. Yêu cầu HS so sánh <span class="m-inline">P'</span> và <span class="m-inline">P</span>, giải thích nguyên nhân làm số chỉ lực kế giảm.
+                          </td>
+                          <td>
+                            <strong>Kết quả đo:</strong> <span class="m-inline">P' &lt; P</span> (giảm mất <span class="m-inline">0,7 N</span>).<br><br>
+                            <strong>Rút ra kết luận:</strong><br>
+                            - Chất lỏng đã tác dụng vào vật nhúng trong nó một lực đẩy hướng thẳng đứng từ dưới lên trên.<br>
+                            - Lực này gọi là <strong>Lực đẩy Archimedes</strong> (<span class="m-inline"><span class="m-vec">F</span><sub>A</sub></span>).<br>
+                            - Độ lớn lực đẩy trong thí nghiệm: <span class="m-inline">F<sub>A</sub> = P - P' = 2,5 - 1,8 = 0,7 N</span>.
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- HOẠT ĐỘNG 3: ĐỘ LỚN CỦA LỰC ĐẨY ARCHIMEDES -->
+                  <div class="lesson-act-box">
+                    <div class="lesson-act-header">
+                      <div class="act-title-wrap">
+                        <span class="act-pill green">Hoạt động 3</span>
+                        <h5 class="act-heading">Hình Thành Kiến Thức 2: Xác Định Độ Lớn Của Lực Đẩy Archimedes</h5>
+                      </div>
+                      <span class="act-time">⏱️ 20 phút</span>
+                    </div>
+                    <div class="lesson-act-body">
+                      <p style="font-size: 0.85rem; color: #334155; margin-bottom: 0.75rem;">
+                        <strong>Thí nghiệm bình tràn kinh điển của Archimedes:</strong> Nhúng chìm một vật vào bình tràn đầy nước, hứng phần nước tràn ra ngoài vào cốc đo. Đo trọng lượng cốc nước tràn (<span class="m-inline">P<sub>nước tràn</sub></span>) và so sánh với độ giảm số chỉ lực kế (<span class="m-inline">F<sub>A</sub></span>).
+                      </p>
+
+                      <div class="formula-showcase">
+                        <div class="formula-main"><span class="m-inline">F<sub>A</sub> = d · V = 10 · D · V</span></div>
+                        <div class="formula-desc">
+                          Trong đó:<br>
+                          • <span><span class="m-inline">F<sub>A</sub></span></span>: Độ lớn lực đẩy Archimedes (đơn vị: Newton — <span class="m-inline">N</span>)<br>
+                          • <span><span class="m-inline">d</span></span>: Trọng lượng riêng của chất lỏng (<span class="m-inline">N/m³</span>), <span class="m-inline">d = 10 · D</span><br>
+                          • <span><span class="m-inline">D</span></span>: Khối lượng riêng của chất lỏng (<span class="m-inline">kg/m³</span>)<br>
+                          • <span><span class="m-inline">V</span></span>: Thể tích <strong>phần chất lỏng bị vật chiếm chỗ</strong> (tức thể tích phần vật chìm) (<span class="m-inline">m³</span>)
+                        </div>
+                      </div>
+
+                      <div style="font-size: 0.82rem; color: #475569; background: #f8fafc; padding: 0.75rem; border-radius: 6px;">
+                        📌 <strong>Điểm cốt lõi học sinh cần lưu ý:</strong> Độ lớn của lực đẩy Archimedes <strong>chỉ phụ thuộc vào 2 yếu tố</strong>: Trọng lượng riêng của chất lỏng (<span class="m-inline">d</span>) và Thể tích phần chìm của vật (<span class="m-inline">V</span>). Lực này <strong>HOÀN TOÀN KHÔNG</strong> phụ thuộc vào vật làm bằng chất gì hay vật nặng bao nhiêu!
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- HOẠT ĐỘNG 4: ĐIỀU KIỆN CHÌM, NỔI CỦA VẬT & TỰ SỬA SAI -->
+                  <div class="lesson-act-box">
+                    <div class="lesson-act-header">
+                      <div class="act-title-wrap">
+                        <span class="act-pill purple">Hoạt động 4</span>
+                        <h5 class="act-heading">Hình Thành Kiến Thức 3: Điều Kiện Chìm, Nổi Của Vật & Tự Sửa Sai Triệt Để</h5>
+                      </div>
+                      <span class="act-time">⏱️ 25 phút</span>
+                    </div>
+                    <div class="lesson-act-body">
+                      <p style="font-size: 0.85rem; color: #334155; margin-bottom: 0.75rem;">
+                        Khi một vật ở trong lòng chất lỏng, vật chịu tác dụng của 2 lực cùng phương nhưng ngược chiều: <strong>Trọng lực <span class="m-inline"><span class="m-vec">P</span></span></strong> (kéo xuống) và <strong>Lực đẩy Archimedes <span class="m-inline"><span class="m-vec">F</span><sub>A</sub></span></strong> (đẩy lên).
+                      </p>
+
+                      <table class="act-table" style="margin-bottom: 1rem;">
+                        <tr>
+                          <th>So Sánh Theo Lực (<span class="m-inline">P</span> và <span class="m-inline">F<sub>A</sub></span>)</th>
+                          <th>So Sánh Theo Khối Lượng Riêng (<span class="m-inline">D<sub>vật</sub></span> và <span class="m-inline">D<sub>lỏng</sub></span>)</th>
+                        </tr>
+                        <tr>
+                          <td>
+                            • <strong><span class="m-inline">P &gt; F<sub>A(max)</sub></span>:</strong> Vật chìm xuống đáy.<br>
+                            • <strong><span class="m-inline">P = F<sub>A</sub></span>:</strong> Vật lơ lửng trong lòng chất lỏng.<br>
+                            • <strong><span class="m-inline">P &lt; F<sub>A(max)</sub></span>:</strong> Vật nổi lên mặt nước cho đến khi <span class="m-inline">P = F<sub>A</sub>'</span>.
+                          </td>
+                          <td>
+                            • <strong><span class="m-inline">D<sub>vật</sub> &gt; D<sub>lỏng</sub></span>:</strong> Vật chìm xuống đáy.<br>
+                            • <strong><span class="m-inline">D<sub>vật</sub> = D<sub>lỏng</sub></span>:</strong> Vật lơ lửng.<br>
+                            • <strong><span class="m-inline">D<sub>vật</sub> &lt; D<sub>lỏng</sub></span>:</strong> Vật nổi một phần trên mặt nước.
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Giải mã quả cam & tàu thép -->
+                      <div style="background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981; padding: 0.85rem 1rem; border-radius: 4px; font-size: 0.82rem; line-height: 1.6; color: #065f46;">
+                        <strong>🔬 BẬT KÍNH LÚP GIẢI MÃ: VÌ SAO QUẢ CAM NẶNG NỔI, QUẢ CAM NHẸ CHÌM?</strong><br>
+                        1. <strong>Quả cam nguyên vỏ (nặng hơn):</strong> Lớp vỏ cùi trắng (albedo) có cấu trúc xốp chứa hàng triệu túi khí li ti (như một chiếc áo phao tự nhiên). Túi khí làm cho thể tích toàn phần <span class="m-inline">V</span> tăng vọt, kéo khối lượng riêng trung bình giảm xuống còn <span class="m-inline">D ≈ 0,90 g/cm³ &lt; D<sub>nước</sub> (1,00 g/cm³) ⇒</span> <strong>NỔI!</strong><br>
+                        2. <strong>Quả cam bóc vỏ (nhẹ hơn):</strong> Mất đi lớp phao khí xốp, thể tích <span class="m-inline">V</span> giảm mạnh trong khi múi cam đầy nước đường có mật độ cao (<span class="m-inline">D ≈ 1,08 g/cm³ &gt; D<sub>nước</sub> ⇒</span> <strong>CHÌM!</strong><br>
+                        3. <strong>Con tàu thép vạn tấn:</strong> Thép đặc có <span class="m-inline">D ≈ 7,8 g/cm³</span> (chìm ngay), nhưng con tàu được thiết kế rỗng ruột chứa nhiều không khí, làm cho khối lượng riêng trung bình của cả con tàu nhỏ hơn nước biển <span class="m-inline">⇒</span> Tàu thép nổi an toàn!
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- HOẠT ĐỘNG 5: LUYỆN TẬP & VẬN DỤNG -->
+                  <div class="lesson-act-box">
+                    <div class="lesson-act-header">
+                      <div class="act-title-wrap">
+                        <span class="act-pill amber">Hoạt động 5</span>
+                        <h5 class="act-heading">Luyện Tập & Vận Dụng: Thử Thách STEM "Con Tàu Chở Hàng"</h5>
+                      </div>
+                      <span class="act-time">⏱️ 20 phút</span>
+                    </div>
+                    <div class="lesson-act-body">
+                      <div class="buoyancy-story-grid" style="margin-bottom: 1rem;">
+                        <div class="story-card">
+                          <span class="story-icon">🥤</span>
+                          <h4>Lon Coca Thường vs Diet Coke</h4>
+                          <p>Cùng thể tích 355ml: Lon Coca thường chứa 39g đường nên nặng hơn (<span class="m-inline">D ≈ 1,04 g/cm³ →</span> chìm); Lon Diet Coke dùng đường ăn kiêng chỉ dưới 1g nên nhẹ hơn (<span class="m-inline">D ≈ 0,99 g/cm³ →</span> nổi)!</p>
+                        </div>
+                        <div class="story-card">
+                          <span class="story-icon">🥚</span>
+                          <h4>Quả Trứng & Nước Muối</h4>
+                          <p>Trứng gà thả vào nước ngọt thì chìm (<span class="m-inline">D<sub>trứng</sub> = 1,09 g/cm³ &gt; 1,00 g/cm³</span>). Nhưng khi hòa tan nhiều muối vào nước làm <span class="m-inline">D<sub>nước muối</sub> &gt; 1,12 g/cm³</span>, quả trứng sẽ từ từ nổi lên!</p>
+                        </div>
+                        <div class="story-card">
+                          <span class="story-icon">🛠️</span>
+                          <h4>Thử Thách Chế Tạo STEM</h4>
+                          <p>Cho mỗi nhóm học sinh một khối đất nặn 50g (thả vào nước chìm ngay). Nhiệm vụ: Nặn lại hình dáng để khối đất nặn biến thành chiếc thuyền nổi và chở được tối thiểu 10 đồng xu kim loại!</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- IV. Phiếu Học Tập Số Hóa (Worksheet) -->
+              <div class="worksheet-panel">
+                <h4>📝 PHIẾU HỌC TẬP TỔNG HỢP: KHÁM PHÁ LỰC ĐẨY ARCHIMEDES</h4>
+                <p style="font-size: 0.82rem; color: #166534; margin: 0 0 0.5rem;">Học sinh hoàn thành các câu hỏi sau để củng cố và đánh giá mức độ đạt yêu cầu:</p>
+                <ol>
+                  <li>
+                    <strong>Câu 1:</strong> Một vật có thể tích <span class="m-inline">V = 500 cm³ = 0,0005 m³</span> được nhúng chìm hoàn toàn trong nước (<span class="m-inline">d = 10.000 N/m³</span>). Tính độ lớn lực đẩy Archimedes tác dụng lên vật.<br>
+                    <em>(Đáp án: <span class="m-inline">F<sub>A</sub> = d · V = 10.000 × 0,0005 = 5 N</span>)</em>
+                  </li>
+                  <li>
+                    <strong>Câu 2:</strong> Tại sao một người có thể nằm nổi trên mặt nước đọc sách ở Biển Chết (Dead Sea) mà không bao giờ bị chìm?<br>
+                    <em>(Đáp án: Vì nồng độ muối ở Biển Chết cực kỳ cao, làm khối lượng riêng của nước biển đạt tới <span class="m-inline">1,24 g/cm³</span>, lớn hơn khối lượng riêng trung bình của cơ thể người <span class="m-inline">≈ 1,05 g/cm³</span>, do đó lực đẩy Archimedes cực lớn nâng toàn bộ cơ thể nổi lên).</em>
+                  </li>
+                  <li>
+                    <strong>Câu 3:</strong> Giải thích vai trò của chiếc áo phao cứu sinh đối với người bơi.<br>
+                    <em>(Đáp án: Áo phao chứa nhiều bọt xốp nhẹ và không khí. Khi mặc vào, khối lượng cả người chỉ tăng rất ít nhưng thể tích toàn phần tăng lên rất lớn, làm khối lượng riêng trung bình của hệ (người + áo phao) nhỏ hơn khối lượng riêng của nước, giúp người luôn nổi an toàn).</em>
+                  </li>
+                </ol>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -233,6 +605,7 @@
   <script src="assets/js/lab-balance.js"></script>
   <script src="assets/js/lab-molecule.js"></script>
   <script src="assets/js/lab-circuit.js"></script>
+  <script src="assets/js/lab-buoyancy.js"></script>
   <script src="assets/js/lab-biology.js"></script>
   
   <script>
@@ -256,8 +629,47 @@
       const targetPanel = document.getElementById(`panel-${tabName}`);
       if (targetPanel) targetPanel.classList.add('active');
 
-      // Kích hoạt tính toán lại kích thước canvas mô hình 3D
+      // Kích hoạt tính toán lại kích thước canvas mô hình
       window.dispatchEvent(new Event('resize'));
+    }
+
+    // Subtab switching cho phân môn Vật Lý (Mạch điện DC vs Sự chìm nổi)
+    function switchPhysicsSubtab(subName) {
+      document.querySelectorAll('.physics-subtab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.physics-subpanel').forEach(panel => {
+        panel.classList.remove('active');
+        panel.style.display = 'none';
+      });
+
+      const targetBtn = document.getElementById(`btn-sub-${subName}`);
+      const targetPanel = document.getElementById(`subpanel-${subName}`);
+      if (targetBtn) targetBtn.classList.add('active');
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+        targetPanel.style.display = 'block';
+      }
+
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    // Điều hướng giữa Bối cảnh, Thí nghiệm POE và Kế hoạch bài dạy Bài 17
+    function scrollToBuoyancyPart(partId) {
+      document.querySelectorAll('.b-nav-btn').forEach(b => b.classList.remove('active'));
+      if (partId === 'buoyancy-context-sec') {
+        const btn = document.getElementById('btn-nav-context');
+        if (btn) btn.classList.add('active');
+      } else if (partId === 'buoyancy-exp-sec') {
+        const btn = document.getElementById('btn-nav-exp');
+        if (btn) btn.classList.add('active');
+      } else if (partId === 'buoyancy-lesson-sec') {
+        const btn = document.getElementById('btn-nav-lesson');
+        if (btn) btn.classList.add('active');
+      }
+
+      const targetEl = document.getElementById(partId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   </script>
 

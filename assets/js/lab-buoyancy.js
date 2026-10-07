@@ -59,7 +59,18 @@
         misconceptionIndex: 0,
         correctIndex: 2,
         explain: 'BẤT NGỜ CHƯA? 😲 Quả cam nguyên vỏ (nặng 260g) lại NỔI, còn quả bóc vỏ (nhẹ 210g) lại CHÌM! Kết quả thực tế hoàn toàn trái ngược với trực giác "vật nặng thì chìm, vật nhẹ thì nổi".'
-      }
+      },
+      conflictHtml: `
+        <strong>😲 BẠN CÓ THẤY BẤT NGỜ KHÔNG?</strong>
+        Quả cam nguyên vỏ <strong>NẶNG HƠN (260g) LẠI NỔI</strong> bồng bềnh!<br>
+        Quả cam bóc vỏ <strong>NHẸ HƠN (210g) LẠI CHÌM</strong> xuống đáy bình!<br>
+        👉 Quy tắc <em>"Cứ nặng là chìm, nhẹ là nổi"</em> đã hoàn toàn sai!
+      `,
+      explainHeader: '🍊 Bí mật nằm ở: KHỐI LƯỢNG RIÊNG & LỚP VỎ XỐP',
+      explainDetail: `
+        • <strong>Cam nguyên vỏ (260g):</strong> Lớp vỏ cùi trắng (albedo) xốp chứa hàng triệu túi khí đóng vai trò như <em>chiếc áo phao</em> làm tăng thể tích lên rất nhiều, khiến <span class="m-inline">D ≈ 0.93 g/cm³ &lt; 1.0</span> ➔ <strong>NỔI</strong>.<br>
+        • <strong>Cam bóc vỏ (210g):</strong> Mất lớp túi khí, thể tích giảm mạnh trong khi múi cam chứa nhiều nước và đường đặc khiến <span class="m-inline">D ≈ 1.05 g/cm³ &gt; 1.0</span> ➔ <strong>CHÌM</strong>!
+      `
     },
 
     'coke': {
@@ -88,20 +99,20 @@
         id: 'coke-diet',
         name: 'Diet Coke (Ăn Kiêng)',
         subName: 'Chất tạo ngọt Aspartame 0.18g',
-        mass: 356, // g
-        volume: 355, // cm3
-        density: 0.992, // g/cm3 < 1.0 -> Nổi!
+        mass: 335, // g (Nhẹ hơn và có khoang khí nhỏ)
+        volume: 365, // cm3
+        density: 0.918, // g/cm3 < 1.0 -> Nổi bồng bềnh!
         radius: 38,
         width: 48,
         height: 76,
         color: '#64748b',
         isCan: true,
-        desc: 'Độ ngọt tương đương nhưng chỉ cần 0.18g chất tạo ngọt nhân tạo, khối lượng riêng nhỏ hơn 1.0 g/cm³.',
+        desc: 'Độ ngọt tương đương nhưng chỉ cần 0.18g chất tạo ngọt nhân tạo, khối lượng riêng tổng thể nhỏ hơn nước (0.92 g/cm³).',
         initX: 250,
         initY: 100
       },
       question: {
-        q: 'Hai lon nước ngọt có cùng kích thước 355ml: Lon Coca thường nặng 384g (chứa đường), lon Diet Coke nặng 356g (dùng chất tạo ngọt ăn kiêng). Hiện tượng khi thả vào nước?',
+        q: 'Hai lon nước ngọt cùng thể tích 355ml: Lon Coca thường nặng 384g (chứa 39g đường), lon Diet Coke nặng 335g (dùng chất tạo ngọt ăn kiêng). Hiện tượng khi thả vào nước?',
         options: [
           'Lon Coca thường (nặng hơn) chìm, lon Diet Coke (nhẹ hơn) nổi.',
           'Cả 2 lon cùng chìm vì vỏ lon làm bằng kim loại nhôm.',
@@ -110,8 +121,19 @@
         ],
         misconceptionIndex: 1,
         correctIndex: 0,
-        explain: 'Chính xác! Lon Coca thường chứa đến 39g đường khiến khối lượng riêng D = 1.08 g/cm³ > D_nước nên chìm. Lon Diet Coke có D = 0.99 g/cm³ < D_nước nên nổi bồng bềnh.'
-      }
+        explain: 'Chính xác! Lon Coca thường chứa đến 39g đường khiến khối lượng riêng D = 1.08 g/cm³ > D_nước nên chìm. Lon Diet Coke có D = 0.92 g/cm³ < D_nước nên nổi bồng bềnh.'
+      },
+      conflictHtml: `
+        <strong>😲 BẠN CÓ THẤY BẤT NGỜ KHÔNG?</strong>
+        Lon Coca thường <strong>NẶNG HƠN (384g) CHÌM NGHỈM</strong> xuống đáy bình!<br>
+        Lon Diet Coke <strong>NHẸ HƠN (335g) LẠI NỔI</strong> bồng bềnh trên mặt nước!<br>
+        👉 Cùng kích cỡ lon nhôm nhưng hàm lượng đường hòa tan quyết định sự chìm hay nổi!
+      `,
+      explainHeader: '🥤 Bí mật nằm ở: LƯỢNG ĐƯỜNG MÍA HÒA TAN',
+      explainDetail: `
+        • <strong>Coca thường (384g):</strong> Chứa tới 39g đường mía hòa tan làm tăng khối lượng tổng thể mà không làm tăng thể tích lon ➔ <span class="m-inline">D = 1.08 g/cm³ &gt; D<sub>nước</sub> (1.00)</span> ➔ <strong>CHÌM</strong>.<br>
+        • <strong>Diet Coke (335g):</strong> Dùng chất tạo ngọt ăn kiêng Aspartame siêu ngọt (chỉ cần dưới 0.2g) nên khối lượng riêng tổng thể <span class="m-inline">D ≈ 0.92 g/cm³ &lt; D<sub>nước</sub> (1.00)</span> ➔ <strong>NỔI</strong>!
+      `
     },
 
     'boat': {
@@ -159,7 +181,18 @@
         misconceptionIndex: 0,
         correctIndex: 1,
         explain: 'Bí mật nằm ở THỂ TÍCH KHOANG RỖNG: Con tàu nặng 500g nhưng uốn thành thân tàu chứa không khí, thể tích tổng lên tới 1200 cm³ nên D = 0.42 g/cm³ (rất nhẹ so với thể tích) ➔ Nổi!'
-      }
+      },
+      conflictHtml: `
+        <strong>😲 BẠN CÓ THẤY BẤT NGỜ KHÔNG?</strong>
+        Con tàu thép <strong>NẶNG TỚI 500g (GẤP 5 LẦN BI SẮT) LẠI NỔI KIÊU HÃNH</strong>!<br>
+        Viên bi sắt <strong>CHỈ 100g LẠI CHÌM NGHỈM</strong> xuống đáy bình!<br>
+        👉 Sắt thép không phải lúc nào cũng chìm trong nước!
+      `,
+      explainHeader: '🚢 Bí mật nằm ở: THỂ TÍCH KHOANG RỖNG CHỨA KHÍ',
+      explainDetail: `
+        • <strong>Tàu thép (500g):</strong> Được uốn cong tạo thành thân tàu rỗng ruột chứa đầy không khí. Thể tích toàn phần lên tới 1200 cm³, kéo khối lượng riêng trung bình của cả con tàu xuống chỉ còn <span class="m-inline">D = 0.42 g/cm³ &lt;&lt; 1.0</span> ➔ Lực đẩy Archimedes <span class="m-inline">F<sub>A</sub></span> dễ dàng nâng con tàu <strong>NỔI</strong>!<br>
+        • <strong>Viên bi sắt (100g):</strong> Khối sắt đặc không có khoang rỗng, thể tích chỉ 12.7 cm³ khiến khối lượng riêng lên tới <span class="m-inline">D = 7.87 g/cm³</span> (gấp gần 8 lần nước) ➔ Trọng lực thắng thế, bi sắt <strong>CHÌM</strong> đáy!
+      `
     },
 
     'egg': {
@@ -171,20 +204,20 @@
       obj1: {
         id: 'egg-fresh',
         name: 'Quả Trứng Gà',
-        subName: 'Khối lượng riêng 1.08 g/cm³',
+        subName: 'Khối lượng riêng 1.085 g/cm³',
         mass: 60, // g
         volume: 55, // cm3
-        density: 1.090, // g/cm3
+        density: 1.085, // g/cm3
         radius: 28,
         color: '#fef08a',
         skinColor: '#fde047',
         isEgg: true,
-        desc: 'Trong nước ngọt (D = 1.00 g/cm³), trứng có D = 1.09 g/cm³ nên chìm. Khi pha muối làm D_nước tăng lên > 1.10 g/cm³, trứng sẽ nổi lên!',
+        desc: 'Trong nước ngọt (D = 1.00 g/cm³), trứng có D = 1.085 g/cm³ nên chìm. Khi pha muối làm D_nước tăng lên > 1.10 g/cm³, trứng sẽ nổi lên!',
         initX: 180,
         initY: 100
       },
       question: {
-        q: 'Quả trứng gà nặng 60g có khối lượng riêng 1.09 g/cm³. Bình thường thả vào nước ngọt (D = 1.00 g/cm³) nó chìm. Nếu ta pha thật nhiều muối ăn vào nước, điều gì sẽ xảy ra?',
+        q: 'Quả trứng gà nặng 60g có khối lượng riêng 1.085 g/cm³. Bình thường thả vào nước ngọt (D = 1.00 g/cm³) nó chìm. Nếu ta pha thật nhiều muối ăn vào nước, điều gì sẽ xảy ra?',
         options: [
           'Trứng vẫn chìm vì muối làm nước nặng hơn đè trứng xuống.',
           'Trứng sẽ từ từ nổi lên mặt nước vì khối lượng riêng của nước muối tăng lên.',
@@ -194,7 +227,18 @@
         misconceptionIndex: 0,
         correctIndex: 1,
         explain: 'Chính xác! Khi hòa tan muối, khối lượng riêng của nước muối tăng lên (khoảng 1.15 g/cm³). Khi D_nước muối > D_trứng, lực đẩy Archimedes thắng trọng lực, nâng quả trứng nổi lên!'
-      }
+      },
+      conflictHtml: `
+        <strong>😲 BẠN CÓ THẤY BẤT NGỜ KHÔNG?</strong>
+        Trong nước ngọt: Quả trứng gà <strong>CHÌM NGHỈM</strong> xuống đáy bình!<br>
+        Khi pha thêm muối ăn: Quả trứng <strong>TỪ TỪ NỔI LÊN MẶT NƯỚC</strong>!<br>
+        👉 Giữ nguyên vật thể, chỉ thay đổi khối lượng riêng của chất lỏng cũng đảo ngược sự chìm nổi!
+      `,
+      explainHeader: '🥚 Bí mật nằm ở: KHỐI LƯỢNG RIÊNG CỦA CHẤT LỎNG',
+      explainDetail: `
+        • <strong>Trong nước ngọt (<span class="m-inline">D = 1.00 g/cm³</span>):</strong> Quả trứng có <span class="m-inline">D<sub>trứng</sub> = 1.085 g/cm³ &gt; 1.00</span> nên Trọng lực lớn hơn Lực đẩy Archimedes tối đa ➔ <strong>CHÌM</strong>.<br>
+        • <strong>Khi pha muối (<span class="m-inline">D<sub>nước muối</sub> &gt; 1.10 g/cm³</span>):</strong> Muối hòa tan làm tăng khối lượng riêng của chất lỏng. Khi <span class="m-inline">D<sub>chất lỏng</sub> &gt; D<sub>trứng</sub></span>, Lực đẩy Archimedes <span class="m-inline">F<sub>A</sub> = d · V</span> tăng vọt thắng trọng lực ➔ Đẩy quả trứng <strong>NỔI</strong> lên!
+      `
     }
   };
 
@@ -312,9 +356,11 @@
                 <button class="buoyancy-action-btn ${showForceVectors ? 'active' : ''}" id="btn-toggle-vectors" onclick="buoyancyToggleVectors()" title="Hiện mũi tên trọng lực P và lực đẩy Archimedes FA">
                   🏹 Vector Lực (${showForceVectors ? 'Bật' : 'Tắt'})
                 </button>
+                ${currentPairKey === 'orange' ? `
                 <button class="buoyancy-action-btn ${showMagnifier ? 'active' : ''}" id="btn-toggle-magnifier" onclick="buoyancyToggleMagnifier()" title="Kính lúp soi cấu trúc túi khí vỏ xốp">
                   🔬 Kính Lúp Vỏ Xốp
                 </button>
+                ` : ''}
                 <button class="buoyancy-action-btn" onclick="buoyancyResetPositions()" title="Đưa mẫu vật về vị trí ban đầu">
                   ⚡ Đặt Lại Vị Trí
                 </button>
@@ -528,12 +574,9 @@
             <em>"${cur.question.options[selectedPrediction !== null ? selectedPrediction : 0]}"</em>
           </div>
 
-          <!-- Alert Xung Đột Nhận Thức -->
+          <!-- Alert Xung Đột Nhận Thức Riêng Cho Từng Cặp Mẫu Vật -->
           <div class="conflict-alert-card">
-            <strong>😲 BẠN CÓ THẤY BẤT NGỜ KHÔNG?</strong>
-            Quả cam nguyên vỏ <strong>NẶNG HƠN (260g) LẠI NỔI</strong> bồng bềnh!<br>
-            Quả cam bóc vỏ <strong>NHẸ HƠN (210g) LẠI CHÌM</strong> xuống đáy bình!<br>
-            👉 Quy tắc <em>"Cứ nặng là chìm, nhẹ là nổi"</em> đã hoàn toàn sai!
+            ${cur.conflictHtml}
           </div>
 
           <div style="margin-top: 1rem; text-align: right;">
@@ -547,15 +590,17 @@
 
     // BƯỚC 4: Giải thích bản chất & Tự sửa sai (Explain & Extend)
     else if (currentStep === 4) {
+      const nextInfo = NEXT_PAIRS[currentPairKey] || { key: 'orange', label: 'Quay Lại: Quả Cam ➔' };
+
       box.innerHTML = `
         <div class="poe-interactive-card" style="border-color: #10b981;">
           <span class="poe-q-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669;">BƯỚC 4: BẢN CHẤT KHOA HỌC & SỬA SAI</span>
-          <div class="poe-q-text">🔬 Vì sao vật nặng lại nổi, vật nhẹ lại chìm?</div>
+          <div class="poe-q-text">🔬 Vì sao có vật chìm, có vật nổi?</div>
 
           <div class="peel-structure-card" style="margin-bottom: 0.75rem;">
-            <h5>🍊 Bí mật nằm ở: KHỐI LƯỢNG RIÊNG & LỚP VỎ XỐP</h5>
+            <h5>${cur.explainHeader}</h5>
             <p>
-              Khối lượng không quyết định sự chìm nổi, mà là <strong>Khối lượng riêng: <span class="m-inline">D = m/V</span></strong> so với khối lượng riêng của nước (<span class="m-inline">D<sub>nước</sub> = 1.0 g/cm³</span>).
+              Khối lượng không quyết định sự chìm nổi, mà là <strong>Khối lượng riêng: <span class="m-inline">D = m/V</span></strong> so với khối lượng riêng của chất lỏng (<span class="m-inline">D<sub>chất lỏng</sub> = ${TANK.waterDensity.toFixed(2)} g/cm³</span>).
             </p>
           </div>
 
@@ -566,26 +611,22 @@
                 <th><span class="m-inline">m</span> (g)</th>
                 <th><span class="m-inline">V</span> (cm³)</th>
                 <th><span class="m-inline">D = m/V</span></th>
-                <th>Trạng thái</th>
+                <th>Trạng thái (${TANK.waterDensity.toFixed(2)} g/cm³)</th>
               </tr>
             </thead>
             <tbody>
-              <tr style="color: #059669; font-weight: 700;">
-                <td>${cur.obj1.name}</td>
-                <td>${cur.obj1.mass}</td>
-                <td>${cur.obj1.volume}</td>
-                <td>${cur.obj1.density.toFixed(2)} g/cm³</td>
-                <td>🟢 NỔI (<span class="m-inline">D &lt; 1.0</span>)</td>
-              </tr>
-              ${cur.obj2 ? `
-                <tr style="color: #dc2626; font-weight: 700;">
-                  <td>${cur.obj2.name}</td>
-                  <td>${cur.obj2.mass}</td>
-                  <td>${cur.obj2.volume}</td>
-                  <td>${cur.obj2.density.toFixed(2)} g/cm³</td>
-                  <td>🔴 CHÌM (<span class="m-inline">D &gt; 1.0</span>)</td>
-                </tr>
-              ` : ''}
+              ${activeObjects.map(obj => {
+                const isFloat = obj.density < TANK.waterDensity;
+                return `
+                  <tr style="color: ${isFloat ? '#059669' : '#dc2626'}; font-weight: 700;">
+                    <td>${obj.name}</td>
+                    <td>${obj.mass} g</td>
+                    <td>${obj.volume} cm³</td>
+                    <td>${obj.density.toFixed(2)} g/cm³</td>
+                    <td>${isFloat ? '🟢 NỔI (D &lt; D_lỏng)' : '🔴 CHÌM (D &gt; D_lỏng)'}</td>
+                  </tr>
+                `;
+              }).join('')}
             </tbody>
           </table>
 
@@ -593,21 +634,29 @@
             <strong>🎯 Điều kiện chìm nổi (CTGDPT 2018 - KHTN 8):</strong><br>
             • <span class="m-inline">D<sub>vật</sub> &lt; D<sub>chất lỏng</sub> ⇔ P &lt; F<sub>A(max)</sub> →</span> Vật <strong>NỔI</strong>.<br>
             • <span class="m-inline">D<sub>vật</sub> &gt; D<sub>chất lỏng</sub> ⇔ P &gt; F<sub>A(max)</sub> →</span> Vật <strong>CHÌM</strong>.<br>
-            • Lớp vỏ cam xốp chứa vô số túi khí đóng vai trò như <strong>chiếc áo phao</strong> làm tăng thể tích lên rất nhiều, khiến <span class="m-inline">D</span> giảm xuống dưới 1.0!
+            ${cur.explainDetail}
           </div>
 
-          <div style="margin-top: 1rem; display: flex; justify-content: space-between;">
+          <div style="margin-top: 1rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
             <button class="buoyancy-action-btn" onclick="buoyancyJumpStep(1)">
               ↺ Làm lại từ Bước 1
             </button>
-            <button class="buoyancy-action-btn active" onclick="buoyancySelectPair('coke')">
-              Thử Thách Mở Rộng: Lon Coca ➔
+            <button class="buoyancy-action-btn active" onclick="buoyancySelectPair('${nextInfo.key}')">
+              ${nextInfo.label}
             </button>
           </div>
         </div>
       `;
     }
   }
+
+  /* Danh sách chuyển đổi thử thách mở rộng */
+  const NEXT_PAIRS = {
+    'orange': { key: 'coke', label: 'Thử Thách Tiếp: Lon Coca ➔' },
+    'coke': { key: 'boat', label: 'Thử Thách Tiếp: Tàu Thép vs Bi Sắt ➔' },
+    'boat': { key: 'egg', label: 'Thử Thách Tiếp: Quả Trứng & Nước Muối ➔' },
+    'egg': { key: 'orange', label: 'Quay Lại: Quả Cam ➔' }
+  };
 
   /* ─────────────────────────────────────────────────────────────
      6. CÁC HÀM XỬ LÝ SỰ KIỆN SƯ PHẠM
@@ -634,17 +683,13 @@
     currentStep = 3;
     renderPOEContent();
 
-    // Tự động thả nhẹ 2 quả vào nước để học sinh quan sát ngay
-    const cur = OBJECT_PAIRS[currentPairKey];
-    if (activeObjects.length >= 2) {
-      activeObjects[0].x = TANK.x + 80;
-      activeObjects[0].y = 120;
-      activeObjects[0].vy = 2;
-
-      activeObjects[1].x = TANK.x + 200;
-      activeObjects[1].y = 120;
-      activeObjects[1].vy = 2;
-    }
+    // Tự động thả các vật vào nước để học sinh quan sát ngay
+    activeObjects.forEach((obj, idx) => {
+      obj.x = TANK.x + (activeObjects.length === 1 ? 160 : (70 + idx * 130));
+      obj.y = 120;
+      obj.vy = 2;
+      obj.onScale = false;
+    });
   };
 
   window.buoyancySelectPair = function (pairKey) {
@@ -685,12 +730,16 @@
     const lbl = document.getElementById('salt-grams-lbl');
     if (lbl) lbl.textContent = `${saltGrams} g`;
 
-    // Khối lượng riêng tăng từ 1.00 -> 1.15 g/cm3
-    TANK.waterDensity = 1.00 + (saltGrams * 0.0015);
+    // Khối lượng riêng tăng từ 1.00 -> 1.20 g/cm3 khi pha muối
+    TANK.waterDensity = 1.00 + (saltGrams * 0.002);
 
     const hudVal = document.getElementById('hud-liquid-val');
     if (hudVal) {
       hudVal.textContent = `Nước muối: ${TANK.waterDensity.toFixed(3)} g/cm³`;
+    }
+
+    if (currentStep === 4) {
+      renderPOEContent();
     }
   };
 
@@ -738,10 +787,11 @@
       // 1. Va chạm với Đĩa cân điện tử
       const panLeft = SCALE.x - SCALE.panW / 2;
       const panRight = SCALE.x + SCALE.panW / 2;
-      const objRadius = obj.radius || (obj.width / 2);
+      const halfH = obj.isBoat ? (obj.height / 2) : (obj.isCan ? (obj.height / 2) : (obj.radius || 30));
+      const halfW = obj.isBoat ? (obj.width / 2) : (obj.isCan ? (obj.width / 2) : (obj.radius || 30));
 
-      if (obj.x >= panLeft && obj.x <= panRight && obj.y + objRadius >= SCALE.panY && obj.y + objRadius <= SCALE.panY + 25) {
-        obj.y = SCALE.panY - objRadius;
+      if (obj.x >= panLeft && obj.x <= panRight && obj.y + halfH >= SCALE.panY && obj.y + halfH <= SCALE.panY + 25) {
+        obj.y = SCALE.panY - halfH;
         obj.vy = 0;
         obj.vx *= 0.8;
         obj.onScale = true;
@@ -754,41 +804,57 @@
       const tankRight = TANK.x + TANK.w;
       const tankBottom = TANK.y + TANK.h - 14;
 
-      if (obj.x >= tankLeft + objRadius && obj.x <= tankRight - objRadius && obj.y + objRadius >= TANK.waterY) {
+      if (obj.x >= tankLeft + halfW && obj.x <= tankRight - halfW && obj.y + halfH >= TANK.waterY) {
         obj.inWater = true;
 
-        // Tính độ chìm trong nước
-        const depthInWater = (obj.y + objRadius) - TANK.waterY;
-        const fullHeight = objRadius * 2;
+        // Tính độ chìm trong nước (0 -> 1)
+        const depthInWater = (obj.y + halfH) - TANK.waterY;
+        const fullHeight = halfH * 2;
         let subRatio = Math.min(Math.max(depthInWater / fullHeight, 0), 1);
         obj.submergedRatio = subRatio;
 
         totalSubmergedVol += obj.volume * subRatio;
 
-        // Lực đẩy Archimedes: Fa = d_chất_lỏng * V_chìm
-        // Lực cân bằng khi D_vật / D_nước = subRatio
-        const buoyantFactor = (TANK.waterDensity / obj.density);
-        const buoyantForce = gravity * subRatio * buoyantFactor;
+        // Động lực học Archimedes
+        const isFloating = obj.density < TANK.waterDensity;
+        let buoyantForce = 0;
+
+        if (isFloating) {
+          // Vật nhẹ hơn nước: Tỷ lệ chìm lý thuyết khi cân bằng P = Fa
+          const targetSubRatio = Math.max(obj.density / TANK.waterDensity, 0.05);
+          if (subRatio >= targetSubRatio) {
+            // Chìm sâu hơn mức cân bằng -> lực đẩy Archimedes hồi phục mạnh
+            const excess = (subRatio - targetSubRatio) / (1 - targetSubRatio + 0.001);
+            buoyantForce = gravity * (1 + excess * 2.2);
+          } else {
+            // Đang nhô cao hơn mức cân bằng
+            buoyantForce = gravity * (subRatio / targetSubRatio);
+          }
+        } else {
+          // Vật nặng hơn nước: Chìm dần xuống đáy
+          const maxFactor = TANK.waterDensity / obj.density;
+          buoyantForce = gravity * subRatio * maxFactor;
+        }
 
         // Gia tốc hướng lên do lực đẩy
         obj.vy -= buoyantForce * dt;
 
         // Lực cản của nước (viscous water damping)
-        obj.vy *= Math.pow(0.2, dt);
-        obj.vx *= Math.pow(0.3, dt);
+        obj.vy *= Math.pow(0.35, dt);
+        obj.vx *= Math.pow(0.35, dt);
 
         // Chạm đáy bình
-        if (obj.y + objRadius >= tankBottom) {
-          obj.y = tankBottom - objRadius;
-          obj.vy = 0;
+        if (obj.y + halfH >= tankBottom) {
+          obj.y = tankBottom - halfH;
+          if (obj.vy > 0) obj.vy = 0;
           obj.vx *= 0.7;
         }
 
         // Tạo bọt khí ngẫu nhiên
         if (Math.abs(obj.vy) > 20 && Math.random() < 0.1) {
           waterBubbles.push({
-            x: obj.x + (Math.random() - 0.5) * objRadius,
-            y: obj.y + objRadius,
+            x: obj.x + (Math.random() - 0.5) * halfW,
+            y: obj.y + halfH,
             r: Math.random() * 3 + 1,
             vy: -40 - Math.random() * 30
           });
@@ -800,19 +866,20 @@
 
       // 3. Va chạm sàn bàn thí nghiệm
       const tableY = 440;
-      if (obj.y + objRadius >= tableY) {
-        obj.y = tableY - objRadius;
-        obj.vy = 0;
+      if (obj.y + halfH >= tableY) {
+        obj.y = tableY - halfH;
+        if (obj.vy > 0) obj.vy = 0;
         obj.vx *= 0.8;
       }
 
       // 4. Giới hạn biên canvas
-      if (obj.x - objRadius < 20) { obj.x = 20 + objRadius; obj.vx = 0; }
-      if (obj.x + objRadius > canvasWidth - 20) { obj.x = canvasWidth - 20 - objRadius; obj.vx = 0; }
+      if (obj.x - halfW < 20) { obj.x = 20 + halfW; obj.vx = 0; }
+      if (obj.x + halfW > canvasWidth - 20) { obj.x = canvasWidth - 20 - halfW; obj.vx = 0; }
     });
 
-    // Mực nước dâng theo thể tích vật chiếm chỗ (1 cm3 dâng ~ 0.08px)
-    TANK.waterY = TANK.baseWaterY - (totalSubmergedVol * 0.08);
+    // Mực nước dâng theo thể tích vật chiếm chỗ (giới hạn tối đa 18px để không bao giờ tràn miệng bình)
+    const waterRisePx = Math.min(totalSubmergedVol * 0.012, 18);
+    TANK.waterY = TANK.baseWaterY - waterRisePx;
 
     // Cập nhật bọt khí
     for (let i = waterBubbles.length - 1; i >= 0; i--) {
@@ -1167,17 +1234,18 @@
     ctx.save();
     ctx.translate(obj.x, obj.y);
 
-    const arrowScale = 0.28; // Scale lực sang pixel vẽ
+    // Tính độ lớn thực tế của Trọng lực theo Newton: P = m (kg) * 9.8
+    const pNewtons = obj.mass * 0.0098;
+    // Scale chiều dài mũi tên pixel vừa vặn khung bình (tối thiểu 18px, tối đa 65px)
+    const arrowPxP = Math.min(Math.max(pNewtons * 11, 18), 65);
+    drawArrow(0, 0, 0, arrowPxP, '#ef4444', `P = ${pNewtons.toFixed(2)}N`);
 
-    // 1. Vector Trọng lực P (Mũi tên đỏ hướng xuống)
-    const gravityForce = obj.mass * 9.8 * arrowScale;
-    drawArrow(0, 0, 0, gravityForce, '#ef4444', `P = ${(obj.mass * 0.0098).toFixed(2)}N`);
-
-    // 2. Vector Lực đẩy Archimedes Fa (Mũi tên xanh lá hướng lên)
+    // Tính độ lớn thực tế của Lực đẩy Archimedes theo Newton: FA = V_chìm * D_lỏng * 0.0098
     if (obj.inWater) {
-      const buoyantForce = (obj.volume * obj.submergedRatio * TANK.waterDensity) * 9.8 * arrowScale;
-      if (buoyantForce > 4) {
-        drawArrow(0, 0, 0, -buoyantForce, '#22c55e', `FA = ${(obj.volume * obj.submergedRatio * TANK.waterDensity * 0.0098).toFixed(2)}N`);
+      const faNewtons = (obj.volume * obj.submergedRatio * TANK.waterDensity) * 0.0098;
+      if (faNewtons > 0.02) {
+        const arrowPxFa = Math.min(Math.max(faNewtons * 11, 18), 65);
+        drawArrow(0, 0, 0, -arrowPxFa, '#22c55e', `FA = ${faNewtons.toFixed(2)}N`);
       }
     }
 
@@ -1277,9 +1345,9 @@
       // Tìm xem có nhấn trúng vật nào không
       for (let i = activeObjects.length - 1; i >= 0; i--) {
         const obj = activeObjects[i];
-        const r = obj.radius || (obj.width / 2);
-        const dist = Math.hypot(pos.x - obj.x, pos.y - obj.y);
-        if (dist <= r + 10) {
+        const halfW = obj.isBoat ? (obj.width / 2) : (obj.isCan ? (obj.width / 2) : (obj.radius || 30));
+        const halfH = obj.isBoat ? (obj.height / 2) : (obj.isCan ? (obj.height / 2) : (obj.radius || 30));
+        if (Math.abs(pos.x - obj.x) <= halfW + 12 && Math.abs(pos.y - obj.y) <= halfH + 12) {
           draggedObject = obj;
           dragOffsetX = pos.x - obj.x;
           dragOffsetY = pos.y - obj.y;

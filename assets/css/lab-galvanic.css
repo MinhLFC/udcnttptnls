@@ -490,3 +490,91 @@
   line-height: 1.55;
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN MODE) & THẺ PHÂN CỰC VÔN KẾ
+   ========================================================================== */
+.galvanic-wrapper:fullscreen,
+.galvanic-wrapper:-webkit-full-screen,
+.galvanic-wrapper.is-fullscreen {
+  background: #090e1d !important;
+  color: #f8fafc !important;
+  padding: 1.25rem 2rem !important;
+  overflow-y: auto !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  box-sizing: border-box !important;
+  z-index: 99999;
+}
+
+.galvanic-wrapper.is-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.galvanic-wrapper:fullscreen .galvanic-topbar,
+.galvanic-wrapper:-webkit-full-screen .galvanic-topbar,
+.galvanic-wrapper.is-fullscreen .galvanic-topbar {
+  background: #111a33;
+  border-color: #1e293b;
+  max-width: 1500px;
+  margin: 0 auto 0.75rem auto;
+}
+
+.galvanic-wrapper:fullscreen .galvanic-main-grid,
+.galvanic-wrapper:-webkit-full-screen .galvanic-main-grid,
+.galvanic-wrapper.is-fullscreen .galvanic-main-grid {
+  grid-template-columns: 1.2fr 0.8fr;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.galvanic-wrapper:fullscreen .ecs-series-card,
+.galvanic-wrapper:-webkit-full-screen .ecs-series-card,
+.galvanic-wrapper.is-fullscreen .ecs-series-card,
+.galvanic-wrapper:fullscreen .galvanic-knowledge-grid,
+.galvanic-wrapper:-webkit-full-screen .galvanic-knowledge-grid,
+.galvanic-wrapper.is-fullscreen .galvanic-knowledge-grid {
+  max-width: 1500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Tag hiển thị trạng thái cực Vôn kế trên HUD */
+.hud-volt-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+}
+
+.hud-volt-tag.forward {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.hud-volt-tag.reverse {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  animation: pulse-red 1.5s infinite alternate;
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 rgba(239, 68, 68, 0.2); }
+  100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+}
+
+.hud-probe-btn-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+

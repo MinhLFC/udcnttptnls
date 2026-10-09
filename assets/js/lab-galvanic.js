@@ -42,6 +42,7 @@
   let saltBridgeActive = true;                      // Cầu muối có gắn hay không
   let circuitClosed = true;                         // Khóa K đóng / mở
   let isSimulating = true;                          // Chạy hoạt ảnh
+  let probeRightIsPositive = true;                  // Chốt que đo Vôn kế: true = Que Đỏ (+) nối Phải, Que Đen (-) nối Trái
 
   // Canvas context & Hoạt ảnh hạt
   let canvas, ctx;
@@ -53,10 +54,10 @@
   let cathodeIons = []; // Ion bám vào cực Cathode
 
   /* ─────────────────────────────────────────────────────────────
-     3. TÍNH TOÁN CÁC ĐẠI LƯỢNG ĐIỆN HÓA
+     3. TÍNH TOÁN CÁC ĐẠI LƯỢNG ĐIỆN HÓA & PHÂN CỰC VÔN KẾ
   ───────────────────────────────────────────────────────────── */
   function getCellData() {
-    // Xác định ai là Anode (E° nhỏ hơn -> bị oxi hóa) và Cathode (E° lớn hơn -> bị khử)
+    // 1. Xác định bản chất hóa học: Anode (E° nhỏ hơn -> bị oxi hóa) và Cathode (E° lớn hơn -> bị khử)
     let anode, cathode;
     let anodePosition, cathodePosition; // 'left' hoặc 'right'
 
@@ -72,11 +73,19 @@
       cathodePosition = 'left';
     }
 
-    // Sức điện động chuẩn của pin: E°pin = E°cathode - E°anode
+    // Sức điện động chuẩn lý thuyết của pin (luôn dương hoặc bằng 0): E°pin = E°Cathode - E°Anode
     const eCell = cathode.e0 - anode.e0;
     
-    // Nếu hở mạch hoặc rút cầu muối -> điện áp đo được = 0
-    const measuredVoltage = (circuitClosed && saltBridgeActive) ? eCell : 0;
+    // 2. Hiệu điện thế hiển thị trên Vôn kế thực tế: V_đo = V_que_đỏ(+) - V_que_đen(-)
+    const redProbeMetal = probeRightIsPositive ? rightMetal : leftMetal;
+    const blackProbeMetal = probeRightIsPositive ? leftMetal : rightMetal;
+    const rawVoltage = redProbeMetal.e0 - blackProbeMetal.e0;
+
+    // Nếu hở mạch (khóa K mở) hoặc rút cầu muối -> điện áp đo được = 0
+    const measuredVoltage = (circuitClosed && saltBridgeActive) ? rawVoltage : 0;
+
+    // Trạng thái ngược cực của que đo Vôn kế (khi que đỏ cắm vào Anode có thế thấp hơn)
+    const isReversedPolarity = (circuitClosed && saltBridgeActive && rawVoltage < 0);
 
     // Chiều dịch chuyển electron: từ Anode sang Cathode qua dây dẫn ngoài
     const electronDirection = anodePosition === 'left' ? 1 : -1; // 1: Trái sang Phải, -1: Phải sang Trái
@@ -87,7 +96,12 @@
       anodePosition,
       cathodePosition,
       eCell,
+      rawVoltage,
       measuredVoltage,
+      isReversedPolarity,
+      probeRightIsPositive,
+      redProbePosition: probeRightIsPositive ? 'right' : 'left',
+      blackProbePosition: probeRightIsPositive ? 'left' : 'right',
       electronDirection,
       isIdentical: leftMetal.id === rightMetal.id
     };
@@ -121,6 +135,9 @@
             <button class="galvanic-btn" onclick="galvanicResetStandard()">
               🔄 Pin Chuẩn Zn - Cu (1.10V)
             </button>
+            <button class="galvanic-btn" id="btn-fullscreen" onclick="galvanicToggleFullscreen()" title="Chế độ toàn màn hình">
+              ⛶ Toàn Màn Hình
+            </button>
           </div>
         </div>
 
@@ -137,6 +154,12 @@
               <div class="hud-volt-display">
                 <span>VÔN KẾ:</span>
                 <span class="hud-volt-val" id="hud-voltage-val">0.00 V</span>
+                <span class="hud-volt-tag forward" id="hud-voltage-tag">THUẬN CỰC</span>
+              </div>
+              <div class="hud-probe-btn-wrap">
+                <button class="galvanic-btn" id="btn-toggle-probe" onclick="galvanicToggleProbe()" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Đổi chỗ que cắm Đỏ (+) và Đen (-)">
+                  🔄 Que Đo: <strong>Đỏ Phải (+) | Đen Trái (−)</strong>
+                </button>
               </div>
               <div id="hud-status-text" style="color: #cbd5e1; font-weight: 600;">
                 Đang nạp dữ liệu pin...
@@ -201,8 +224,13 @@
               </div>
               
               <div class="calc-formula-row">
-                <span>E°<sub>pin</sub> = E°<sub>Cathode (+)</sub> − E°<sub>Anode (−)</sub></span>
-                <strong id="calc-result-text" style="color: #2563eb; font-weight: 800;">1.10 V</strong>
+                <span>SĐĐ Lý Thuyết: E°<sub>pin</sub> = E°<sub>Cathode (+)</sub> − E°<sub>Anode (−)</sub></span>
+                <strong id="calc-result-text" style="color: #2563eb; font-weight: 800;">+1.10 V</strong>
+              </div>
+
+              <div class="calc-formula-row" id="calc-measured-row" style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px dashed var(--border-color); font-size: 0.85rem;">
+                <span>Số chỉ Vôn kế (V<sub>đo</sub> = V<sub>que đỏ (+)</sub> − V<sub>que đen (−)</sub>):</span>
+                <strong id="calc-measured-text" style="color: #10b981; font-weight: 800;">+1.10 V</strong>
               </div>
 
               <div class="calc-rxn-row" id="calc-equation-box">
@@ -211,9 +239,12 @@
             </div>
 
             <!-- Thao tác nhanh đổi vai trò -->
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button class="galvanic-btn" onclick="galvanicSwapElectrodes()" title="Hoán đổi 2 điện cực">
-                ⇄ Đổi Vị Trí Trái / Phải
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; margin-top: 0.5rem;">
+              <button class="galvanic-btn" onclick="galvanicSwapElectrodes()" title="Hoán đổi 2 điện cực Trái / Phải (Số chỉ Vôn kế sẽ đổi dấu)">
+                ⇄ Đổi Vị Trí Trái / Phải (Đổi Dấu V)
+              </button>
+              <button class="galvanic-btn" onclick="galvanicToggleProbe()" title="Đảo chốt que cắm Vôn kế Đỏ ⇄ Đen">
+                🔄 Đảo Que Đo (+ / −)
               </button>
             </div>
           </div>
@@ -376,32 +407,81 @@
       }
     }
 
-    // 3. Vôn kế trên HUD
+    // 3. Vôn kế trên HUD & Nút que đo
     const hudVal = document.getElementById('hud-voltage-val');
+    const hudTag = document.getElementById('hud-voltage-tag');
     const hudStatus = document.getElementById('hud-status-text');
+    const btnProbe = document.getElementById('btn-toggle-probe');
+
+    if (btnProbe) {
+      btnProbe.innerHTML = probeRightIsPositive 
+        ? '🔄 Que Đo: <strong>Đỏ Phải (+) | Đen Trái (−)</strong>' 
+        : '🔄 Que Đo: <strong>Đỏ Trái (+) | Đen Phải (−)</strong>';
+    }
+
     if (hudVal) {
-      hudVal.textContent = `${cell.measuredVoltage.toFixed(2)} V`;
-      hudVal.style.color = (circuitClosed && saltBridgeActive && cell.measuredVoltage > 0) ? '#38bdf8' : '#94a3b8';
+      if (!circuitClosed || !saltBridgeActive) {
+        hudVal.textContent = '0.00 V';
+        hudVal.style.color = '#94a3b8';
+      } else if (cell.measuredVoltage < 0) {
+        hudVal.textContent = `${cell.measuredVoltage.toFixed(2)} V`;
+        hudVal.style.color = '#ef4444'; // Đỏ cảnh báo âm
+      } else if (cell.measuredVoltage > 0) {
+        hudVal.textContent = `+${cell.measuredVoltage.toFixed(2)} V`;
+        hudVal.style.color = '#38bdf8'; // Xanh lam chuẩn
+      } else {
+        hudVal.textContent = '0.00 V';
+        hudVal.style.color = '#94a3b8';
+      }
+    }
+
+    if (hudTag) {
+      if (!circuitClosed || !saltBridgeActive || cell.isIdentical) {
+        hudTag.style.display = 'none';
+      } else if (cell.measuredVoltage < 0) {
+        hudTag.style.display = 'inline-block';
+        hudTag.className = 'hud-volt-tag reverse';
+        hudTag.textContent = '⚠️ NGƯỢC CỰC';
+      } else {
+        hudTag.style.display = 'inline-block';
+        hudTag.className = 'hud-volt-tag forward';
+        hudTag.textContent = '🟢 THUẬN CỰC';
+      }
     }
 
     if (hudStatus) {
       if (!circuitClosed) {
         hudStatus.innerHTML = '<span style="color: #f87171;">⚠️ Khóa K đang mở: Mạch hở, không có dòng electron!</span>';
       } else if (!saltBridgeActive) {
-        hudStatus.innerHTML = '<span style="color: #fbbf24;">⚠️ Cầu muối đã rút ra: Tích tụ điện tích làm ngắt dòng điện (U = 0V)!</span>';
+        hudStatus.innerHTML = '<span style="color: #fbbf24;">⚠️ Cầu muối đã rút ra: Tích tụ điện tích làm ngắt mạch kín (U = 0.00V)!</span>';
       } else if (cell.isIdentical) {
         hudStatus.innerHTML = '<span style="color: #fbbf24;">ℹ️ Hai điện cực cùng kim loại: E° bằng nhau nên E°pin = 0.00V!</span>';
+      } else if (cell.measuredVoltage < 0) {
+        hudStatus.innerHTML = `<span style="color: #f87171;">⚠️ <strong>VÔN KẾ CHỈ SỐ ÂM (${cell.measuredVoltage.toFixed(2)} V):</strong> Do que đo dương (+) nối Anode (${cell.anode.symbol}, E° thấp hơn) và que đo âm (−) nối Cathode (${cell.cathode.symbol}, E° cao hơn). SĐĐ chuẩn pin là <strong>+${cell.eCell.toFixed(2)} V</strong>.</span>`;
       } else {
-        hudStatus.innerHTML = `🟢 Pin hoạt động: Electron chạy từ <strong>${cell.anode.symbol}</strong> sang <strong>${cell.cathode.symbol}</strong>. SĐĐ = <strong>+${cell.eCell.toFixed(2)} V</strong>`;
+        hudStatus.innerHTML = `🟢 Pin hoạt động: Electron chạy từ Anode <strong>${cell.anode.symbol}</strong> sang Cathode <strong>${cell.cathode.symbol}</strong>. SĐĐ chuẩn pin = <strong>+${cell.eCell.toFixed(2)} V</strong>`;
       }
     }
 
-    // 4. Phản ứng tổng quát
+    // 4. Phản ứng tổng quát & So sánh SĐĐ vs Số đo Vôn kế
     const calcResult = document.getElementById('calc-result-text');
+    const calcMeasured = document.getElementById('calc-measured-text');
     const calcBox = document.getElementById('calc-equation-box');
 
     if (calcResult) {
       calcResult.textContent = `+${cell.eCell.toFixed(2)} V`;
+    }
+
+    if (calcMeasured) {
+      if (!circuitClosed || !saltBridgeActive) {
+        calcMeasured.innerHTML = `<span style="color: #94a3b8;">0.00 V (Mạch hở)</span>`;
+      } else if (cell.measuredVoltage < 0) {
+        calcMeasured.innerHTML = `<span style="color: #ef4444; font-weight: 800;">${cell.measuredVoltage.toFixed(2)} V (⚠️ Mắc ngược cực đo)</span>`;
+      } else if (cell.measuredVoltage > 0) {
+        calcMeasured.innerHTML = `<span style="color: #10b981; font-weight: 800;">+${cell.measuredVoltage.toFixed(2)} V (🟢 Mắc thuận cực)</span>`;
+      } else {
+        calcMeasured.innerHTML = `<span style="color: #94a3b8;">0.00 V</span>`;
+      }
     }
 
     if (calcBox) {
@@ -420,6 +500,18 @@
         const anIonPart = `${anCoeff > 1 ? anCoeff : ''}${cell.anode.ion}`;
         const catPart = `${catCoeff > 1 ? catCoeff : ''}${cell.cathode.symbol}`;
 
+        let warningHtml = '';
+        if (cell.measuredVoltage < 0 && circuitClosed && saltBridgeActive) {
+          warningHtml = `
+            <div style="margin-top: 0.65rem; padding: 0.5rem 0.75rem; background: rgba(239, 68, 68, 0.1); border-left: 3px solid #ef4444; border-radius: 4px; font-size: 0.8rem; color: #f87171; line-height: 1.45;">
+              <strong>⚠️ Lưu ý sư phạm khi Vôn kế hiển thị số ÂM:</strong><br>
+              • Sức điện động chuẩn lý thuyết của pin là đại lượng không đổi và luôn dương: <strong>E°<sub>pin</sub> = E°<sub>Cathode</sub> − E°<sub>Anode</sub> = +${cell.eCell.toFixed(2)} V</strong>.<br>
+              • Vôn kế hiển thị số âm <strong>(${cell.measuredVoltage.toFixed(2)} V)</strong> do chốt dương (+) cắm vào điện cực có thế thấp hơn (Anode), còn chốt âm (−) cắm vào điện cực có thế cao hơn (Cathode).<br>
+              • Nhấn nút <em>"⇄ Đổi Vị Trí Trái / Phải"</em> hoặc <em>"🔄 Đảo Que Đo (+ / −)"</em> để đưa số đo về giá trị dương chuẩn!
+            </div>
+          `;
+        }
+
         calcBox.innerHTML = `
           <strong>Phản ứng tổng quát trong pin:</strong><br>
           <span style="font-size: 0.95rem; font-family: 'Cambria Math', serif; color: var(--text-main); font-weight: 700;">
@@ -428,6 +520,7 @@
           <small style="color: var(--text-muted);">
             (Anode: ${cell.anode.symbol} bị tan dần; Cathode: kim loại ${cell.cathode.symbol} bám dày thêm)
           </small>
+          ${warningHtml}
         `;
       }
     }
@@ -510,8 +603,8 @@
     const rodRightX = cupRightX + cupW - 50 - rodW;
     const rodY = cupY - 40;
 
-    drawElectrodeRod(rodLeftX, rodY, rodW, rodH, leftMetal, cell.anodePosition === 'left');
-    drawElectrodeRod(rodRightX, rodY, rodW, rodH, rightMetal, cell.anodePosition === 'right');
+    drawElectrodeRod(rodLeftX, rodY, rodW, rodH, leftMetal, cell.anodePosition === 'left', cell.redProbePosition === 'left');
+    drawElectrodeRod(rodRightX, rodY, rodW, rodH, rightMetal, cell.anodePosition === 'right', cell.redProbePosition === 'right');
 
     // 4. Vẽ Cầu Muối U-tube bắc qua 2 cốc
     if (saltBridgeActive) {
@@ -597,7 +690,7 @@
     ctx.restore();
   }
 
-  function drawElectrodeRod(x, y, w, h, metal, isAnode) {
+  function drawElectrodeRod(x, y, w, h, metal, isAnode, isRedProbe) {
     ctx.save();
 
     // Vẽ thanh kim loại nguyên khối
@@ -612,12 +705,19 @@
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, w, h);
 
-    // Kẹp cá sấu giữ điện cực ở trên
-    ctx.fillStyle = isAnode ? '#2563eb' : '#dc2626';
+    // Kẹp cá sấu giữ điện cực ở trên (đỏ nếu nối chốt +, đen xám nếu nối chốt -)
+    const clipColor = isRedProbe ? '#dc2626' : '#1e293b';
+    ctx.fillStyle = clipColor;
     ctx.fillRect(x - 4, y - 8, w + 8, 12);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = isRedProbe ? '#fca5a5' : '#64748b';
+    ctx.lineWidth = 1.2;
     ctx.strokeRect(x - 4, y - 8, w + 8, 12);
+
+    // Nhãn que đo nối kẹp cá sấu (+ hoặc −)
+    ctx.fillStyle = isRedProbe ? '#fca5a5' : '#cbd5e1';
+    ctx.font = '800 8.5px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(isRedProbe ? 'Que (+)' : 'Que (−)', x + w / 2, y - 11);
 
     // Tên kim loại in nổi trên thanh
     ctx.save();
@@ -632,7 +732,7 @@
     ctx.fillStyle = isAnode ? '#60a5fa' : '#f87171';
     ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(isAnode ? 'ANODE (−)' : 'CATHODE (+)', x + w / 2, y - 16);
+    ctx.fillText(isAnode ? 'ANODE (−)' : 'CATHODE (+)', x + w / 2, y - 22);
 
     ctx.restore();
   }
@@ -737,18 +837,26 @@
     const wireTopY = 60;
     const midX = (xLeft + xRight) / 2;
 
-    // Dây dẫn đồng nối 2 điện cực qua Vôn kế
-    ctx.strokeStyle = circuitClosed ? '#f59e0b' : '#64748b';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    
+    // Màu dây dẫn:
+    // Nhánh nối với que Đỏ (+): màu cam/đỏ `#f59e0b`
+    // Nhánh nối với que Đen (−): màu xám chì `#475569`
+    const leftWireColor = cell.redProbePosition === 'left' ? '#f59e0b' : '#475569';
+    const rightWireColor = cell.redProbePosition === 'right' ? '#f59e0b' : '#475569';
+
     // Nhánh trái
+    ctx.strokeStyle = circuitClosed ? leftWireColor : '#64748b';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
     ctx.moveTo(xLeft, yRod);
     ctx.lineTo(xLeft, wireTopY);
-    ctx.lineTo(midX - 55, wireTopY);
-    
+    ctx.lineTo(midX - 54, wireTopY);
+    ctx.stroke();
+
     // Nhánh phải
-    ctx.moveTo(midX + 55, wireTopY);
+    ctx.strokeStyle = circuitClosed ? rightWireColor : '#64748b';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(midX + 54, wireTopY);
     ctx.lineTo(xRight, wireTopY);
     ctx.lineTo(xRight, yRod);
     ctx.stroke();
@@ -776,8 +884,8 @@
     ctx.fillText('Khóa K', switchX, switchY + 20);
 
     // Đồng hồ Vôn kế điện tử chính giữa
-    const meterW = 100;
-    const meterH = 65;
+    const meterW = 108;
+    const meterH = 72;
     const meterX = midX - meterW / 2;
     const meterY = wireTopY - meterH / 2;
 
@@ -786,25 +894,83 @@
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(meterX, meterY, meterW, meterH, 8) : ctx.rect(meterX, meterY, meterW, meterH);
     ctx.fill();
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = cell.isReversedPolarity ? '#ef4444' : '#38bdf8';
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    // 2 Jack cắm (Trái và Phải) trên vôn kế
+    // Jack Trái
+    const jackLeftColor = cell.redProbePosition === 'left' ? '#dc2626' : '#1e293b';
+    const jackLeftBorder = cell.redProbePosition === 'left' ? '#fca5a5' : '#64748b';
+    const jackLeftSign = cell.redProbePosition === 'left' ? '+' : '−';
+    ctx.fillStyle = jackLeftColor;
+    ctx.strokeStyle = jackLeftBorder;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(meterX + 6, wireTopY, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(jackLeftSign, meterX + 6, wireTopY - 7);
+
+    // Jack Phải
+    const jackRightColor = cell.redProbePosition === 'right' ? '#dc2626' : '#1e293b';
+    const jackRightBorder = cell.redProbePosition === 'right' ? '#fca5a5' : '#64748b';
+    const jackRightSign = cell.redProbePosition === 'right' ? '+' : '−';
+    ctx.fillStyle = jackRightColor;
+    ctx.strokeStyle = jackRightBorder;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(meterX + meterW - 6, wireTopY, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(jackRightSign, meterX + meterW - 6, wireTopY - 7);
+
     // Màn hình LCD LED hiển thị số Vôn
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(meterX + 10, meterY + 12, meterW - 20, 28);
-    ctx.strokeStyle = '#1e293b';
-    ctx.strokeRect(meterX + 10, meterY + 12, meterW - 20, 28);
+    ctx.fillRect(meterX + 10, meterY + 10, meterW - 20, 34);
+    ctx.strokeStyle = cell.isReversedPolarity ? '#7f1d1d' : '#1e293b';
+    ctx.strokeRect(meterX + 10, meterY + 10, meterW - 20, 34);
 
-    const vText = cell.measuredVoltage.toFixed(2) + ' V';
-    ctx.fillStyle = (circuitClosed && saltBridgeActive && cell.measuredVoltage > 0) ? '#38bdf8' : '#64748b';
+    let vText = '0.00 V';
+    let vColor = '#64748b';
+    let subStatus = 'HỞ MẠCH';
+
+    if (circuitClosed && saltBridgeActive) {
+      if (cell.measuredVoltage < 0) {
+        vText = `${cell.measuredVoltage.toFixed(2)} V`;
+        vColor = '#ef4444'; // Đỏ cảnh báo âm
+        subStatus = 'NGƯỢC CỰC (−)';
+      } else if (cell.measuredVoltage > 0) {
+        vText = `+${cell.measuredVoltage.toFixed(2)} V`;
+        vColor = '#38bdf8'; // Xanh chuẩn dương
+        subStatus = 'THUẬN CỰC (+)';
+      } else {
+        vText = '0.00 V';
+        vColor = '#94a3b8';
+        subStatus = 'E° = 0.00 V';
+      }
+    }
+
+    ctx.fillStyle = vColor;
     ctx.font = '700 17px "Courier New", monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(vText, midX, meterY + 31);
+    ctx.fillText(vText, midX, meterY + 28);
 
+    // Dòng chữ phụ trên màn LCD
+    ctx.font = '700 8px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = cell.isReversedPolarity ? '#f87171' : '#64748b';
+    ctx.fillText(subStatus, midX, meterY + 40);
+
+    // Nhãn tên Vôn kế bên dưới
     ctx.font = '800 9px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#94a3b8';
-    ctx.fillText('VÔN KẾ (V)', midX, meterY + 54);
+    ctx.fillText('VÔN KẾ (V)', midX, meterY + 58);
 
     ctx.restore();
   }
@@ -900,6 +1066,7 @@
     rightMetal = METALS.find(m => m.id === 'Cu');
     circuitClosed = true;
     saltBridgeActive = true;
+    probeRightIsPositive = true;
 
     const selL = document.getElementById('select-metal-left');
     const selR = document.getElementById('select-metal-right');
@@ -908,8 +1075,10 @@
 
     const btnC = document.getElementById('btn-toggle-circuit');
     const btnB = document.getElementById('btn-toggle-bridge');
+    const btnP = document.getElementById('btn-toggle-probe');
     if (btnC) { btnC.classList.add('active'); btnC.innerHTML = '⚡ Công Tắc K: <strong>ĐÓNG (Chạy)</strong>'; }
     if (btnB) { btnB.classList.add('active'); btnB.innerHTML = '🧪 Cầu Muối KNO₃: <strong>ĐANG GẮN</strong>'; }
+    if (btnP) { btnP.innerHTML = '🔄 Que Đo: <strong>Đỏ Phải (+) | Đen Trái (−)</strong>'; }
 
     updateUIElements();
   };
@@ -926,6 +1095,64 @@
 
     updateUIElements();
   };
+
+  window.galvanicToggleProbe = function () {
+    probeRightIsPositive = !probeRightIsPositive;
+    const btnP = document.getElementById('btn-toggle-probe');
+    if (btnP) {
+      btnP.innerHTML = probeRightIsPositive 
+        ? '🔄 Que Đo: <strong>Đỏ Phải (+) | Đen Trái (−)</strong>' 
+        : '🔄 Que Đo: <strong>Đỏ Trái (+) | Đen Phải (−)</strong>';
+    }
+    updateUIElements();
+  };
+
+  window.galvanicToggleFullscreen = function () {
+    const wrapper = document.querySelector('.galvanic-wrapper');
+    if (!wrapper) return;
+
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (wrapper.requestFullscreen) {
+        wrapper.requestFullscreen().catch(() => {
+          wrapper.classList.toggle('is-fullscreen');
+          updateFullscreenState(wrapper.classList.contains('is-fullscreen'));
+        });
+      } else if (wrapper.webkitRequestFullscreen) {
+        wrapper.webkitRequestFullscreen();
+      } else {
+        wrapper.classList.toggle('is-fullscreen');
+        updateFullscreenState(wrapper.classList.contains('is-fullscreen'));
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  };
+
+  function updateFullscreenState(isFull) {
+    const btn = document.getElementById('btn-fullscreen');
+    if (btn) {
+      btn.innerHTML = isFull ? '🗗 Thu Nhỏ Màn Hình' : '⛶ Toàn Màn Hình';
+      btn.classList.toggle('active', isFull);
+    }
+    const wrapper = document.querySelector('.galvanic-wrapper');
+    if (wrapper) {
+      wrapper.classList.toggle('is-fullscreen', isFull);
+    }
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 120);
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    updateFullscreenState(!!document.fullscreenElement);
+  });
+  document.addEventListener('webkitfullscreenchange', () => {
+    updateFullscreenState(!!document.webkitFullscreenElement);
+  });
 
   window.galvanicClickSeriesItem = function (metalId) {
     // Nếu kim loại này chưa được chọn:

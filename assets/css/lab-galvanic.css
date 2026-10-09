@@ -1,0 +1,492 @@
+/* ==========================================================================
+   THÍ NGHIỆM HÓA HỌC: PIN ĐIỆN HÓA & THẾ ĐIỆN CỰC CHUẨN (HÓA HỌC 12)
+   Tự động hình thành dãy điện hóa kim loại & Cầu muối tương tác
+   ========================================================================== */
+
+.galvanic-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Thanh điều hướng chế độ học tập */
+.galvanic-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-surface-soft);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.galvanic-title-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.galvanic-badge {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.galvanic-top-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.galvanic-btn {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.galvanic-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.galvanic-btn.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.galvanic-btn.primary {
+  background: #10b981;
+  color: #fff;
+  border-color: #10b981;
+}
+
+.galvanic-btn.primary:hover {
+  background: #059669;
+}
+
+/* Lưới chính: Canvas mô phỏng & Bảng điều khiển */
+.galvanic-main-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .galvanic-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hộp chứa Canvas thí nghiệm */
+.galvanic-canvas-card {
+  background: #0b1329;
+  border-radius: var(--radius-lg);
+  border: 1px solid #1e293b;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.galvanic-canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: #070d1e;
+}
+
+#galvanic-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.galvanic-canvas-hud {
+  background: #090e1d;
+  border-top: 1px solid #1e293b;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.hud-volt-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  background: #020617;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #334155;
+}
+
+.hud-volt-val {
+  font-family: 'Courier New', monospace;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+/* Bảng điều khiển chọn điện cực (Anode / Cathode) */
+.galvanic-ctrl-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.electrode-pick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .electrode-pick-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.electrode-box {
+  background: var(--bg-surface-soft);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.electrode-box.anode-box {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.electrode-box.cathode-box {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.electrode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.anode-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.cathode-badge {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.electrode-select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.electrode-info-detail {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.electrode-potential-tag {
+  display: inline-block;
+  background: var(--bg-surface);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 800;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #2563eb;
+  margin-top: 0.35rem;
+  border: 1px solid var(--border-color);
+}
+
+/* Hộp phản ứng & Tính toán SĐĐ */
+.galvanic-calc-box {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.calc-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.calc-formula-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-color);
+  font-family: 'Cambria Math', 'Times New Roman', serif;
+  font-size: 1.05rem;
+  margin-bottom: 0.6rem;
+}
+
+.calc-rxn-row {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.calc-rxn-row strong {
+  color: var(--text-main);
+}
+
+/* Dãy điện hóa kim loại tương tác đầy đủ */
+.ecs-series-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.ecs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ecs-header h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 0.35rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ecs-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Băng chuyền cuộn ngang các cặp oxi hóa - khử */
+.ecs-scroll-wrap {
+  width: 100%;
+  overflow-x: auto;
+  padding: 0.5rem 0 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ecs-trend-arrow-box {
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.trend-arrow-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+}
+
+.trend-arrow-line.ox-trend {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.25));
+  color: #dc2626;
+  border-left: 3px solid #dc2626;
+}
+
+.trend-arrow-line.red-trend {
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.25), rgba(37, 99, 235, 0.1));
+  color: #2563eb;
+  border-right: 3px solid #2563eb;
+}
+
+.ecs-strip {
+  display: flex;
+  gap: 0.45rem;
+  min-width: 950px;
+}
+
+.ecs-metal-item {
+  flex: 1;
+  min-width: 72px;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.35rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.ecs-metal-item:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.ecs-metal-item.active-anode {
+  border-color: #3b82f6;
+  background: #dbeafe;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+[data-theme="dark"] .ecs-metal-item.active-anode {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.ecs-metal-item.active-cathode {
+  border-color: #ef4444;
+  background: #fee2e2;
+  box-shadow: 0 0 0 2px #ef4444;
+}
+[data-theme="dark"] .ecs-metal-item.active-cathode {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.ecs-ion-val {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #dc2626;
+  margin-bottom: 0.15rem;
+}
+
+.ecs-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.25rem auto;
+  width: 75%;
+}
+
+.ecs-metal-val {
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #2563eb;
+  margin-bottom: 0.25rem;
+}
+
+.ecs-pot-val {
+  font-size: 0.7rem;
+  font-family: monospace;
+  color: var(--text-muted);
+}
+
+/* Bảng tra cứu & Thí nghiệm đối chiếu */
+.ecs-comparison-table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.ecs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.ecs-table th, .ecs-table td {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-light);
+  text-align: left;
+}
+
+.ecs-table th {
+  background: var(--bg-surface-soft);
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.ecs-table tr:hover {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+/* Thẻ kiến thức cầu muối & Thế điện cực */
+.galvanic-knowledge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.k-card {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.k-card h4 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.k-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}

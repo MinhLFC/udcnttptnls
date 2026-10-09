@@ -17,6 +17,7 @@
   <!-- Stylesheets -->
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/lab.css">
+  <link rel="stylesheet" href="assets/css/lab-galvanic.css">
 </head>
 <body>
 
@@ -108,6 +109,9 @@
         <button class="lab-tab-btn" data-tab="molecule" onclick="switchTab('molecule')">
           <span class="tab-icon">🔬</span> Phân Tử 3D
         </button>
+        <button class="lab-tab-btn" data-tab="galvanic" onclick="switchTab('galvanic')">
+          <span class="tab-icon">🔋</span> Pin & Dãy Điện Hóa
+        </button>
         <button class="lab-tab-btn" data-tab="circuit" onclick="switchTab('circuit')">
           <span class="tab-icon">⚡</span> Vật Lý (Mạch Điện & Sự Nổi)
         </button>
@@ -154,6 +158,19 @@
           </div>
         </div>
       </div>
+      <!-- Experiment: Galvanic Cell & Electrochemical Series -->
+      <div class="experiment-panel" id="panel-galvanic">
+        <div class="experiment-container">
+          <div class="experiment-header">
+            <h2>🔋 Mô Phỏng Pin Điện Hóa & Dãy Điện Hóa Kim Loại (Hóa Học 12)</h2>
+            <p>Khám phá thế điện cực chuẩn (E°), bản chất phản ứng oxi hóa - khử tự diễn biến tạo dòng điện, vai trò của cầu muối KNO₃ và quy tắc alpha (α).</p>
+          </div>
+          <div id="experiment-galvanic">
+            <!-- Nội dung sẽ được tạo bởi lab-galvanic.js -->
+          </div>
+        </div>
+      </div>
+
       <!-- Experiment 4: Physics (Circuit & Buoyancy) -->
       <div class="experiment-panel" id="panel-circuit">
         <div class="experiment-container">
@@ -604,6 +621,7 @@
   <script src="assets/js/lab-acid-base.js"></script>
   <script src="assets/js/lab-balance.js"></script>
   <script src="assets/js/lab-molecule.js"></script>
+  <script src="assets/js/lab-galvanic.js"></script>
   <script src="assets/js/lab-circuit.js"></script>
   <script src="assets/js/lab-buoyancy.js"></script>
   <script src="assets/js/lab-biology.js"></script>
@@ -614,10 +632,21 @@
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('tab') === 'plickers' || urlParams.has('room') || window.location.hash === '#plickers') {
         window.location.replace('plickers.html' + window.location.search + window.location.hash);
+        return;
+      }
+
+      // Hỗ trợ mở trực tiếp tab từ URL param hoặc hash (ví dụ: lab.html?tab=galvanic hoặc #galvanic)
+      const initialTab = urlParams.get('tab') || window.location.hash.replace('#', '');
+      if (initialTab && ['acid-base', 'balance', 'molecule', 'galvanic', 'circuit', 'biology'].includes(initialTab)) {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => switchTab(initialTab));
+        } else {
+          switchTab(initialTab);
+        }
       }
     })();
 
-    // Tab switching logic cho 5 thí nghiệm (Hóa học, Vật Lý, Sinh học)
+    // Tab switching logic cho các thí nghiệm (Hóa học, Vật Lý, Sinh học)
     function switchTab(tabName) {
       // Deactivate all tabs and panels
       document.querySelectorAll('.lab-tab-btn').forEach(btn => btn.classList.remove('active'));

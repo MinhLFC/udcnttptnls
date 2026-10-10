@@ -681,11 +681,22 @@
       ctx.stroke();
     }
 
-    // Nhãn dung dịch dưới đáy cốc
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = '700 11px "Plus Jakarta Sans", sans-serif';
+    // Nhãn dung dịch dưới đáy cốc (To rõ, có nền pill nổi bật)
+    const labelY = y + h + 25;
+    ctx.font = '800 13.5px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(label, x + w / 2, y + h + 22);
+
+    const textW = ctx.measureText(label).width;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x + w / 2 - textW / 2 - 12, labelY - 14, textW + 24, 25, 6) : ctx.rect(x + w / 2 - textW / 2 - 12, labelY - 14, textW + 24, 25);
+    ctx.fill();
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillText(label, x + w / 2, labelY + 4);
 
     ctx.restore();
   }
@@ -706,33 +717,36 @@
     ctx.strokeRect(x, y, w, h);
 
     // Kẹp cá sấu giữ điện cực ở trên (đỏ nếu nối chốt +, đen xám nếu nối chốt -)
+    const clipH = 16;
     const clipColor = isRedProbe ? '#dc2626' : '#1e293b';
     ctx.fillStyle = clipColor;
-    ctx.fillRect(x - 4, y - 8, w + 8, 12);
+    ctx.fillRect(x - 5, y - clipH, w + 10, clipH);
     ctx.strokeStyle = isRedProbe ? '#fca5a5' : '#64748b';
-    ctx.lineWidth = 1.2;
-    ctx.strokeRect(x - 4, y - 8, w + 8, 12);
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 5, y - clipH, w + 10, clipH);
 
-    // Nhãn que đo nối kẹp cá sấu (+ hoặc −)
-    ctx.fillStyle = isRedProbe ? '#fca5a5' : '#cbd5e1';
-    ctx.font = '800 8.5px monospace';
+    // Nhãn que đo nối kẹp cá sấu (+ hoặc −) - TO RÕ
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 10.5px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(isRedProbe ? 'Que (+)' : 'Que (−)', x + w / 2, y - 11);
+    ctx.fillText(isRedProbe ? 'Que (+)' : 'Que (−)', x + w / 2, y - 4);
 
-    // Tên kim loại in nổi trên thanh
+    // Tên kim loại in nổi trên thanh - TO RÕ NỔI BẬT (24px)
     ctx.save();
-    ctx.translate(x + w / 2, y + 45);
+    ctx.translate(x + w / 2, y + 55);
     ctx.fillStyle = '#0f172a';
-    ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.9)';
+    ctx.shadowBlur = 5;
     ctx.fillText(metal.symbol, 0, 0);
     ctx.restore();
 
-    // Nhãn cực Anode (-) / Cathode (+)
+    // Nhãn cực Anode (-) / Cathode (+) - TO RÕ (14.5px)
     ctx.fillStyle = isAnode ? '#60a5fa' : '#f87171';
-    ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '900 14.5px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(isAnode ? 'ANODE (−)' : 'CATHODE (+)', x + w / 2, y - 22);
+    ctx.fillText(isAnode ? 'ANODE (−)' : 'CATHODE (+)', x + w / 2, y - 25);
 
     ctx.restore();
   }
@@ -781,35 +795,35 @@
     ctx.fillRect(x1 - bridgeW / 2 + 3, yBase + legDepth - 8, bridgeW - 6, 8);
     ctx.fillRect(x2 - bridgeW / 2 + 3, yBase + legDepth - 8, bridgeW - 6, 8);
 
-    // Chữ chú thích Cầu Muối KNO3
+    // Chữ chú thích Cầu Muối KNO3 - TO RÕ (14px)
     ctx.fillStyle = '#fef08a';
-    ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '900 14px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('CẦU MUỐI (KNO₃)', (x1 + x2) / 2, topY - 22);
+    ctx.fillText('CẦU MUỐI (KNO₃)', (x1 + x2) / 2, topY - 24);
 
-    // Nếu pin đang hoạt động: Vẽ ion K⁺ và NO₃⁻ di chuyển
+    // Nếu pin đang hoạt động: Vẽ ion K⁺ và NO₃⁻ di chuyển (font 12.5px)
     if (isLive) {
       const time = performance.now() * 0.001;
       
       // Hướng ion: K⁺ sang Cathode, NO₃⁻ sang Anode
       const kTargetLeft = cell.cathodePosition === 'left';
       
-      ctx.font = '700 9px monospace';
+      ctx.font = '800 12.5px monospace';
       
-      // K⁺ (màu tím)
-      ctx.fillStyle = '#c084fc';
+      // K⁺ (màu tím sáng)
+      ctx.fillStyle = '#d8b4fe';
       for (let i = 0; i < 4; i++) {
         const offset = ((time * 0.2 + i * 0.25) % 1);
         const pt = getBridgePoint(x1, x2, topY, yBase + legDepth, kTargetLeft ? (1 - offset) : offset);
         ctx.fillText('K⁺', pt.x, pt.y);
       }
 
-      // NO₃⁻ (màu vàng nhạt)
+      // NO₃⁻ (màu vàng nhạt sáng)
       ctx.fillStyle = '#fef08a';
       for (let i = 0; i < 4; i++) {
         const offset = ((time * 0.2 + i * 0.25) % 1);
         const pt = getBridgePoint(x1, x2, topY, yBase + legDepth, kTargetLeft ? offset : (1 - offset));
-        ctx.fillText('NO₃⁻', pt.x, pt.y + 4);
+        ctx.fillText('NO₃⁻', pt.x, pt.y + 5);
       }
     }
 
@@ -837,6 +851,12 @@
     const wireTopY = 60;
     const midX = (xLeft + xRight) / 2;
 
+    // Kích thước Vôn kế điện tử lớn hơn, nổi bật hơn
+    const meterW = 144;
+    const meterH = 92;
+    const meterX = midX - meterW / 2;
+    const meterY = wireTopY - meterH / 2;
+
     // Màu dây dẫn:
     // Nhánh nối với que Đỏ (+): màu cam/đỏ `#f59e0b`
     // Nhánh nối với que Đen (−): màu xám chì `#475569`
@@ -849,14 +869,14 @@
     ctx.beginPath();
     ctx.moveTo(xLeft, yRod);
     ctx.lineTo(xLeft, wireTopY);
-    ctx.lineTo(midX - 54, wireTopY);
+    ctx.lineTo(meterX, wireTopY);
     ctx.stroke();
 
     // Nhánh phải
     ctx.strokeStyle = circuitClosed ? rightWireColor : '#64748b';
     ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.moveTo(midX + 54, wireTopY);
+    ctx.moveTo(meterX + meterW, wireTopY);
     ctx.lineTo(xRight, wireTopY);
     ctx.lineTo(xRight, yRod);
     ctx.stroke();
@@ -865,37 +885,35 @@
     const switchX = xRight - 70;
     const switchY = wireTopY;
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(switchX - 15, switchY - 8, 30, 16);
+    ctx.fillRect(switchX - 18, switchY - 10, 36, 20);
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(switchX - 18, switchY - 10, 36, 20);
     
     ctx.strokeStyle = circuitClosed ? '#10b981' : '#ef4444';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.moveTo(switchX - 12, switchY);
+    ctx.moveTo(switchX - 14, switchY);
     if (circuitClosed) {
-      ctx.lineTo(switchX + 12, switchY); // Khóa K đóng
+      ctx.lineTo(switchX + 14, switchY); // Khóa K đóng
     } else {
-      ctx.lineTo(switchX + 8, switchY - 18); // Khóa K mở
+      ctx.lineTo(switchX + 10, switchY - 20); // Khóa K mở
     }
     ctx.stroke();
 
+    // Chữ Khóa K - TO RÕ (13px)
     ctx.fillStyle = '#e2e8f0';
-    ctx.font = '700 9px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Khóa K', switchX, switchY + 20);
+    ctx.fillText('Khóa K', switchX, switchY + 26);
 
-    // Đồng hồ Vôn kế điện tử chính giữa
-    const meterW = 108;
-    const meterH = 72;
-    const meterX = midX - meterW / 2;
-    const meterY = wireTopY - meterH / 2;
-
-    // Vỏ vôn kế
+    // Vỏ vôn kế (Kích thước lớn 144x92, bo góc đẹp)
     ctx.fillStyle = '#020617';
     ctx.beginPath();
-    ctx.roundRect ? ctx.roundRect(meterX, meterY, meterW, meterH, 8) : ctx.rect(meterX, meterY, meterW, meterH);
+    ctx.roundRect ? ctx.roundRect(meterX, meterY, meterW, meterH, 10) : ctx.rect(meterX, meterY, meterW, meterH);
     ctx.fill();
     ctx.strokeStyle = cell.isReversedPolarity ? '#ef4444' : '#38bdf8';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     // 2 Jack cắm (Trái và Phải) trên vôn kế
@@ -905,15 +923,15 @@
     const jackLeftSign = cell.redProbePosition === 'left' ? '+' : '−';
     ctx.fillStyle = jackLeftColor;
     ctx.strokeStyle = jackLeftBorder;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(meterX + 6, wireTopY, 5, 0, Math.PI * 2);
+    ctx.arc(meterX + 7, wireTopY, 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#ffffff';
-    ctx.font = '800 8px monospace';
+    ctx.font = '900 11px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(jackLeftSign, meterX + 6, wireTopY - 7);
+    ctx.fillText(jackLeftSign, meterX + 7, wireTopY - 9);
 
     // Jack Phải
     const jackRightColor = cell.redProbePosition === 'right' ? '#dc2626' : '#1e293b';
@@ -921,21 +939,27 @@
     const jackRightSign = cell.redProbePosition === 'right' ? '+' : '−';
     ctx.fillStyle = jackRightColor;
     ctx.strokeStyle = jackRightBorder;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(meterX + meterW - 6, wireTopY, 5, 0, Math.PI * 2);
+    ctx.arc(meterX + meterW - 7, wireTopY, 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#ffffff';
-    ctx.font = '800 8px monospace';
+    ctx.font = '900 11px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(jackRightSign, meterX + meterW - 6, wireTopY - 7);
+    ctx.fillText(jackRightSign, meterX + meterW - 7, wireTopY - 9);
 
-    // Màn hình LCD LED hiển thị số Vôn
+    // Màn hình LCD LED hiển thị số Vôn (Mở rộng cho số to)
+    const lcdW = meterW - 32;
+    const lcdH = 46;
+    const lcdX = meterX + 16;
+    const lcdY = meterY + 12;
+
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(meterX + 10, meterY + 10, meterW - 20, 34);
+    ctx.fillRect(lcdX, lcdY, lcdW, lcdH);
     ctx.strokeStyle = cell.isReversedPolarity ? '#7f1d1d' : '#1e293b';
-    ctx.strokeRect(meterX + 10, meterY + 10, meterW - 20, 34);
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(lcdX, lcdY, lcdW, lcdH);
 
     let vText = '0.00 V';
     let vColor = '#64748b';
@@ -957,20 +981,21 @@
       }
     }
 
+    // Số vôn to rõ nét (24px Courier New)
     ctx.fillStyle = vColor;
-    ctx.font = '700 17px "Courier New", monospace';
+    ctx.font = '900 24px "Courier New", monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(vText, midX, meterY + 28);
+    ctx.fillText(vText, midX, lcdY + 26);
 
-    // Dòng chữ phụ trên màn LCD
-    ctx.font = '700 8px "Plus Jakarta Sans", sans-serif';
+    // Dòng chữ phụ trên màn LCD (11px)
+    ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = cell.isReversedPolarity ? '#f87171' : '#64748b';
-    ctx.fillText(subStatus, midX, meterY + 40);
+    ctx.fillText(subStatus, midX, lcdY + 40);
 
-    // Nhãn tên Vôn kế bên dưới
-    ctx.font = '800 9px "Plus Jakarta Sans", sans-serif';
+    // Nhãn tên Vôn kế bên dưới màn hình LCD (12px)
+    ctx.font = '900 12px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#94a3b8';
-    ctx.fillText('VÔN KẾ (V)', midX, meterY + 58);
+    ctx.fillText('VÔN KẾ (V)', midX, meterY + 77);
 
     ctx.restore();
   }
@@ -980,6 +1005,8 @@
 
     const wireTopY = 60;
     const time = performance.now() * 0.0015;
+    const midX = (xLeft + xRight) / 2;
+    const meterHalfW = 72;
 
     // Chiều dịch chuyển electron (direction = 1: Trái -> Phải; direction = -1: Phải -> Trái)
     // 3 đoạn dây: (1) Trái đi lên, (2) Ngang qua vôn kế, (3) Phải đi xuống
@@ -1008,6 +1035,11 @@
         // Đoạn 2: chạy ngang qua
         px = xLeft + (dist - legH);
         py = wireTopY;
+
+        // Bỏ qua hạt electron nếu đang ở bên trong thân đồng hồ Vôn kế
+        if (px >= midX - meterHalfW + 6 && px <= midX + meterHalfW - 6) {
+          continue;
+        }
       } else {
         // Đoạn 3: từ góc trên bên phải xuống cực phải
         px = xRight;
@@ -1015,7 +1047,7 @@
       }
 
       ctx.beginPath();
-      ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
       ctx.fill();
     }
 

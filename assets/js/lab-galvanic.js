@@ -173,14 +173,17 @@
               
               <!-- Cực Bên Trái -->
               <div class="electrode-box" id="card-left-electrode">
-                <span class="electrode-badge" id="badge-left">CỰC TRÁI</span>
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
-                  Thanh kim loại & Dung dịch 1:
+                <div class="electrode-head-row">
+                  <span class="electrode-badge" id="badge-left">⚫ CỐC TRÁI (QUE ĐEN −)</span>
+                  <span class="electrode-role-pill" id="role-pill-left">ANODE (−)</span>
+                </div>
+                <label class="electrode-label">
+                  Thanh kim loại & dung dịch:
                 </label>
                 <select class="electrode-select" id="select-metal-left" onchange="galvanicSelectLeft(this.value)">
                   ${METALS.map(m => `
                     <option value="${m.id}" ${m.id === leftMetal.id ? 'selected' : ''}>
-                      ${m.symbol} (${m.name}) — E° = ${m.e0 >= 0 ? '+' : ''}${m.e0.toFixed(2)}V
+                      ${m.symbol} (${m.name}) — E°: ${m.e0 >= 0 ? '+' : ''}${m.e0.toFixed(2)}V
                     </option>
                   `).join('')}
                 </select>
@@ -195,14 +198,17 @@
 
               <!-- Cực Bên Phải -->
               <div class="electrode-box" id="card-right-electrode">
-                <span class="electrode-badge" id="badge-right">CỰC PHẢI</span>
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
-                  Thanh kim loại & Dung dịch 2:
+                <div class="electrode-head-row">
+                  <span class="electrode-badge" id="badge-right">🔴 CỐC PHẢI (QUE ĐỎ +)</span>
+                  <span class="electrode-role-pill" id="role-pill-right">CATHODE (+)</span>
+                </div>
+                <label class="electrode-label">
+                  Thanh kim loại & dung dịch:
                 </label>
                 <select class="electrode-select" id="select-metal-right" onchange="galvanicSelectRight(this.value)">
                   ${METALS.map(m => `
                     <option value="${m.id}" ${m.id === rightMetal.id ? 'selected' : ''}>
-                      ${m.symbol} (${m.name}) — E° = ${m.e0 >= 0 ? '+' : ''}${m.e0.toFixed(2)}V
+                      ${m.symbol} (${m.name}) — E°: ${m.e0 >= 0 ? '+' : ''}${m.e0.toFixed(2)}V
                     </option>
                   `).join('')}
                 </select>
@@ -224,13 +230,17 @@
               </div>
               
               <div class="calc-formula-row">
-                <span>SĐĐ Lý Thuyết: E°<sub>pin</sub> = E°<sub>Cathode (+)</sub> − E°<sub>Anode (−)</sub></span>
-                <strong id="calc-result-text" style="color: #2563eb; font-weight: 800;">+1.10 V</strong>
+                <div class="calc-formula-label">
+                  SĐĐ Chuẩn lý thuyết: E°<sub>pin</sub> = E°<sub>Cathode</sub> − E°<sub>Anode</sub>
+                </div>
+                <strong id="calc-result-text" class="calc-formula-val" style="color: #2563eb;">+1.10 V</strong>
               </div>
 
-              <div class="calc-formula-row" id="calc-measured-row" style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px dashed var(--border-color); font-size: 0.85rem;">
-                <span>Số chỉ Vôn kế (V<sub>đo</sub> = V<sub>que đỏ (+)</sub> − V<sub>que đen (−)</sub>):</span>
-                <strong id="calc-measured-text" style="color: #10b981; font-weight: 800;">+1.10 V</strong>
+              <div class="calc-formula-row measured-row" id="calc-measured-row">
+                <div class="calc-formula-label">
+                  Số chỉ Vôn kế (V<sub>đo</sub> = V<sub>que đỏ (+)</sub> − V<sub>que đen (−)</sub>):
+                </div>
+                <strong id="calc-measured-text" class="calc-formula-val" style="color: #10b981;">+1.10 V</strong>
               </div>
 
               <div class="calc-rxn-row" id="calc-equation-box">
@@ -332,19 +342,22 @@
     strip.innerHTML = METALS.map(m => {
       const isLeft = m.id === leftMetal.id;
       const isRight = m.id === rightMetal.id;
-      const isAnode = m.id === cell.anode.id;
-      const isCathode = m.id === cell.cathode.id;
 
       let activeClass = '';
-      if (isAnode) activeClass = 'active-anode';
-      else if (isCathode) activeClass = 'active-cathode';
+      if (isLeft && isRight) activeClass = 'active-both';
+      else if (isLeft) activeClass = 'active-left';
+      else if (isRight) activeClass = 'active-right';
 
       return `
-        <div class="ecs-metal-item ${activeClass}" onclick="galvanicClickSeriesItem('${m.id}')" title="${m.name}: E° = ${m.e0.toFixed(2)}V (Bấm để chọn)">
+        <div class="ecs-metal-item ${activeClass}" onclick="galvanicClickSeriesItem('${m.id}')" title="${m.name}: E° = ${m.e0.toFixed(2)}V (Bấm để gán)">
           <div class="ecs-ion-val">${m.ion}</div>
           <div class="ecs-divider"></div>
           <div class="ecs-metal-val">${m.symbol}</div>
           <div class="ecs-pot-val">${m.e0 >= 0 ? '+' : ''}${m.e0.toFixed(2)}V</div>
+          <div class="ecs-action-btns">
+            <button class="ecs-btn-set ${isLeft ? 'cur-sel' : ''}" onclick="event.stopPropagation(); galvanicSelectLeft('${m.id}')" title="Gán vào Cốc Trái (Que −)">Trái</button>
+            <button class="ecs-btn-set ${isRight ? 'cur-sel' : ''}" onclick="event.stopPropagation(); galvanicSelectRight('${m.id}')" title="Gán vào Cốc Phải (Que +)">Phải</button>
+          </div>
         </div>
       `;
     }).join('');
@@ -356,25 +369,47 @@
   function updateUIElements() {
     const cell = getCellData();
 
-    // 1. Cập nhật nhãn và màu thẻ Anode / Cathode
+    // 1. Cập nhật nhãn que cắm và vai trò điện hóa của Cốc Trái / Cốc Phải
     const cardLeft = document.getElementById('card-left-electrode');
     const cardRight = document.getElementById('card-right-electrode');
     const badgeLeft = document.getElementById('badge-left');
     const badgeRight = document.getElementById('badge-right');
+    const roleLeft = document.getElementById('role-pill-left');
+    const roleRight = document.getElementById('role-pill-right');
+
+    const leftIsRed = (cell.redProbePosition === 'left');
+    const rightIsRed = (cell.redProbePosition === 'right');
+    const leftIsAnode = (cell.anodePosition === 'left');
+    const rightIsAnode = (cell.anodePosition === 'right');
+
+    if (badgeLeft) {
+      badgeLeft.className = `electrode-badge ${leftIsRed ? 'probe-red-badge' : 'probe-black-badge'}`;
+      badgeLeft.innerHTML = leftIsRed ? '🔴 CỐC TRÁI (QUE ĐỎ +)' : '⚫ CỐC TRÁI (QUE ĐEN −)';
+    }
+    if (badgeRight) {
+      badgeRight.className = `electrode-badge ${rightIsRed ? 'probe-red-badge' : 'probe-black-badge'}`;
+      badgeRight.innerHTML = rightIsRed ? '🔴 CỐC PHẢI (QUE ĐỎ +)' : '⚫ CỐC PHẢI (QUE ĐEN −)';
+    }
+
+    if (roleLeft) {
+      roleLeft.className = `electrode-role-pill ${leftIsAnode ? 'is-anode' : 'is-cathode'}`;
+      roleLeft.textContent = leftIsAnode ? 'ANODE (CỰC ÂM PIN)' : 'CATHODE (CỰC DƯƠNG PIN)';
+    }
+    if (roleRight) {
+      roleRight.className = `electrode-role-pill ${rightIsAnode ? 'is-anode' : 'is-cathode'}`;
+      roleRight.textContent = rightIsAnode ? 'ANODE (CỰC ÂM PIN)' : 'CATHODE (CỰC DƯƠNG PIN)';
+    }
 
     if (cardLeft && cardRight) {
-      if (cell.anodePosition === 'left') {
-        cardLeft.className = 'electrode-box anode-box';
-        cardRight.className = 'electrode-box cathode-box';
-        if (badgeLeft) { badgeLeft.className = 'electrode-badge anode-badge'; badgeLeft.textContent = 'CỰC ÂM (ANODE)'; }
-        if (badgeRight) { badgeRight.className = 'electrode-badge cathode-badge'; badgeRight.textContent = 'CỰC DƯƠNG (CATHODE)'; }
-      } else {
-        cardLeft.className = 'electrode-box cathode-box';
-        cardRight.className = 'electrode-box anode-box';
-        if (badgeLeft) { badgeLeft.className = 'electrode-badge cathode-badge'; badgeLeft.textContent = 'CỰC DƯƠNG (CATHODE)'; }
-        if (badgeRight) { badgeRight.className = 'electrode-badge anode-badge'; badgeRight.textContent = 'CỰC ÂM (ANODE)'; }
-      }
+      cardLeft.className = `electrode-box ${leftIsAnode ? 'anode-box' : 'cathode-box'}`;
+      cardRight.className = `electrode-box ${rightIsAnode ? 'anode-box' : 'cathode-box'}`;
     }
+
+    // Luôn đồng bộ giá trị dropdown với trạng thái thực
+    const selL = document.getElementById('select-metal-left');
+    const selR = document.getElementById('select-metal-right');
+    if (selL && selL.value !== leftMetal.id) selL.value = leftMetal.id;
+    if (selR && selR.value !== rightMetal.id) selR.value = rightMetal.id;
 
     // 2. Cập nhật thông tin nồng độ & phản ứng từng cốc
     const solLeftName = document.getElementById('sol-left-name');
@@ -1057,10 +1092,13 @@
   /* ─────────────────────────────────────────────────────────────
      10. CÁC HÀM XỬ LÝ SỰ KIỆN GIAO DIỆN (INTERACTIONS)
   ───────────────────────────────────────────────────────────── */
+  let lastAssignedSlot = 'right';
+
   window.galvanicSelectLeft = function (metalId) {
     const found = METALS.find(m => m.id === metalId);
     if (found) {
       leftMetal = found;
+      lastAssignedSlot = 'left';
       updateUIElements();
     }
   };
@@ -1069,6 +1107,7 @@
     const found = METALS.find(m => m.id === metalId);
     if (found) {
       rightMetal = found;
+      lastAssignedSlot = 'right';
       updateUIElements();
     }
   };
@@ -1187,19 +1226,25 @@
   });
 
   window.galvanicClickSeriesItem = function (metalId) {
-    // Nếu kim loại này chưa được chọn:
-    // Tự động gán: nếu E° bé hơn cực trái hiện tại -> gán làm cực trái, ngược lại gán cực phải
     const m = METALS.find(x => x.id === metalId);
     if (!m) return;
 
-    if (m.e0 <= leftMetal.e0) {
-      leftMetal = m;
-      const selL = document.getElementById('select-metal-left');
-      if (selL) selL.value = m.id;
-    } else {
+    // Nếu kim loại này đang ở Cốc Trái thì chuyển sang Cốc Phải
+    if (leftMetal.id === metalId) {
       rightMetal = m;
-      const selR = document.getElementById('select-metal-right');
-      if (selR) selR.value = m.id;
+      lastAssignedSlot = 'right';
+    } else if (rightMetal.id === metalId) {
+      leftMetal = m;
+      lastAssignedSlot = 'left';
+    } else {
+      // Gán luân phiên theo lượt gần nhất
+      if (lastAssignedSlot === 'left') {
+        rightMetal = m;
+        lastAssignedSlot = 'right';
+      } else {
+        leftMetal = m;
+        lastAssignedSlot = 'left';
+      }
     }
 
     updateUIElements();

@@ -857,7 +857,7 @@
     const q0 = { x: termRightX, y: termY };
     const q1 = { x: termRightX, y: wireMidY };
     const q2 = { x: rodRightTop.x, y: wireMidY };
-    const q3 = { x: rodRightTop.x, rodRightTop.y };
+    const q3 = { x: rodRightTop.x, y: rodRightTop.y };
 
     ctx.strokeStyle = !leftIsCathode ? '#1e293b' : '#dc2626';
     ctx.beginPath();

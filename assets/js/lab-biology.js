@@ -807,11 +807,11 @@
 
   window.bioReloadModel = function () {
     const cur = ANATOMY_SYSTEMS[currentKey];
-    const iframe = document.getElementById('fa-3d
-      iframe.src = `https://sketchfab.com/models/$-iframe');
+    const iframe = document.getElementById('fa-3d-iframe');
     const loader = document.getElementById('fa-iframe-loader');
     if (loader) loader.classList.remove('hidden');
-    if (iframe) {{cur.modelId}/embed?autostart=1&ui_theme=dark&dnt=1&preload=1`;
+    if (iframe && cur) {
+      iframe.src = `https://sketchfab.com/models/${cur.modelId}/embed?autostart=1&ui_theme=dark&dnt=1&preload=1`;
     }
   };
 

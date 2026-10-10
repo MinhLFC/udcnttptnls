@@ -432,10 +432,10 @@
     const gasLeft = leftIsCathode ? curPreset.cathodeGas : curPreset.anodeGas;
     const gasRight = !leftIsCathode ? curPreset.cathodeGas : curPreset.anodeGas;
 
-    // Sinh bọt khí bên trái nếu có khí
+    // Sinh bọt khí bên trái nếu có khí (tâm thanh trái x = 248)
     if (gasLeft && Math.random() < 0.35) {
       bubblesLeft.push({
-        x: 235 + (Math.random() - 0.5) * 28,
+        x: 248 + (Math.random() - 0.5) * 24,
         y: 420 - Math.random() * 120,
         r: 2 + Math.random() * 3.5,
         speed: 1.2 + Math.random() * 1.5,
@@ -443,10 +443,10 @@
       });
     }
 
-    // Sinh bọt khí bên phải nếu có khí
+    // Sinh bọt khí bên phải nếu có khí (tâm thanh phải x = 612)
     if (gasRight && Math.random() < 0.35) {
       bubblesRight.push({
-        x: 625 + (Math.random() - 0.5) * 28,
+        x: 612 + (Math.random() - 0.5) * 24,
         y: 420 - Math.random() * 120,
         r: 2 + Math.random() * 3.5,
         speed: 1.2 + Math.random() * 1.5,
@@ -834,25 +834,37 @@
 
     const rodLeftTop = { x: cupX + 70 + 18, y: cupY - 46 };
     const rodRightTop = { x: cupX + cupW - 70 - 18, y: cupY - 46 };
+    const wireMidY = 155;
 
-    // Dây nối 1 (Cọc trái xuống Điện cực trái)
-    // Nếu leftIsCathode -> que đen (-), nếu Anot -> que đỏ (+)
+    // Đường dây 1 (Cọc trái sang Điện cực trái)
+    const p0 = { x: termLeftX, y: termY };
+    const p1 = { x: termLeftX, y: wireMidY };
+    const p2 = { x: rodLeftTop.x, y: wireMidY };
+    const p3 = { x: rodLeftTop.x, y: rodLeftTop.y };
+
     ctx.strokeStyle = leftIsCathode ? '#1e293b' : '#dc2626';
     ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
-    ctx.moveTo(termLeftX, termY);
-    ctx.lineTo(termLeftX - 30, termY);
-    ctx.lineTo(rodLeftTop.x, termY + 45);
-    ctx.lineTo(rodLeftTop.x, rodLeftTop.y);
+    ctx.moveTo(p0.x, p0.y);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.lineTo(p3.x, p3.y);
     ctx.stroke();
 
-    // Dây nối 2 (Cọc phải xuống Điện cực phải)
+    // Đường dây 2 (Cọc phải sang Điện cực phải)
+    const q0 = { x: termRightX, y: termY };
+    const q1 = { x: termRightX, y: wireMidY };
+    const q2 = { x: rodRightTop.x, y: wireMidY };
+    const q3 = { x: rodRightTop.x, rodRightTop.y };
+
     ctx.strokeStyle = !leftIsCathode ? '#1e293b' : '#dc2626';
     ctx.beginPath();
-    ctx.moveTo(termRightX, termY);
-    ctx.lineTo(termRightX + 30, termY);
-    ctx.lineTo(rodRightTop.x, termY + 45);
-    ctx.lineTo(rodRightTop.x, rodRightTop.y);
+    ctx.moveTo(q0.x, q0.y);
+    ctx.lineTo(q1.x, q1.y);
+    ctx.lineTo(q2.x, q2.y);
+    ctx.lineTo(q3.x, q3.y);
     ctx.stroke();
 
     // Hạt electron chạy trên dây dẫn nếu nguồn điện bật
@@ -861,31 +873,55 @@
       ctx.shadowColor = '#0284c7';
       ctx.shadowBlur = 6;
 
-      // Chiều dòng electron: Nguồn đẩy electron từ cực âm (−) xuống Catot,
-      // và hút electron từ Anot (+) về cực dương (+) của nguồn
-      electrons.forEach(el => {
-        el.progress += 0.006 * (currentAmps / 2.5);
-        if (el.progress > 1) el.progress = 0;
+      const time = performance.now() * 0.0015;
 
-        // Vẽ trên dây dẫn Catot (đi từ nguồn xuống)
-        const p1 = el.progress;
-        const e1X = termLeftX + (rodLeftTop.x - termLeftX) * p1;
-        const e1Y = termY + (rodLeftTop.y - termY) * p1;
+      electrons.forEach((el, idx) => {
+        const tVal = ((time * 0.4 + idx / electrons.length) % 1);
+
+        // Nguồn đẩy electron vào Catot, hút electron từ Anot
+        let ptLeft, ptRight;
+        if (leftIsCathode) {
+          // Trái là Catot: dòng e từ Nguồn p0 -> p3
+          ptLeft = getPointOnOrthogonalWire(tVal, p0, p1, p2, p3);
+          // Phải là Anot: dòng e từ Anot q3 -> Nguồn q0
+          ptRight = getPointOnOrthogonalWire(1 - tVal, q0, q1, q2, q3);
+        } else {
+          // Trái là Anot: dòng e từ p3 -> p0
+          ptLeft = getPointOnOrthogonalWire(1 - tVal, p0, p1, p2, p3);
+          // Phải là Catot: dòng e từ q0 -> q3
+          ptRight = getPointOnOrthogonalWire(tVal, q0, q1, q2, q3);
+        }
+
         ctx.beginPath();
-        ctx.arc(e1X, e1Y, 3.5, 0, Math.PI * 2);
+        ctx.arc(ptLeft.x, ptLeft.y, 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Vẽ trên dây dẫn Anot (đi từ điện cực về nguồn)
-        const p2 = 1 - el.progress;
-        const e2X = termRightX + (rodRightTop.x - termRightX) * p2;
-        const e2Y = termY + (rodRightTop.y - termY) * p2;
         ctx.beginPath();
-        ctx.arc(e2X, e2Y, 3.5, 0, Math.PI * 2);
+        ctx.arc(ptRight.x, ptRight.y, 3.5, 0, Math.PI * 2);
         ctx.fill();
       });
     }
 
     ctx.restore();
+  }
+
+  function getPointOnOrthogonalWire(t, p0, p1, p2, p3) {
+    const L1 = Math.abs(p1.y - p0.y);
+    const L2 = Math.abs(p2.x - p1.x);
+    const L3 = Math.abs(p3.y - p2.y);
+    const total = L1 + L2 + L3;
+    const d = t * total;
+
+    if (d <= L1) {
+      const r = d / L1;
+      return { x: p0.x, y: p0.y + (p1.y - p0.y) * r };
+    } else if (d <= L1 + L2) {
+      const r = (d - L1) / L2;
+      return { x: p1.x + (p2.x - p1.x) * r, y: p1.y };
+    } else {
+      const r = (d - L1 - L2) / L3;
+      return { x: p2.x, y: p2.y + (p3.y - p2.y) * r };
+    }
   }
 
   /* ─────────────────────────────────────────────────────────────
@@ -897,6 +933,14 @@
     const t = elapsedSeconds;
     const I = currentAmps;
     return (curPreset.A_cat * I * t) / (curPreset.n_cat * FARADAY);
+  }
+
+  function getGasVolumeCathode() {
+    if (!isPowered || elapsedSeconds <= 0 || !curPreset.cathodeGas) return 0;
+    // V = (I * t) / (n * F) * 24.79 (lít ở đkc 25°C, 1 bar)
+    const t = elapsedSeconds;
+    const I = currentAmps;
+    return (I * t / (curPreset.n_cat * FARADAY)) * 24.79 * 1000; // mL
   }
 
   function getGasVolumeAnode() {
@@ -924,36 +968,48 @@
       hudQ.textContent = `${q.toFixed(0)} C`;
     }
 
-    // 2. Tính khối lượng Catot tăng (m)
+    // 2. Tính sản phẩm giải phóng ở Catot (kim loại bám hoặc khí H2)
     const massCatEl = document.getElementById('calc-mass-cat');
     const subCatEl = document.getElementById('faraday-sub-cat');
 
     if (massCatEl) {
-      const mass = getAccumulatedMass();
       if (curPreset.cathodeDepositMetal) {
+        const mass = getAccumulatedMass();
         massCatEl.textContent = `+${mass.toFixed(4)} g (${curPreset.cathodeDepositMetal})`;
         massCatEl.style.color = '#0284c7';
+      } else if (curPreset.cathodeGas) {
+        const vCatMl = getGasVolumeCathode();
+        massCatEl.textContent = `+${vCatMl.toFixed(2)} mL (${curPreset.cathodeGas} ↑)`;
+        massCatEl.style.color = '#0284c7';
       } else {
-        massCatEl.textContent = `0.000 g (Chỉ sủi bọt khí H₂)`;
+        massCatEl.textContent = `0.000 g`;
         massCatEl.style.color = '#94a3b8';
       }
     }
 
     if (subCatEl) {
-      subCatEl.innerHTML = curPreset.cathodeDepositMetal 
-        ? `Catot: <strong>A=${curPreset.A_cat}, n=${curPreset.n_cat}</strong>`
-        : `Catot: <strong>Thoát khí H₂</strong>`;
+      if (curPreset.cathodeDepositMetal) {
+        subCatEl.innerHTML = `Catot: <strong>A=${curPreset.A_cat}, n=${curPreset.n_cat}</strong>`;
+      } else {
+        subCatEl.innerHTML = `Catot: <strong>Khí ${curPreset.cathodeGas || 'H₂'} (n=${curPreset.n_cat})</strong>`;
+      }
     }
 
-    // 3. Tính thể tích khí ở Anot (V)
+    // 3. Tính sản phẩm giải phóng ở Anot (khí hoặc khối lượng Anot tan)
     const volAnEl = document.getElementById('calc-vol-an');
     const rowGasAnEl = document.getElementById('row-gas-anode');
 
     if (volAnEl && rowGasAnEl) {
-      if (curPreset.anodeGas) {
+      if (curPreset.anodeSoluble) {
+        rowGasAnEl.style.display = 'flex';
+        const massAn = (curPreset.A_an * currentAmps * elapsedSeconds) / (curPreset.n_an * FARADAY);
+        volAnEl.textContent = `−${massAn.toFixed(4)} g (${curPreset.anodeMaterial.split(' ')[1] || 'Cu'} tan)`;
+        volAnEl.style.color = '#ef4444';
+      } else if (curPreset.anodeGas) {
         rowGasAnEl.style.display = 'flex';
         const vMl = getGasVolumeAnode();
-        volAnEl.textContent = `${vMl.toFixed(2)} mL (${curPreset.anodeGas})`;
+        volAnEl.textContent = `+${vMl.toFixed(2)} mL (${curPreset.anodeGas} ↑)`;
+        volAnEl.style.color = '#f59e0b';
       } else {
         rowGasAnEl.style.display = 'none';
       }
@@ -1073,11 +1129,13 @@
       if (wrapper.requestFullscreen) {
         wrapper.requestFullscreen().catch(() => {
           wrapper.classList.toggle('is-fullscreen');
+          updateFullscreenStateEl(wrapper.classList.contains('is-fullscreen'));
         });
       } else if (wrapper.webkitRequestFullscreen) {
         wrapper.webkitRequestFullscreen();
       } else {
         wrapper.classList.toggle('is-fullscreen');
+        updateFullscreenStateEl(wrapper.classList.contains('is-fullscreen'));
       }
     } else {
       if (document.exitFullscreen) {
@@ -1088,6 +1146,28 @@
     }
   };
 
+  function updateFullscreenStateEl(isFull) {
+    const btn = document.getElementById('btn-fullscreen-el');
+    if (btn) {
+      btn.innerHTML = isFull ? '🗗 Thu Nhỏ Màn Hình' : '⛶ Toàn Màn Hình';
+      btn.classList.toggle('active', isFull);
+    }
+    const wrapper = document.querySelector('.electrolysis-wrapper');
+    if (wrapper) {
+      wrapper.classList.toggle('is-fullscreen', isFull);
+    }
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 120);
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    updateFullscreenStateEl(!!document.fullscreenElement);
+  });
+  document.addEventListener('webkitfullscreenchange', () => {
+    updateFullscreenStateEl(!!document.webkitFullscreenElement);
+  });
+
   // Khởi tạo khi trang tải
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -1096,5 +1176,12 @@
   } else {
     buildElectrolysisUI();
   }
+
+  window.addEventListener('resize', () => {
+    const c = document.getElementById('electrolysis-canvas');
+    if (c && c.offsetParent !== null) {
+      renderCanvas();
+    }
+  });
 
 })();

@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/lab.css">
   <link rel="stylesheet" href="assets/css/lab-galvanic.css?v=20261011">
+  <link rel="stylesheet" href="assets/css/lab-electrolysis.css?v=20261011">
 </head>
 <body>
 
@@ -112,8 +113,11 @@
         <button class="lab-tab-btn" data-tab="galvanic" onclick="switchTab('galvanic')">
           <span class="tab-icon">🔋</span> Pin & Dãy Điện Hóa
         </button>
+        <button class="lab-tab-btn" data-tab="electrolysis" onclick="switchTab('electrolysis')">
+          <span class="tab-icon">⚡</span> Điện Phân (DC)
+        </button>
         <button class="lab-tab-btn" data-tab="circuit" onclick="switchTab('circuit')">
-          <span class="tab-icon">⚡</span> Vật Lý (Mạch Điện & Sự Nổi)
+          <span class="tab-icon">🔌</span> Vật Lý (Mạch Điện & Sự Nổi)
         </button>
         <button class="lab-tab-btn" data-tab="biology" onclick="switchTab('biology')">
           <span class="tab-icon">🧬</span> Hệ Cơ Quan
@@ -167,6 +171,19 @@
           </div>
           <div id="experiment-galvanic">
             <!-- Nội dung sẽ được tạo bởi lab-galvanic.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Experiment: Electrolysis (Điện Phân Dung Dịch & Nóng Chảy) -->
+      <div class="experiment-panel" id="panel-electrolysis">
+        <div class="experiment-container">
+          <div class="experiment-header">
+            <h2>⚡ Mô Phỏng Thí Nghiệm Điện Phân & Định Luật Faraday (Hóa Học 12)</h2>
+            <p>Khám phá bản chất quá trình oxi hóa - khử cưỡng bức dưới tác dụng của dòng điện một chiều (DC), sự khử ở Catot (−), sự oxi hóa ở Anot (+), bọt khí, mạ điện và tính toán định luật Faraday.</p>
+          </div>
+          <div id="experiment-electrolysis">
+            <!-- Nội dung sẽ được tạo bởi lab-electrolysis.js -->
           </div>
         </div>
       </div>
@@ -622,6 +639,7 @@
   <script src="assets/js/lab-balance.js"></script>
   <script src="assets/js/lab-molecule.js"></script>
   <script src="assets/js/lab-galvanic.js?v=20261011"></script>
+  <script src="assets/js/lab-electrolysis.js?v=20261011"></script>
   <script src="assets/js/lab-circuit.js"></script>
   <script src="assets/js/lab-buoyancy.js"></script>
   <script src="assets/js/lab-biology.js"></script>
@@ -635,9 +653,9 @@
         return;
       }
 
-      // Hỗ trợ mở trực tiếp tab từ URL param hoặc hash (ví dụ: lab.html?tab=galvanic hoặc #galvanic)
+      // Hỗ trợ mở trực tiếp tab từ URL param hoặc hash (ví dụ: lab.html?tab=electrolysis hoặc #electrolysis)
       const initialTab = urlParams.get('tab') || window.location.hash.replace('#', '');
-      if (initialTab && ['acid-base', 'balance', 'molecule', 'galvanic', 'circuit', 'biology'].includes(initialTab)) {
+      if (initialTab && ['acid-base', 'balance', 'molecule', 'galvanic', 'electrolysis', 'circuit', 'biology'].includes(initialTab)) {
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', () => switchTab(initialTab));
         } else {

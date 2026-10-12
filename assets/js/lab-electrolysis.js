@@ -1,18 +1,25 @@
 /**
  * ==============================================================================
- * THÍ NGHIỆM HÓA HỌC: ĐIỆN PHÂN DUNG DỊCH & NÓNG CHẢY (HÓA HỌC 12)
- * Mô phỏng bộ nguồn DC một chiều, hiện tượng bọt khí, mạ kim loại & Định luật Faraday
- * Khoa Hóa học / ĐH Sư Phạm TP.HCM (HCMUE)
+ * PHÒNG THÍ NGHIỆM HÓA HỌC ẢO: BÌNH ĐIỆN PHÂN DUNG DỊCH & NÓNG CHẢY (HÓA HỌC 12)
+ * Tính năng chính:
+ * 1. Mô phỏng bộ nguồn DC 1 chiều (6 bài thí nghiệm chuẩn SGK)
+ * 2. Lưu giữ nguyên kết quả khối lượng Catot & thể tích khí Anot khi tạm dừng
+ * 3. Cân phân tích điện tử (0.0001 g) đặt trên bàn thí nghiệm: Cân Catot/Anot trước & sau pư
+ * 4. Hệ thống hạt ion phát sáng (Cu²⁺, SO₄²⁻, Na⁺, Cl⁻, H⁺, OH⁻...) di chuyển có hướng về 2 cực
+ * 5. Bọt khí, mạ kim loại dày lên, Anot tan, màng ngăn xốp & định luật Faraday
  * ==============================================================================
  */
 
 (function () {
   'use strict';
 
-  // Hằng số Faraday
-  const FARADAY = 96485; // C/mol
+  // Hằng số Faraday (C/mol) và khối lượng que điện cực ban đầu
+  const FARADAY = 96485;
+  const INITIAL_ELECTRODE_MASS = 10.0000; // m0 = 10.0000 g
 
-  // 6 Chế độ thí nghiệm tiêu chuẩn SGK Hóa học 12
+  /* ─────────────────────────────────────────────────────────────
+     DANH MỤC 6 BÀI THÍ NGHIỆM ĐIỆN PHÂN CHUẨN SGK HÓA HỌC 12
+  ───────────────────────────────────────────────────────────── */
   const PRESETS = [
     {
       id: 'cu_inert',
@@ -31,19 +38,25 @@
       n_cat: 2,
       A_an: 32,  // O2
       n_an: 4,
-      defaultU: 6.0, // V
-      defaultI: 2.5, // A
+      defaultU: 6.0,
+      defaultI: 2.5,
       catHalfRxn: 'Cu²⁺ + 2e → Cu ↓ (Đồng đỏ bám lên Catot)',
       anHalfRxn: '2H₂O → O₂ ↑ + 4H⁺ + 4e (Khí O₂ sủi bọt, tạo môi trường axit)',
       overallRxn: '2CuSO₄ + 2H₂O ➔ 2Cu ↓ + O₂ ↑ + 2H₂SO₄',
-      desc: 'Điện phân dung dịch CuSO₄ với điện cực trơ: Cu²⁺ bị khử tạo đồng đỏ bám ở Catot, H₂O bị oxi hóa tạo khí O₂ thoát ra ở Anot. Màu xanh dung dịch nhạt dần.'
+      desc: 'Điện phân dung dịch CuSO₄ với điện cực trơ: Cu²⁺ bị khử tạo đồng đỏ bám ở Catot, H₂O bị oxi hóa tạo khí O₂ thoát ra ở Anot. Màu xanh dung dịch nhạt dần.',
+      ions: [
+        { s: 'Cu²⁺', q: 2, c: '#38bdf8', r: 13, isTargetCat: true },
+        { s: 'SO₄²⁻', q: -2, c: '#eab308', r: 13, isTargetAn: false },
+        { s: 'H⁺', q: 1, c: '#f87171', r: 9, isTargetCat: false },
+        { s: 'OH⁻', q: -1, c: '#34d399', r: 10, isTargetAn: true }
+      ]
     },
     {
       id: 'nacl_diaphragm',
       name: '2. ĐP dung dịch NaCl (Có màng ngăn xốp - Sản xuất Xút/Clo)',
       shortTitle: 'NaCl (Có màng ngăn)',
       solName: 'Dung dịch NaCl bão hòa (+ Phenolphthalein)',
-      solColor: 'rgba(236, 72, 153, 0.25)', // Hồng phớt do OH- sinh ra
+      solColor: 'rgba(236, 72, 153, 0.28)', // Hồng phớt do OH- sinh ra
       hasDiaphragm: true,
       cathodeMaterial: 'Sắt / Than chì',
       anodeMaterial: 'Graphite / Titan',
@@ -60,7 +73,13 @@
       catHalfRxn: '2H₂O + 2e → H₂ ↑ + 2OH⁻ (Dung dịch hóa kiềm làm hồng phenolphthalein)',
       anHalfRxn: '2Cl⁻ → Cl₂ ↑ + 2e (Khí Clo màu vàng lục sủi bọt)',
       overallRxn: '2NaCl + 2H₂O ➔ 2NaOH + H₂ ↑ + Cl₂ ↑ (Có màng ngăn)',
-      desc: 'Sản xuất Xút (NaOH), khí Clo và Hydro trong công nghiệp. Màng ngăn xốp ngăn Cl₂ tiếp xúc với NaOH để tránh tạo nước Javel.'
+      desc: 'Sản xuất Xút (NaOH), khí Clo và Hydro trong công nghiệp. Màng ngăn xốp ngăn Cl₂ tiếp xúc với NaOH để tránh tạo nước Javel.',
+      ions: [
+        { s: 'Na⁺', q: 1, c: '#c084fc', r: 12, isTargetCat: false },
+        { s: 'Cl⁻', q: -1, c: '#4ade80', r: 12, isTargetAn: true },
+        { s: 'H⁺', q: 1, c: '#f87171', r: 9, isTargetCat: true },
+        { s: 'OH⁻', q: -1, c: '#f43f5e', r: 10, isTargetAn: false }
+      ]
     },
     {
       id: 'cu_active',
@@ -84,14 +103,19 @@
       catHalfRxn: 'Cu²⁺ + 2e → Cu ↓ (Đồng bám dày lên vật mạ ở Catot)',
       anHalfRxn: 'Cu (thô) → Cu²⁺ + 2e (Anot bằng đồng bị hòa tan dần)',
       overallRxn: 'Cu (anot) ➔ Cu (catot) (Nồng độ Cu²⁺ và màu dung dịch không đổi)',
-      desc: 'Ứng dụng trong mạ điện và tinh chế đồng kỹ thuật đạt độ tinh khiết 99.99%. Anot tan đúng bằng lượng đồng bám ở Catot.'
+      desc: 'Ứng dụng trong mạ điện và tinh chế đồng kỹ thuật đạt độ tinh khiết 99.99%. Anot tan đúng bằng lượng đồng bám ở Catot.',
+      ions: [
+        { s: 'Cu²⁺', q: 2, c: '#38bdf8', r: 13, isTargetCat: true },
+        { s: 'SO₄²⁻', q: -2, c: '#eab308', r: 13, isTargetAn: false },
+        { s: 'H⁺', q: 1, c: '#f87171', r: 9, isTargetCat: false }
+      ]
     },
     {
       id: 'ag_electroplate',
       name: '4. Mạ bạc (Dung dịch AgNO₃ - Anot bạc Ag)',
       shortTitle: 'AgNO₃ (Mạ bạc)',
       solName: 'Dung dịch AgNO₃ 0.5M',
-      solColor: 'rgba(241, 245, 249, 0.45)', // Trong suốt ánh bạc
+      solColor: 'rgba(241, 245, 249, 0.35)', // Trong suốt ánh bạc
       hasDiaphragm: false,
       cathodeMaterial: 'Thìa kim loại (Vật mạ)',
       anodeMaterial: 'Thanh bạc Ag (Tan)',
@@ -108,7 +132,13 @@
       catHalfRxn: 'Ag⁺ + e → Ag ↓ (Lớp bạc trắng sáng bóng phủ lên thìa kim loại)',
       anHalfRxn: 'Ag → Ag⁺ + e (Thanh bạc ở Anot bị tan dần vào dung dịch)',
       overallRxn: 'Ag (anot) ➔ Ag (catot) (Mạ bạc trang sức, đồ dùng cao cấp)',
-      desc: 'Công nghệ mạ điện bạc: Lớp bạc mạ bám chắc, bóng mịn trên bề mặt chi tiết kim loại cần mạ tại Catot.'
+      desc: 'Công nghệ mạ điện bạc: Lớp bạc mạ bám chắc, bóng mịn trên bề mặt chi tiết kim loại cần mạ tại Catot.',
+      ions: [
+        { s: 'Ag⁺', q: 1, c: '#e2e8f0', r: 13, isTargetCat: true },
+        { s: 'NO₃⁻', q: -1, c: '#fb923c', r: 13, isTargetAn: false },
+        { s: 'H⁺', q: 1, c: '#f87171', r: 9, isTargetCat: false },
+        { s: 'OH⁻', q: -1, c: '#34d399', r: 10, isTargetAn: false }
+      ]
     },
     {
       id: 'water_splitting',
@@ -132,7 +162,12 @@
       catHalfRxn: '4H⁺ + 4e → 2H₂ ↑ (Khí H₂ thoát ra gấp đôi ở Catot)',
       anHalfRxn: '2H₂O → O₂ ↑ + 4H⁺ + 4e (Khí O₂ thoát ra ở Anot)',
       overallRxn: '2H₂O ➔ 2H₂ ↑ + O₂ ↑ (Tỉ lệ thể tích VH₂ : VO₂ = 2 : 1)',
-      desc: 'Điện phân nước tạo khí Hydro và Oxy tinh khiết. Thể tích khí H₂ thu được ở Catot luôn gấp 2 lần thể tích khí O₂ ở Anot.'
+      desc: 'Điện phân nước tạo khí Hydro và Oxy tinh khiết. Thể tích khí H₂ thu được ở Catot luôn gấp 2 lần thể tích khí O₂ ở Anot.',
+      ions: [
+        { s: 'H⁺', q: 1, c: '#f87171', r: 9, isTargetCat: true },
+        { s: 'SO₄²⁻', q: -2, c: '#eab308', r: 13, isTargetAn: false },
+        { s: 'OH⁻', q: -1, c: '#38bdf8', r: 10, isTargetAn: true }
+      ]
     },
     {
       id: 'molten_nacl',
@@ -156,7 +191,11 @@
       catHalfRxn: 'Na⁺ + e → Na ↓ (Kim loại Natri nóng chảy nổi lên trên bề mặt)',
       anHalfRxn: '2Cl⁻ → Cl₂ ↑ + 2e (Khí Clo màu vàng lục thoát ra ở Anot)',
       overallRxn: '2NaCl ➔ 2Na + Cl₂ ↑ (Điện phân nóng chảy)',
-      desc: 'Phương pháp duy nhất điều chế kim loại kiềm mạnh (Na, K, Ca, Al). Không có nước tham gia, cation kim loại bị khử trực tiếp thành kim loại tự do.'
+      desc: 'Phương pháp duy nhất điều chế kim loại kiềm mạnh (Na, K, Ca, Al). Không có nước tham gia, cation kim loại bị khử trực tiếp thành kim loại tự do.',
+      ions: [
+        { s: 'Na⁺', q: 1, c: '#c084fc', r: 13, isTargetCat: true },
+        { s: 'Cl⁻', q: -1, c: '#4ade80', r: 13, isTargetAn: true }
+      ]
     }
   ];
 
@@ -170,6 +209,9 @@
   let hasDiaphragm = false;       // Màng ngăn xốp
   let elapsedSeconds = 0;         // Thời gian điện phân tích lũy (giây)
 
+  // Trạng thái cân điện tử: null | 'cathode' | 'anode'
+  let weighingTarget = null;
+
   // Hệ thống hạt mô phỏng đồ họa Canvas
   let canvas, ctx;
   let animId = null;
@@ -177,6 +219,8 @@
   let electrons = [];
   let bubblesLeft = [];
   let bubblesRight = [];
+  let ions = [];
+  let ionSparks = [];
 
   /* ─────────────────────────────────────────────────────────────
      1. KHỞI TẠO VÀ BUILD GIAO DIỆN HTML
@@ -189,6 +233,7 @@
     currentAmps = curPreset.defaultI;
     hasDiaphragm = curPreset.hasDiaphragm;
     elapsedSeconds = 0;
+    weighingTarget = null;
 
     container.innerHTML = `
       <div class="electrolysis-wrapper">
@@ -211,6 +256,15 @@
             <button class="electrolysis-btn" onclick="electrolysisResetTime()" title="Đặt lại đồng hồ thời gian điện phân về 0">
               ⏱ Đặt Lại Thời Gian
             </button>
+            <button class="electrolysis-btn btn-weigh ${weighingTarget === 'cathode' ? 'active' : ''}" id="btn-top-weigh-cat" onclick="electrolysisWeighElectrode('cathode')" title="Nhấc Catot đặt lên cân phân tích điện tử">
+              ⚖️ Cân Catot
+            </button>
+            <button class="electrolysis-btn btn-weigh ${weighingTarget === 'anode' ? 'active' : ''}" id="btn-top-weigh-an" onclick="electrolysisWeighElectrode('anode')" title="Nhấc Anot đặt lên cân phân tích điện tử">
+              ⚖️ Cân Anot
+            </button>
+            <button class="electrolysis-btn btn-return ${weighingTarget ? 'active' : ''}" id="btn-top-return" onclick="electrolysisReturnElectrode()" title="Đưa thanh điện cực trở lại bình điện phân">
+              ↩ Đặt Lại Vào Bình
+            </button>
             <button class="electrolysis-btn" id="btn-fullscreen-el" onclick="electrolysisToggleFullscreen()" title="Chế độ toàn màn hình">
               ⛶ Toàn Màn Hình
             </button>
@@ -223,7 +277,7 @@
           <!-- Cột Trái: Bàn thí nghiệm Canvas 2D tương tác -->
           <div class="electrolysis-canvas-card">
             <div class="electrolysis-canvas-wrap">
-              <canvas id="electrolysis-canvas" width="860" height="520"></canvas>
+              <canvas id="electrolysis-canvas" width="880" height="520"></canvas>
             </div>
             
             <div class="electrolysis-canvas-hud">
@@ -231,12 +285,17 @@
                 <span>NGUỒN DC:</span>
                 <span class="hud-dc-val" id="hud-voltage-text">${voltage.toFixed(1)} V</span>
                 <span class="hud-dc-val" id="hud-current-text" style="color: #10b981;">${currentAmps.toFixed(2)} A</span>
-                <span class="hud-dc-tag running" id="hud-status-badge">ĐANG ĐIỆN PHÂN</span>
+                <span class="hud-dc-tag ${isPowered ? 'running' : 'stopped'}" id="hud-status-badge">
+                  ${isPowered ? 'ĐANG ĐIỆN PHÂN' : (weighingTarget ? 'ĐANG CÂN ĐIỆN CỰC' : 'TẠM DỪNG (GIỮ SỐ LIỆU)')}
+                </span>
               </div>
               
-              <div style="display: flex; gap: 0.75rem; align-items: center; font-family: monospace; font-size: 0.92rem;">
+              <div style="display: flex; gap: 0.85rem; align-items: center; font-family: monospace; font-size: 0.92rem; flex-wrap: wrap;">
                 <span>⏱ Thời gian: <strong id="hud-time-text" style="color: #38bdf8; font-size: 1.05rem;">00:00</strong></span>
                 <span>⚡ Điện lượng Q: <strong id="hud-q-text" style="color: #fbbf24;">0 C</strong></span>
+                <span style="color: #a7f3d0; border-left: 1px solid #334155; padding-left: 0.65rem;">
+                  ⚖️ Cân: <strong id="hud-scale-text" style="color: #34d399;">0.0000 g</strong>
+                </span>
               </div>
             </div>
           </div>
@@ -299,6 +358,32 @@
 
             </div>
 
+            <!-- Khung Cân Phân Tích Điện Tử (Mới) -->
+            <div class="weigh-ctrl-box">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 0.4rem;">
+                  <span>⚖️</span> CÂN PHÂN TÍCH ĐIỆN TỬ (0.0001 g):
+                </span>
+                <span id="weigh-status-text" style="font-size: 0.78rem; font-weight: 800; color: #10b981; background: rgba(16,185,129,0.15); padding: 0.15rem 0.5rem; border-radius: 4px;">
+                  ${weighingTarget ? 'ĐANG CÂN' : 'SẴN SÀNG'}
+                </span>
+              </div>
+              <div class="weigh-btns-wrap">
+                <button type="button" class="electrolysis-btn btn-weigh ${weighingTarget === 'cathode' ? 'active' : ''}" id="btn-card-weigh-cat" onclick="electrolysisWeighElectrode('cathode')" style="flex: 1; font-size: 0.82rem; padding: 0.45rem;">
+                  ⚖️ Cân Catot
+                </button>
+                <button type="button" class="electrolysis-btn btn-weigh ${weighingTarget === 'anode' ? 'active' : ''}" id="btn-card-weigh-an" onclick="electrolysisWeighElectrode('anode')" style="flex: 1; font-size: 0.82rem; padding: 0.45rem;">
+                  ⚖️ Cân Anot
+                </button>
+                <button type="button" class="electrolysis-btn btn-return ${weighingTarget ? 'active' : ''}" id="btn-card-return" onclick="electrolysisReturnElectrode()" style="font-size: 0.82rem; padding: 0.45rem;">
+                  ↩ Vào Bình
+                </button>
+              </div>
+              <div id="weigh-detail-info" style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace; background: rgba(0,0,0,0.18); padding: 0.4rem 0.6rem; border-radius: 4px;">
+                Que ban đầu m₀ = 10.0000 g | Bấm 'Cân Catot' để xem số đo
+              </div>
+            </div>
+
             <!-- Khung Tính toán Định luật Faraday -->
             <div class="faraday-calc-box">
               <div class="faraday-title">
@@ -312,11 +397,11 @@
                 </div>
                 <div class="faraday-eq-row" style="margin-top: 0.35rem; padding-top: 0.35rem; border-top: 1px dashed var(--border-color);">
                   <span>Khối lượng Catot tăng (m):</span>
-                  <strong class="faraday-val" id="calc-mass-cat">0.000 g</strong>
+                  <strong class="faraday-val" id="calc-mass-cat">+0.0000 g</strong>
                 </div>
                 <div class="faraday-eq-row" id="row-gas-anode" style="margin-top: 0.25rem;">
                   <span>Thể tích khí Anot (V đkc, 25°C):</span>
-                  <strong class="faraday-val" id="calc-vol-an" style="color: #f59e0b;">0.00 mL</strong>
+                  <strong class="faraday-val" id="calc-vol-an" style="color: #f59e0b;">+0.00 mL</strong>
                 </div>
               </div>
 
@@ -376,7 +461,7 @@
                   <td>Cực DƯƠNG (+) — Xảy ra sự Oxi hóa</td>
                 </tr>
                 <tr>
-                  <td><strong>Quy tắc nhớ</strong></td>
+                  <td><strong>Khẩu quyết</strong></td>
                   <td>"Anode luôn oxi hóa, Cathode luôn khử"</td>
                   <td>"Dấu cực bị đảo ngược so với Pin"</td>
                 </tr>
@@ -405,78 +490,223 @@
     }
 
     initParticleEngine();
+    initIons();
     updateUI();
     startSimulationLoop();
   }
 
   /* ─────────────────────────────────────────────────────────────
-     2. HỆ THỐNG HẠT ĐỒ HỌA (ELECTRON & BỌT KHÍ)
+     2. HỆ THỐNG HẠT ĐỒ HỌA (ELECTRON & BỌT KHÍ & ION)
   ───────────────────────────────────────────────────────────── */
   function initParticleEngine() {
     electrons = [];
     bubblesLeft = [];
     bubblesRight = [];
+    ionSparks = [];
 
-    // Tạo 20 electron chạy dọc dây dẫn ngoài
-    for (let i = 0; i < 20; i++) {
-      electrons.push({ progress: i / 20 });
+    // Tạo 22 electron chạy dọc dây dẫn ngoài
+    for (let i = 0; i < 22; i++) {
+      electrons.push({ progress: i / 22 });
+    }
+  }
+
+  function initIons() {
+    ions = [];
+    if (!curPreset.ions || curPreset.ions.length === 0) return;
+
+    // Vùng chứa dung dịch trong bình điện phân
+    const solX = 55 + 14;
+    const solY = 210 + 44;
+    const solW = 440 - 28;
+    const solH = 245 - 52;
+
+    const templateIons = curPreset.ions;
+    const targetCount = 28;
+
+    for (let i = 0; i < targetCount; i++) {
+      const tmpl = templateIons[i % templateIons.length];
+      ions.push({
+        s: tmpl.s,
+        q: tmpl.q,
+        c: tmpl.c,
+        r: tmpl.r || 12,
+        isTargetCat: !!tmpl.isTargetCat,
+        isTargetAn: !!tmpl.isTargetAn,
+        x: solX + 20 + Math.random() * (solW - 40),
+        y: solY + 15 + Math.random() * (solH - 30),
+        vx: (Math.random() - 0.5) * 16,
+        vy: (Math.random() - 0.5) * 16
+      });
     }
   }
 
   function spawnBubbles() {
-    if (!isPowered) return;
+    if (!isPowered || weighingTarget !== null) return;
 
-    // Xác định điện cực trái/phải là Catot hay Anot
     const leftIsCathode = !polarityReversed;
-
     const gasLeft = leftIsCathode ? curPreset.cathodeGas : curPreset.anodeGas;
     const gasRight = !leftIsCathode ? curPreset.cathodeGas : curPreset.anodeGas;
 
-    // Sinh bọt khí bên trái nếu có khí (tâm thanh trái x = 248)
-    if (gasLeft && Math.random() < 0.35) {
+    // Sinh bọt khí bên trái (x = 127)
+    if (gasLeft && Math.random() < 0.38) {
       bubblesLeft.push({
-        x: 248 + (Math.random() - 0.5) * 24,
-        y: 420 - Math.random() * 120,
+        x: 127 + (Math.random() - 0.5) * 22,
+        y: 410 - Math.random() * 110,
         r: 2 + Math.random() * 3.5,
-        speed: 1.2 + Math.random() * 1.5,
-        gas: gasLeft
+        speedY: 1.5 + Math.random() * 2.5,
+        driftX: (Math.random() - 0.5) * 0.8,
+        gasType: gasLeft
       });
     }
 
-    // Sinh bọt khí bên phải nếu có khí (tâm thanh phải x = 612)
-    if (gasRight && Math.random() < 0.35) {
+    // Sinh bọt khí bên phải (x = 423)
+    if (gasRight && Math.random() < 0.38) {
       bubblesRight.push({
-        x: 612 + (Math.random() - 0.5) * 24,
-        y: 420 - Math.random() * 120,
+        x: 423 + (Math.random() - 0.5) * 22,
+        y: 410 - Math.random() * 110,
         r: 2 + Math.random() * 3.5,
-        speed: 1.2 + Math.random() * 1.5,
-        gas: gasRight
+        speedY: 1.5 + Math.random() * 2.5,
+        driftX: (Math.random() - 0.5) * 0.8,
+        gasType: gasRight
       });
     }
   }
 
+  function updateIons(dt) {
+    const solX = 55 + 14;
+    const solY = 210 + 44;
+    const solW = 440 - 28;
+    const solH = 245 - 52;
+
+    const leftIsCathode = !polarityReversed;
+    const rodLeftCenterX = 127;
+    const rodRightCenterX = 423;
+    const diaphragmX = 55 + 220;
+
+    const catX = leftIsCathode ? rodLeftCenterX : rodRightCenterX;
+    const anX = leftIsCathode ? rodRightCenterX : rodLeftCenterX;
+
+    const circuitClosed = isPowered && weighingTarget === null;
+
+    ions.forEach(ion => {
+      if (circuitClosed) {
+        // Có điện trường: Cation (+) bơi về Catot, Anion (-) bơi về Anot
+        const targetX = ion.q > 0 ? catX : anX;
+        const dir = targetX > ion.x ? 1 : -1;
+        const eForce = (42 + Math.abs(ion.q) * 26) * dir;
+
+        ion.vx += eForce * dt + (Math.random() - 0.5) * 25 * dt;
+        ion.vy += (Math.random() - 0.5) * 25 * dt;
+
+        // Giới hạn vận tốc trôi dạt có hướng
+        ion.vx = Math.max(-65, Math.min(65, ion.vx));
+        ion.vy = Math.max(-30, Math.min(30, ion.vy));
+
+        // Kiểm tra chạm điện cực đích
+        const distCat = Math.abs(ion.x - catX);
+        const distAn = Math.abs(ion.x - anX);
+
+        if (ion.q > 0 && distCat < 14) {
+          // Ion dương đến Catot: nếu là ion nhận e (Cu2+, H+, Ag+, Na+)
+          if (ion.isTargetCat && Math.random() < 0.08) {
+            ionSparks.push({ x: catX + (Math.random() - 0.5) * 10, y: ion.y, life: 1.0, color: ion.c });
+            // Tái sinh ion từ dung dịch
+            ion.x = diaphragmX + (Math.random() - 0.5) * 60;
+            ion.y = solY + 20 + Math.random() * (solH - 40);
+            ion.vx = (Math.random() - 0.5) * 10;
+          } else {
+            ion.vx *= -0.5;
+          }
+        } else if (ion.q < 0 && distAn < 14) {
+          // Ion âm đến Anot: nếu là ion nhường e (Cl-, OH-)
+          if (ion.isTargetAn && Math.random() < 0.08) {
+            ionSparks.push({ x: anX + (Math.random() - 0.5) * 10, y: ion.y, life: 1.0, color: ion.c });
+            ion.x = diaphragmX + (Math.random() - 0.5) * 60;
+            ion.y = solY + 20 + Math.random() * (solH - 40);
+            ion.vx = (Math.random() - 0.5) * 10;
+          } else {
+            ion.vx *= -0.5;
+          }
+        }
+
+      } else {
+        // Tắt điện: chuyển động nhiệt hỗn loạn (Brownian motion)
+        ion.vx += (Math.random() - 0.5) * 35 * dt;
+        ion.vy += (Math.random() - 0.5) * 35 * dt;
+        ion.vx *= 0.985;
+        ion.vy *= 0.985;
+      }
+
+      // Cập nhật tọa độ
+      ion.x += ion.vx * dt;
+      ion.y += ion.vy * dt;
+
+      // Va chạm biên dung dịch
+      if (ion.x < solX + ion.r) {
+        ion.x = solX + ion.r;
+        ion.vx = Math.abs(ion.vx) * 0.8;
+      } else if (ion.x > solX + solW - ion.r) {
+        ion.x = solX + solW - ion.r;
+        ion.vx = -Math.abs(ion.vx) * 0.8;
+      }
+
+      if (ion.y < solY + ion.r) {
+        ion.y = solY + ion.r;
+        ion.vy = Math.abs(ion.vy) * 0.8;
+      } else if (ion.y > solY + solH - ion.r) {
+        ion.y = solY + solH - ion.r;
+        ion.vy = -Math.abs(ion.vy) * 0.8;
+      }
+
+      // Xử lý màng ngăn xốp
+      if (hasDiaphragm) {
+        const diaL = diaphragmX - 6;
+        const diaR = diaphragmX + 6;
+        if (ion.x > diaL - ion.r && ion.x < diaR + ion.r) {
+          // Chỉ hạt nhỏ (H+, OH-) có xác suất nhỏ qua màng
+          if ((ion.s === 'H⁺' || ion.s === 'OH⁻') && Math.random() < 0.1) {
+            // Cho qua
+          } else {
+            ion.vx *= -1;
+            ion.x = ion.vx > 0 ? diaR + ion.r : diaL - ion.r;
+          }
+        }
+      }
+    });
+
+    // Cập nhật tia lóe sáng (sparks) khi phản ứng bề mặt
+    for (let i = ionSparks.length - 1; i >= 0; i--) {
+      ionSparks[i].life -= dt * 2.5;
+      if (ionSparks[i].life <= 0) {
+        ionSparks.splice(i, 1);
+      }
+    }
+  }
+
   /* ─────────────────────────────────────────────────────────────
-     3. VÒNG LẶP RENDER CANVAS 2D THỜI GIAN THỰC (60 FPS)
+     3. VÒNG LẶP MÔ PHỎNG VÀ VẼ CANVAS (SIMULATION LOOP)
   ───────────────────────────────────────────────────────────── */
   function startSimulationLoop() {
     if (animId) cancelAnimationFrame(animId);
 
-    function loop(now) {
-      const dt = (now - lastFrameTime) / 1000;
-      lastFrameTime = now;
+    function loop(timestamp) {
+      const dt = Math.min(0.05, (timestamp - lastFrameTime) * 0.001);
+      lastFrameTime = timestamp;
 
-      // Cập nhật tích lũy thời gian điện phân nếu nguồn bật
-      if (isPowered) {
+      // Nếu đang bật nguồn và không nhấc điện cực lên cân: tích lũy thời gian
+      if (isPowered && weighingTarget === null) {
         elapsedSeconds += dt * speedMultiplier;
         spawnBubbles();
       }
 
-      renderCanvas();
+      updateIons(dt);
       updateFaradayCalculations();
+      renderCanvas();
 
       animId = requestAnimationFrame(loop);
     }
 
+    lastFrameTime = performance.now();
     animId = requestAnimationFrame(loop);
   }
 
@@ -485,28 +715,37 @@
 
     const w = canvas.width;
     const h = canvas.height;
+
     ctx.clearRect(0, 0, w, h);
 
+    // Xác định cực trái là Catot hay Anot
     const leftIsCathode = !polarityReversed;
 
-    // 1. Vẽ mặt bàn phòng thí nghiệm
+    // 1. Mặt bàn phòng thí nghiệm & phông nền
     drawTable(w, h);
 
-    // 2. Vẽ Bộ nguồn 1 chiều DC Power Supply ở phía trên
-    const psX = 280;
-    const psY = 25;
-    const psW = 300;
-    const psH = 110;
+    // 2. Bộ nguồn DC ở góc trên bên trái
+    const psX = 130;
+    const psY = 20;
+    const psW = 270;
+    const psH = 92;
     drawPowerSupply(psX, psY, psW, psH);
 
-    // 3. Vẽ Bình điện phân ở phía dưới
-    const cupX = 160;
-    const cupY = 220;
-    const cupW = 540;
-    const cupH = 240;
+    // 3. Bình điện phân dung dịch ở phía dưới bên trái
+    const cupX = 55;
+    const cupY = 210;
+    const cupW = 440;
+    const cupH = 245;
     drawElectrolyticCell(cupX, cupY, cupW, cupH, leftIsCathode);
 
-    // 4. Vẽ Dây dẫn điện nối từ Bộ nguồn xuống 2 điện cực
+    // 4. Cân phân tích điện tử (0.0001 g) ở bên phải mặt bàn
+    const scaleX = 535;
+    const scaleY = 190;
+    const scaleW = 310;
+    const scaleH = 270;
+    drawDigitalScale(scaleX, scaleY, scaleW, scaleH, leftIsCathode);
+
+    // 5. Dây dẫn điện nối từ Bộ nguồn DC
     drawWiresAndElectrons(psX, psY, psW, psH, cupX, cupY, cupW, leftIsCathode);
   }
 
@@ -514,7 +753,7 @@
      4. HỌA VẼ BÀN THÍ NGHIỆM & BỘ NGUỒN DC
   ───────────────────────────────────────────────────────────── */
   function drawTable(w, h) {
-    const tableY = 465;
+    const tableY = 460;
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(0, tableY, w, h - tableY);
     ctx.strokeStyle = '#334155';
@@ -534,7 +773,7 @@
   function drawPowerSupply(x, y, w, h) {
     ctx.save();
 
-    // Vỏ hộp kim loại của bộ nguồn DC công nghiệp
+    // Vỏ kim loại bộ nguồn DC
     ctx.fillStyle = '#0f172a';
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(x, y, w, h, 10) : ctx.rect(x, y, w, h);
@@ -543,17 +782,17 @@
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // Tên thiết bị trên mặt bộ nguồn
+    // Tên thiết bị
     ctx.fillStyle = '#94a3b8';
-    ctx.font = '800 11.5px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('DC POWER SUPPLY (NGUỒN 1 CHIỀU)', x + 16, y + 22);
+    ctx.fillText('DC POWER SUPPLY (NGUỒN 1 CHIỀU)', x + 14, y + 20);
 
-    // Màn hình LED kỹ thuật số hiển thị V và A
-    const dispX = x + 16;
-    const dispY = y + 32;
-    const dispW = 145;
-    const dispH = 62;
+    // Màn hình LED kỹ thuật số V và A
+    const dispX = x + 14;
+    const dispY = y + 28;
+    const dispW = 135;
+    const dispH = 56;
 
     ctx.fillStyle = '#020617';
     ctx.beginPath();
@@ -562,43 +801,42 @@
     ctx.strokeStyle = '#1e293b';
     ctx.stroke();
 
+    const circuitActive = isPowered && weighingTarget === null;
+
     // Số LED đỏ hiển thị Volt
-    ctx.font = '900 21px "Courier New", monospace';
-    ctx.fillStyle = isPowered ? '#ef4444' : '#52525b';
-    ctx.fillText(`${voltage.toFixed(1)} V`, dispX + 12, dispY + 28);
+    ctx.font = '900 18px "Courier New", monospace';
+    ctx.fillStyle = circuitActive ? '#ef4444' : '#52525b';
+    ctx.fillText(`${voltage.toFixed(1)} V`, dispX + 10, dispY + 24);
 
     // Số LED xanh hiển thị Ampe
-    ctx.fillStyle = isPowered ? '#10b981' : '#52525b';
-    ctx.fillText(`${(isPowered ? currentAmps : 0).toFixed(2)} A`, dispX + 12, dispY + 52);
+    ctx.fillStyle = circuitActive ? '#10b981' : '#52525b';
+    ctx.fillText(`${(circuitActive ? currentAmps : 0).toFixed(2)} A`, dispX + 10, dispY + 46);
 
-    // Nút công tắc nguồn tròn (Power Toggle)
-    const switchX = x + 185;
-    const switchY = y + 63;
-    ctx.fillStyle = isPowered ? '#10b981' : '#ef4444';
+    // Nút công tắc nguồn tròn
+    const switchX = x + 175;
+    const switchY = y + 54;
+    ctx.fillStyle = circuitActive ? '#10b981' : '#ef4444';
     ctx.beginPath();
-    ctx.arc(switchX, switchY, 14, 0, Math.PI * 2);
+    ctx.arc(switchX, switchY, 13, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.stroke();
 
     ctx.fillStyle = '#cbd5e1';
-    ctx.font = '800 10.5px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '800 10px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(isPowered ? 'BẬT' : 'TẮT', switchX, switchY + 25);
+    ctx.fillText(circuitActive ? 'BẬT' : 'TẮT', switchX, switchY + 23);
 
-    // 2 Cọc cắm đầu ra: Cọc ĐỎ (+) và Cọc ĐEN (−)
-    // Nếu polarityReversed = false: Trái là cực âm (-), Phải là cực dương (+)
-    const termLeftX = x + 230;
-    const termRightX = x + 270;
-    const termY = y + 63;
+    // 2 Cọc cắm đầu ra: ĐỎ (+) và ĐEN (−)
+    const termLeftX = x + 215;
+    const termRightX = x + 250;
+    const termY = y + 54;
 
     const leftIsPositive = polarityReversed;
     const rightIsPositive = !polarityReversed;
 
-    // Cọc bên trái
     drawTerminalJack(termLeftX, termY, leftIsPositive ? '#dc2626' : '#1e293b', leftIsPositive ? '+' : '−');
-    // Cọc bên phải
     drawTerminalJack(termRightX, termY, rightIsPositive ? '#dc2626' : '#1e293b', rightIsPositive ? '+' : '−');
 
     ctx.restore();
@@ -607,152 +845,194 @@
   function drawTerminalJack(x, y, color, sign) {
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x, y, 12, 0, Math.PI * 2);
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 14px "Courier New", monospace';
+    ctx.font = '900 12px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(sign, x, y + 4.5);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(sign, x, y);
   }
 
   /* ─────────────────────────────────────────────────────────────
-     5. HỌA VẼ BÌNH ĐIỆN PHÂN, DUNG DỊCH, MÀNG NGĂN & ĐIỆN CỰC
+     5. HỌA VẼ BÌNH ĐIỆN PHÂN DUNG DỊCH, ION & 2 ĐIỆN CỰC
   ───────────────────────────────────────────────────────────── */
   function drawElectrolyticCell(x, y, w, h, leftIsCathode) {
     ctx.save();
 
-    // 1. Khối dung dịch bên trong cốc
-    const solY = y + 45;
-    const solH = h - 50;
-
-    ctx.fillStyle = curPreset.solColor;
-    ctx.fillRect(x + 8, solY, w - 16, solH);
-
-    // Gợn sóng lăn tăn mặt nước
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-    ctx.fillRect(x + 8, solY - 2, w - 16, 4);
-
-    // 2. Màng ngăn xốp (Diaphragm) ở giữa cốc nếu được kích hoạt
-    if (hasDiaphragm) {
-      const midX = x + w / 2;
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.85)';
-      ctx.lineWidth = 6;
-      ctx.setLineDash([6, 4]); // Nét đứt biểu thị màng xốp cho ion đi qua
-      ctx.beginPath();
-      ctx.moveTo(midX, solY);
-      ctx.lineTo(midX, y + h);
-      ctx.stroke();
-      ctx.setLineDash([]); // Bỏ nét đứt
-
-      // Nhãn màng ngăn
-      ctx.fillStyle = '#fbbf24';
-      ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('MÀNG NGĂN XỐP', midX, solY - 12);
-    }
-
-    // 3. Thành cốc thủy tinh chịu lực
-    ctx.strokeStyle = 'rgba(186, 230, 253, 0.75)';
-    ctx.lineWidth = 4;
+    // 1. Thân Cốc Thủy Tinh (Beaker)
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.moveTo(x - 5, y);
-    ctx.lineTo(x + 5, y);
-    ctx.lineTo(x + 5, y + h - 12);
-    ctx.quadraticCurveTo(x + 5, y + h, x + 18, y + h);
-    ctx.lineTo(x + w - 18, y + h);
-    ctx.quadraticCurveTo(x + w - 5, y + h, x + w - 5, y + h - 12);
-    ctx.lineTo(x + w - 5, y);
-    ctx.lineTo(x + w + 5, y);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + h);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x + w, y);
     ctx.stroke();
 
-    // Vạch chia độ thủy tinh
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    // Vành miệng cốc
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.moveTo(x - 8, y);
+    ctx.lineTo(x + w + 8, y);
+    ctx.stroke();
+
+    // Vạch chia độ ml
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.lineWidth = 1.5;
-    for (let i = 1; i <= 4; i++) {
-      const my = y + h - (i * 40);
+    for (let i = 1; i <= 6; i++) {
+      const markY = y + h - i * 32;
       ctx.beginPath();
-      ctx.moveTo(x + 8, my);
-      ctx.lineTo(x + 24, my);
+      ctx.moveTo(x + 5, markY);
+      ctx.lineTo(x + (i % 2 === 0 ? 20 : 12), markY);
       ctx.stroke();
     }
 
-    // 4. Nhãn tên dung dịch dưới đáy cốc
+    // 2. Dung dịch điện phân bên trong cốc
+    const solY = y + 42;
+    const solH = h - 45;
+    const solGrad = ctx.createLinearGradient(x, solY, x, y + h);
+    solGrad.addColorStop(0, curPreset.solColor);
+    solGrad.addColorStop(1, 'rgba(15, 23, 42, 0.9)');
+
+    ctx.fillStyle = solGrad;
+    ctx.fillRect(x + 4, solY, w - 8, solH);
+
+    // Mặt thoáng dung dịch
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 4, solY);
+    ctx.lineTo(x + w - 4, solY);
+    ctx.stroke();
+
+    // 3. Màng ngăn xốp (nếu có)
+    if (hasDiaphragm) {
+      const midX = x + w / 2;
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.65)';
+      ctx.fillRect(midX - 6, y + 25, 12, h - 25);
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(midX - 6, y + 25, 12, h - 25);
+
+      // Lỗ xốp trên màng
+      ctx.fillStyle = '#78350f';
+      for (let py = y + 35; py < y + h - 10; py += 14) {
+        ctx.beginPath();
+        ctx.arc(midX, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // 4. Họa vẽ các hạt ion đang bơi trong dung dịch
+    drawIonsInSolution();
+
+    // 5. Tia sáng phản ứng tại bề mặt
+    drawIonSparks();
+
+    // 6. Nhãn tên dung dịch dưới đáy cốc
     const labelY = y + h + 24;
-    ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '800 12.5px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
     const textW = ctx.measureText(curPreset.solName).width;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
     ctx.beginPath();
-    ctx.roundRect ? ctx.roundRect(x + w / 2 - textW / 2 - 12, labelY - 13, textW + 24, 25, 6) : ctx.rect(x + w / 2 - textW / 2 - 12, labelY - 13, textW + 24, 25);
+    ctx.roundRect ? ctx.roundRect(x + w / 2 - textW / 2 - 10, labelY - 12, textW + 20, 24, 6) : ctx.rect(x + w / 2 - textW / 2 - 10, labelY - 12, textW + 20, 24);
     ctx.fill();
     ctx.strokeStyle = '#334155';
     ctx.stroke();
     ctx.fillStyle = '#f8fafc';
     ctx.fillText(curPreset.solName, x + w / 2, labelY + 4);
 
-    // 5. Vẽ 2 Thanh điện cực nhúng vào cốc
-    const rodW = 36;
-    const rodH = 220;
-    const rodLeftX = x + 70;
-    const rodRightX = x + w - 70 - rodW;
-    const rodY = y - 30;
+    // 7. Vẽ 2 Thanh điện cực nhúng vào cốc
+    const rodW = 34;
+    const rodH = 215;
+    const rodLeftX = x + 55;
+    const rodRightX = x + w - 55 - rodW;
+    const rodY = y - 25;
 
     // Tính độ dày lớp kim loại bám (Catot) và độ mòn (Anot tan)
     const faradayMass = getAccumulatedMass();
-    const depositThickness = Math.min(rodW * 0.45, (faradayMass / 5.0) * 8); // Tối đa bám thêm
+    const depositThickness = Math.min(rodW * 0.45, (faradayMass / 5.0) * 8);
     const dissolvedThickness = curPreset.anodeSoluble ? Math.min(rodW * 0.5, (faradayMass / 5.0) * 8) : 0;
 
-    // Thanh Điện Cực Trái
-    drawElectrode(
-      rodLeftX, rodY, rodW, rodH,
-      leftIsCathode,
-      leftIsCathode ? curPreset.cathodeMaterial : curPreset.anodeMaterial,
-      leftIsCathode ? depositThickness : 0,
-      !leftIsCathode ? dissolvedThickness : 0,
-      bubblesLeft
-    );
+    // Thanh Trái (Nếu không bị nhấc lên cân)
+    const leftIsWeighed = (leftIsCathode && weighingTarget === 'cathode') || (!leftIsCathode && weighingTarget === 'anode');
+    if (!leftIsWeighed) {
+      drawElectrode(
+        rodLeftX, rodY, rodW, rodH,
+        leftIsCathode,
+        leftIsCathode ? curPreset.cathodeMaterial : curPreset.anodeMaterial,
+        leftIsCathode ? depositThickness : 0,
+        !leftIsCathode ? dissolvedThickness : 0,
+        bubblesLeft
+      );
+    } else {
+      drawEmptyElectrodeHolder(rodLeftX, rodY, rodW, leftIsCathode);
+    }
 
-    // Thanh Điện Cực Phải
-    drawElectrode(
-      rodRightX, rodY, rodW, rodH,
-      !leftIsCathode,
-      !leftIsCathode ? curPreset.cathodeMaterial : curPreset.anodeMaterial,
-      !leftIsCathode ? depositThickness : 0,
-      leftIsCathode ? dissolvedThickness : 0,
-      bubblesRight
-    );
+    // Thanh Phải (Nếu không bị nhấc lên cân)
+    const rightIsWeighed = (!leftIsCathode && weighingTarget === 'cathode') || (leftIsCathode && weighingTarget === 'anode');
+    if (!rightIsWeighed) {
+      drawElectrode(
+        rodRightX, rodY, rodW, rodH,
+        !leftIsCathode,
+        !leftIsCathode ? curPreset.cathodeMaterial : curPreset.anodeMaterial,
+        !leftIsCathode ? depositThickness : 0,
+        leftIsCathode ? dissolvedThickness : 0,
+        bubblesRight
+      );
+    } else {
+      drawEmptyElectrodeHolder(rodRightX, rodY, rodW, !leftIsCathode);
+    }
 
+    ctx.restore();
+  }
+
+  function drawEmptyElectrodeHolder(x, y, w, isCathode) {
+    ctx.save();
+    // Kẹp giữ trống khi que đang được nhấc ra cân
+    ctx.fillStyle = 'rgba(71, 85, 105, 0.4)';
+    ctx.fillRect(x + 4, y, w - 8, 25);
+    ctx.strokeStyle = '#64748b';
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(x + 4, y, w - 8, 25);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '800 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('[ĐÃ NHẤC CÂN]', x + w / 2, y + 16);
     ctx.restore();
   }
 
   function drawElectrode(x, y, w, h, isCathode, materialName, depositThick, dissolveThick, bubbleList) {
     ctx.save();
 
-    // Bề rộng thực tế của thanh lõi kim loại/than chì
     const activeW = Math.max(12, w - dissolveThick);
 
-    // Màu thanh điện cực
-    let rodColor = '#475569'; // Graphite / than chì
-    if (materialName.includes('Cu')) rodColor = '#b45309'; // Đồng
-    else if (materialName.includes('Ag')) rodColor = '#cbd5e1'; // Bạc
-    else if (materialName.includes('Pt')) rodColor = '#94a3b8'; // Bạch kim
+    let rodColor = '#475569';
+    if (materialName.includes('Cu')) rodColor = '#b45309';
+    else if (materialName.includes('Ag')) rodColor = '#cbd5e1';
+    else if (materialName.includes('Pt')) rodColor = '#94a3b8';
 
-    // Vẽ thanh điện cực chính
+    // Vẽ thanh điện cực
     ctx.fillStyle = rodColor;
     ctx.fillRect(x + dissolveThick / 2, y, activeW, h);
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 2;
     ctx.strokeRect(x + dissolveThick / 2, y, activeW, h);
 
-    // Nếu là Catot và có kim loại bám dày lên: vẽ lớp phủ kim loại bám ngoài
-    if (depositThick > 0.5 && curPreset.cathodeDepositMetal) {
+    // Lớp kim loại mạ bám dày lên ở Catot
+    if (depositThick > 0.4 && curPreset.cathodeDepositMetal) {
       const depColor = curPreset.cathodeDepositMetal === 'Cu' ? '#ea580c' : '#f8fafc';
       ctx.fillStyle = depColor;
-      // Lớp mạ bám hai bên hông và đáy thanh
       ctx.fillRect(x - depositThick / 2, y + 40, depositThick / 2, h - 40);
       ctx.fillRect(x + w, y + 40, depositThick / 2, h - 40);
       ctx.fillRect(x - depositThick / 2, y + h - depositThick / 2, w + depositThick, depositThick / 2);
@@ -760,46 +1040,47 @@
 
     // Kẹp cá sấu ở đỉnh thanh
     const clipH = 16;
-    const clipColor = isCathode ? '#1e293b' : '#dc2626'; // Catot nối cực âm (- đen), Anot nối cực dương (+ đỏ)
+    const clipColor = isCathode ? '#1e293b' : '#dc2626';
     ctx.fillStyle = clipColor;
-    ctx.fillRect(x - 5, y - clipH, w + 10, clipH);
+    ctx.fillRect(x - 4, y - clipH, w + 8, clipH);
     ctx.strokeStyle = isCathode ? '#64748b' : '#fca5a5';
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(x - 5, y - clipH, w + 10, clipH);
+    ctx.strokeRect(x - 4, y - clipH, w + 8, clipH);
 
-    // Dấu cực que cắm (+ hoặc −)
+    // Dấu cực
     ctx.fillStyle = '#ffffff';
     ctx.font = '800 11px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(isCathode ? 'CỰC (−)' : 'CỰC (+)', x + w / 2, y - 4);
 
-    // Nhãn danh tính Catot/Anot trên đầu thanh (TO RÕ NỔI BẬT)
+    // Nhãn danh tính Catot/Anot trên đầu thanh
     ctx.fillStyle = isCathode ? '#60a5fa' : '#f87171';
-    ctx.font = '900 14px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(isCathode ? 'CATOT (−)' : 'ANOT (+)', x + w / 2, y - 25);
+    ctx.font = '900 13px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(isCathode ? 'CATOT (−)' : 'ANOT (+)', x + w / 2, y - 24);
 
     // Tên chất liệu điện cực
     ctx.fillStyle = '#f1f5f9';
-    ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(materialName.split(' ')[0], x + w / 2, y + 60);
+    ctx.font = '800 10.5px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(materialName.split(' ')[0], x + w / 2, y + 55);
 
-    // Vẽ các bọt khí thoát ra từ điện cực
+    // Bọt khí
     drawBubbles(bubbleList);
 
     ctx.restore();
   }
 
   function drawBubbles(bubbleList) {
+    if (!bubbleList) return;
     for (let i = bubbleList.length - 1; i >= 0; i--) {
       const b = bubbleList[i];
-      b.y -= b.speed;
+      b.y -= b.speedY;
+      b.x += b.driftX;
 
-      // Màu bọt khí tùy theo loại khí (Cl2 vàng lục, O2/H2 trong suốt)
-      if (b.gas === 'Cl₂') {
-        ctx.fillStyle = 'rgba(234, 179, 8, 0.7)'; // Vàng lục
+      if (b.gasType === 'Cl₂') {
+        ctx.fillStyle = 'rgba(234, 179, 8, 0.7)';
         ctx.strokeStyle = '#ca8a04';
       } else {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)'; // O2 hoặc H2 trắng trong
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
         ctx.strokeStyle = '#93c5fd';
       }
 
@@ -809,41 +1090,291 @@
       ctx.fill();
       ctx.stroke();
 
-      // Điểm sáng phản chiếu trên bọt
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.35, 0, Math.PI * 2);
       ctx.fill();
 
-      // Nếu bọt chạm mặt nước thì nổ và biến mất
-      if (b.y < 265) {
+      if (b.y < 255) {
         bubbleList.splice(i, 1);
       }
     }
   }
 
+  function drawIonsInSolution() {
+    ctx.save();
+    ions.forEach(ion => {
+      ctx.shadowColor = ion.c;
+      ctx.shadowBlur = 7;
+
+      ctx.fillStyle = ion.c;
+      ctx.beginPath();
+      ctx.arc(ion.x, ion.y, ion.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Ký hiệu hóa học ở giữa hạt ion
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 9.5px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ion.s, ion.x, ion.y + 0.5);
+    });
+    ctx.restore();
+  }
+
+  function drawIonSparks() {
+    ctx.save();
+    ionSparks.forEach(sp => {
+      ctx.fillStyle = sp.color;
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 10;
+      ctx.globalAlpha = Math.max(0, sp.life);
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, 4.5 * sp.life, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
   /* ─────────────────────────────────────────────────────────────
-     6. HỌA VẼ DÂY DẪN & DÒNG ELECTRON DI CHUYỂN
+     6. HỌA VẼ CÂN PHÂN TÍCH ĐIỆN TỬ (0.0001 g)
+  ───────────────────────────────────────────────────────────── */
+  function drawDigitalScale(scaleX, scaleY, scaleW, scaleH, leftIsCathode) {
+    ctx.save();
+
+    const baseX = scaleX;
+    const baseY = scaleY + 168;
+    const baseW = scaleW;
+    const baseH = 102;
+
+    // 1. Buồng kính chắn gió phân tích (Analytical Draft Shield)
+    const shieldX = scaleX + 30;
+    const shieldY = scaleY + 10;
+    const shieldW = scaleW - 60;
+    const shieldH = 160;
+
+    // Khung kính trong suốt
+    ctx.fillStyle = 'rgba(224, 242, 254, 0.06)';
+    ctx.fillRect(shieldX, shieldY, shieldW, shieldH);
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(shieldX, shieldY, shieldW, shieldH);
+
+    // Nóc buồng cân
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(shieldX - 4, shieldY - 6, shieldW + 8, 8);
+
+    // Cột viền kim loại các góc
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(shieldX, shieldY, 4, shieldH);
+    ctx.fillRect(shieldX + shieldW - 4, shieldY, 4, shieldH);
+
+    // Vạch ánh sáng phản chiếu trên kính
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(shieldX + 15, shieldY + 15);
+    ctx.lineTo(shieldX + 45, shieldY + shieldH - 20);
+    ctx.stroke();
+
+    // 2. Đĩa cân inox (Stainless Steel Weighing Pan)
+    const panX = shieldX + shieldW / 2;
+    const panY = baseY - 8;
+    const panW = 86;
+    const panH = 9;
+
+    // Trục đỡ đĩa cân
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(panX - 4, panY, 8, baseY - panY);
+
+    // Đĩa cân inox tròn
+    const panGrad = ctx.createLinearGradient(panX - panW / 2, panY, panX + panW / 2, panY);
+    panGrad.addColorStop(0, '#94a3b8');
+    panGrad.addColorStop(0.5, '#f8fafc');
+    panGrad.addColorStop(1, '#64748b');
+
+    ctx.fillStyle = panGrad;
+    ctx.beginPath();
+    ctx.ellipse(panX, panY, panW / 2, panH / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 3. Nếu đang cân điện cực: vẽ que điện cực đứng trên đĩa cân
+    if (weighingTarget !== null) {
+      drawElectrodeOnScale(panX, panY, leftIsCathode);
+    }
+
+    // 4. Thân máy cân điện tử (Base)
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(baseX, baseY, baseW, baseH, 8) : ctx.rect(baseX, baseY, baseW, baseH);
+    ctx.fill();
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Chân đế cao su cân bằng
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(baseX + 16, baseY + baseH, 18, 5);
+    ctx.fillRect(baseX + baseW - 34, baseY + baseH, 18, 5);
+
+    // Tên thương hiệu & Thông số cân
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '800 10.5px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('⚖️ METTLER TOLEDO • ANALYTICAL BALANCE (0.0001 g)', baseX + 14, baseY + 20);
+
+    // 5. Màn hình LED kỹ thuật số trên thân cân
+    const dispX = baseX + 14;
+    const dispY = baseY + 28;
+    const dispW = baseW - 28;
+    const dispH = 46;
+
+    ctx.fillStyle = '#020617';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(dispX, dispY, dispW, dispH, 6) : ctx.rect(dispX, dispY, dispW, dispH);
+    ctx.fill();
+    ctx.strokeStyle = '#1e293b';
+    ctx.stroke();
+
+    // Tính toán số hiển thị trên cân
+    const scaleData = getScaleMeasurement(leftIsCathode);
+
+    // Chữ số LED phát sáng xanh ngọc
+    ctx.font = '900 23px "Courier New", monospace';
+    ctx.fillStyle = '#38bdf8';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${scaleData.displayMass} g`, dispX + dispW - 14, dispY + 30);
+
+    // Biểu tượng STABLE ● bên trái màn hình LED
+    ctx.font = '800 10px "Plus Jakarta Sans", monospace';
+    ctx.fillStyle = '#10b981';
+    ctx.textAlign = 'left';
+    ctx.fillText('● STABLE', dispX + 10, dispY + 18);
+
+    ctx.font = '800 9.5px monospace';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText(weighingTarget ? `[${weighingTarget.toUpperCase()}]` : '[TARE]', dispX + 10, dispY + 36);
+
+    // Dòng thông tin phụ bên dưới màn hình LED
+    ctx.font = '800 10.5px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText(scaleData.subText, baseX + baseW / 2, baseY + 88);
+
+    ctx.restore();
+  }
+
+  function getScaleMeasurement(leftIsCathode) {
+    if (weighingTarget === 'cathode') {
+      const mCat = getAccumulatedMass();
+      const totalM = INITIAL_ELECTRODE_MASS + mCat;
+      const metalName = curPreset.cathodeDepositMetal || 'chất bám';
+      return {
+        displayMass: totalM.toFixed(4),
+        subText: `Catot: m₀ = 10.0000 g | Δm = +${mCat.toFixed(4)} g (${metalName})`
+      };
+    } else if (weighingTarget === 'anode') {
+      if (curPreset.anodeSoluble) {
+        const mTan = (curPreset.A_an * currentAmps * elapsedSeconds) / (curPreset.n_an * FARADAY);
+        const totalM = Math.max(0, INITIAL_ELECTRODE_MASS - mTan);
+        return {
+          displayMass: totalM.toFixed(4),
+          subText: `Anot Cu: m₀ = 10.0000 g | Δm = −${mTan.toFixed(4)} g (Tan)`
+        };
+      } else {
+        return {
+          displayMass: INITIAL_ELECTRODE_MASS.toFixed(4),
+          subText: `Anot ${curPreset.anodeMaterial.split(' ')[0]}: m₀ = 10.0000 g | Không đổi (Trơ)`
+        };
+      }
+    }
+
+    return {
+      displayMass: '0.0000',
+      subText: 'Đĩa cân trống (Bấm "Cân Catot" hoặc "Cân Anot")'
+    };
+  }
+
+  function drawElectrodeOnScale(panX, panY, leftIsCathode) {
+    ctx.save();
+
+    const isCathode = weighingTarget === 'cathode';
+    const materialName = isCathode ? curPreset.cathodeMaterial : curPreset.anodeMaterial;
+
+    const faradayMass = getAccumulatedMass();
+    const depositThickness = isCathode ? Math.min(34 * 0.45, (faradayMass / 5.0) * 8) : 0;
+    const dissolvedThickness = (!isCathode && curPreset.anodeSoluble) ? Math.min(34 * 0.5, (faradayMass / 5.0) * 8) : 0;
+
+    const rodW = 30;
+    const rodH = 120;
+    const rodX = panX - rodW / 2;
+    const rodY = panY - rodH;
+
+    const activeW = Math.max(12, rodW - dissolvedThickness);
+
+    let rodColor = '#475569';
+    if (materialName.includes('Cu')) rodColor = '#b45309';
+    else if (materialName.includes('Ag')) rodColor = '#cbd5e1';
+    else if (materialName.includes('Pt')) rodColor = '#94a3b8';
+
+    // Vẽ thanh điện cực đứng trên đĩa cân
+    ctx.fillStyle = rodColor;
+    ctx.fillRect(rodX + dissolvedThickness / 2, rodY, activeW, rodH);
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(rodX + dissolvedThickness / 2, rodY, activeW, rodH);
+
+    // Lớp kim loại bám ngoài nếu là Catot
+    if (depositThickness > 0.4 && curPreset.cathodeDepositMetal) {
+      const depColor = curPreset.cathodeDepositMetal === 'Cu' ? '#ea580c' : '#f8fafc';
+      ctx.fillStyle = depColor;
+      ctx.fillRect(rodX - depositThickness / 2, rodY + 20, depositThickness / 2, rodH - 20);
+      ctx.fillRect(rodX + rodW, rodY + 20, depositThickness / 2, rodH - 20);
+      ctx.fillRect(rodX - depositThickness / 2, rodY + rodH - depositThickness / 2, rodW + depositThickness, depositThickness / 2);
+    }
+
+    // Nhãn nổi bật trên thanh đang cân
+    ctx.fillStyle = isCathode ? '#38bdf8' : '#f87171';
+    ctx.font = '900 12px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(isCathode ? 'ĐANG CÂN CATOT' : 'ĐANG CÂN ANOT', panX, rodY - 10);
+
+    ctx.restore();
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     7. HỌA VẼ DÂY DẪN & DÒNG ELECTRON DI CHUYỂN
   ───────────────────────────────────────────────────────────── */
   function drawWiresAndElectrons(psX, psY, psW, psH, cupX, cupY, cupW, leftIsCathode) {
     ctx.save();
 
-    const termLeftX = psX + 230;
-    const termRightX = psX + 270;
-    const termY = psY + 63;
+    const termLeftX = psX + 215;
+    const termRightX = psX + 250;
+    const termY = psY + 54;
 
-    const rodLeftTop = { x: cupX + 70 + 18, y: cupY - 46 };
-    const rodRightTop = { x: cupX + cupW - 70 - 18, y: cupY - 46 };
-    const wireMidY = 155;
+    const rodLeftTop = { x: cupX + 55 + 17, y: cupY - 41 };
+    const rodRightTop = { x: cupX + cupW - 55 - 17, y: cupY - 41 };
+    const wireMidY = 145;
+
+    const leftIsWeighed = (leftIsCathode && weighingTarget === 'cathode') || (!leftIsCathode && weighingTarget === 'anode');
+    const rightIsWeighed = (!leftIsCathode && weighingTarget === 'cathode') || (leftIsCathode && weighingTarget === 'anode');
 
     // Đường dây 1 (Cọc trái sang Điện cực trái)
     const p0 = { x: termLeftX, y: termY };
     const p1 = { x: termLeftX, y: wireMidY };
     const p2 = { x: rodLeftTop.x, y: wireMidY };
-    const p3 = { x: rodLeftTop.x, y: rodLeftTop.y };
+    const p3 = { x: rodLeftTop.x, y: leftIsWeighed ? wireMidY + 25 : rodLeftTop.y };
 
     ctx.strokeStyle = leftIsCathode ? '#1e293b' : '#dc2626';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
@@ -853,11 +1384,16 @@
     ctx.lineTo(p3.x, p3.y);
     ctx.stroke();
 
+    // Nếu que trái đang nhấc ra cân: vẽ kẹp cá sấu hở mạch
+    if (leftIsWeighed) {
+      drawOpenAlligatorClip(p3.x, p3.y, leftIsCathode ? '#1e293b' : '#dc2626');
+    }
+
     // Đường dây 2 (Cọc phải sang Điện cực phải)
     const q0 = { x: termRightX, y: termY };
     const q1 = { x: termRightX, y: wireMidY };
     const q2 = { x: rodRightTop.x, y: wireMidY };
-    const q3 = { x: rodRightTop.x, y: rodRightTop.y };
+    const q3 = { x: rodRightTop.x, y: rightIsWeighed ? wireMidY + 25 : rodRightTop.y };
 
     ctx.strokeStyle = !leftIsCathode ? '#1e293b' : '#dc2626';
     ctx.beginPath();
@@ -867,8 +1403,12 @@
     ctx.lineTo(q3.x, q3.y);
     ctx.stroke();
 
-    // Hạt electron chạy trên dây dẫn nếu nguồn điện bật
-    if (isPowered) {
+    if (rightIsWeighed) {
+      drawOpenAlligatorClip(q3.x, q3.y, !leftIsCathode ? '#1e293b' : '#dc2626');
+    }
+
+    // Hạt electron chạy trên dây dẫn nếu nguồn điện bật và mạch kín
+    if (isPowered && weighingTarget === null) {
       ctx.fillStyle = '#38bdf8';
       ctx.shadowColor = '#0284c7';
       ctx.shadowBlur = 6;
@@ -878,17 +1418,12 @@
       electrons.forEach((el, idx) => {
         const tVal = ((time * 0.4 + idx / electrons.length) % 1);
 
-        // Nguồn đẩy electron vào Catot, hút electron từ Anot
         let ptLeft, ptRight;
         if (leftIsCathode) {
-          // Trái là Catot: dòng e từ Nguồn p0 -> p3
           ptLeft = getPointOnOrthogonalWire(tVal, p0, p1, p2, p3);
-          // Phải là Anot: dòng e từ Anot q3 -> Nguồn q0
           ptRight = getPointOnOrthogonalWire(1 - tVal, q0, q1, q2, q3);
         } else {
-          // Trái là Anot: dòng e từ p3 -> p0
           ptLeft = getPointOnOrthogonalWire(1 - tVal, p0, p1, p2, p3);
-          // Phải là Catot: dòng e từ q0 -> q3
           ptRight = getPointOnOrthogonalWire(tVal, q0, q1, q2, q3);
         }
 
@@ -905,30 +1440,45 @@
     ctx.restore();
   }
 
-  function getPointOnOrthogonalWire(t, p0, p1, p2, p3) {
-    const L1 = Math.abs(p1.y - p0.y);
-    const L2 = Math.abs(p2.x - p1.x);
-    const L3 = Math.abs(p3.y - p2.y);
-    const total = L1 + L2 + L3;
-    const d = t * total;
+  function drawOpenAlligatorClip(x, y, color) {
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.fillRect(x - 4, y, 8, 12);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 4, y, 8, 12);
+    ctx.fillStyle = '#f87171';
+    ctx.font = '800 9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('[HỞ]', x, y + 22);
+    ctx.restore();
+  }
 
-    if (d <= L1) {
-      const r = d / L1;
-      return { x: p0.x, y: p0.y + (p1.y - p0.y) * r };
-    } else if (d <= L1 + L2) {
-      const r = (d - L1) / L2;
-      return { x: p1.x + (p2.x - p1.x) * r, y: p1.y };
+  function getPointOnOrthogonalWire(t, p0, p1, p2, p3) {
+    const len1 = Math.abs(p1.y - p0.y);
+    const len2 = Math.abs(p2.x - p1.x);
+    const len3 = Math.abs(p3.y - p2.y);
+    const totalLen = len1 + len2 + len3;
+
+    const dist = t * totalLen;
+
+    if (dist <= len1) {
+      const frac = dist / (len1 || 1);
+      return { x: p0.x, y: p0.y + (p1.y - p0.y) * frac };
+    } else if (dist <= len1 + len2) {
+      const frac = (dist - len1) / (len2 || 1);
+      return { x: p1.x + (p2.x - p1.x) * frac, y: p1.y };
     } else {
-      const r = (d - L1 - L2) / L3;
-      return { x: p2.x, y: p2.y + (p3.y - p2.y) * r };
+      const frac = (dist - len1 - len2) / (len3 || 1);
+      return { x: p2.x, y: p2.y + (p3.y - p2.y) * frac };
     }
   }
 
   /* ─────────────────────────────────────────────────────────────
-     7. TÍNH TOÁN THEO ĐỊNH LUẬT FARADAY & CẬP NHẬT GIAO DIỆN
+     8. TÍNH TOÁN ĐỊNH LUẬT FARADAY (BẢO LƯU SỐ LIỆU KHI DỪNG)
   ───────────────────────────────────────────────────────────── */
   function getAccumulatedMass() {
-    if (!isPowered || elapsedSeconds <= 0) return 0;
+    if (elapsedSeconds <= 0) return 0;
     // m = (A * I * t) / (n * F)
     const t = elapsedSeconds;
     const I = currentAmps;
@@ -936,25 +1486,24 @@
   }
 
   function getGasVolumeCathode() {
-    if (!isPowered || elapsedSeconds <= 0 || !curPreset.cathodeGas) return 0;
-    // V = (I * t) / (n * F) * 24.79 (lít ở đkc 25°C, 1 bar)
+    if (elapsedSeconds <= 0 || !curPreset.cathodeGas) return 0;
     const t = elapsedSeconds;
     const I = currentAmps;
     return (I * t / (curPreset.n_cat * FARADAY)) * 24.79 * 1000; // mL
   }
 
   function getGasVolumeAnode() {
-    if (!isPowered || elapsedSeconds <= 0 || !curPreset.anodeGas) return 0;
-    // V = (I * t) / (n * F) * 24.79 (lít ở đkc 25°C, 1 bar)
+    if (elapsedSeconds <= 0 || !curPreset.anodeGas) return 0;
     const t = elapsedSeconds;
     const I = currentAmps;
     return (I * t / (curPreset.n_an * FARADAY)) * 24.79 * 1000; // mL
   }
 
   function updateFaradayCalculations() {
-    // 1. Cập nhật đồng hồ thời gian HUD
+    // 1. Cập nhật HUD thời gian và điện lượng Q
     const hudTime = document.getElementById('hud-time-text');
     const hudQ = document.getElementById('hud-q-text');
+    const hudScale = document.getElementById('hud-scale-text');
 
     if (hudTime) {
       const totalSec = Math.floor(elapsedSeconds);
@@ -968,7 +1517,12 @@
       hudQ.textContent = `${q.toFixed(0)} C`;
     }
 
-    // 2. Tính sản phẩm giải phóng ở Catot (kim loại bám hoặc khí H2)
+    if (hudScale) {
+      const scaleMeas = getScaleMeasurement(!polarityReversed);
+      hudScale.textContent = `${scaleMeas.displayMass} g`;
+    }
+
+    // 2. Tính sản phẩm giải phóng ở Catot
     const massCatEl = document.getElementById('calc-mass-cat');
     const subCatEl = document.getElementById('faraday-sub-cat');
 
@@ -982,7 +1536,7 @@
         massCatEl.textContent = `+${vCatMl.toFixed(2)} mL (${curPreset.cathodeGas} ↑)`;
         massCatEl.style.color = '#0284c7';
       } else {
-        massCatEl.textContent = `0.000 g`;
+        massCatEl.textContent = `+0.0000 g`;
         massCatEl.style.color = '#94a3b8';
       }
     }
@@ -995,7 +1549,7 @@
       }
     }
 
-    // 3. Tính sản phẩm giải phóng ở Anot (khí hoặc khối lượng Anot tan)
+    // 3. Tính sản phẩm giải phóng ở Anot
     const volAnEl = document.getElementById('calc-vol-an');
     const rowGasAnEl = document.getElementById('row-gas-anode');
 
@@ -1014,10 +1568,18 @@
         rowGasAnEl.style.display = 'none';
       }
     }
+
+    // Cập nhật thẻ cân chi tiết
+    const weighDetailEl = document.getElementById('weigh-detail-info');
+    if (weighDetailEl) {
+      const scaleMeas = getScaleMeasurement(!polarityReversed);
+      weighDetailEl.textContent = scaleMeas.subText;
+    }
   }
 
   function updateUI() {
-    // Cập nhật nhãn và nút điều khiển
+    const circuitActive = isPowered && weighingTarget === null;
+
     const btnDc = document.getElementById('btn-toggle-dc');
     const hudStatus = document.getElementById('hud-status-badge');
     const hudVolt = document.getElementById('hud-voltage-text');
@@ -1029,12 +1591,34 @@
     }
 
     if (hudStatus) {
-      hudStatus.className = `hud-dc-tag ${isPowered ? 'running' : 'stopped'}`;
-      hudStatus.textContent = isPowered ? 'ĐANG ĐIỆN PHÂN' : 'MẠCH HỞ (TẮT NGUỒN)';
+      hudStatus.className = `hud-dc-tag ${circuitActive ? 'running' : 'stopped'}`;
+      hudStatus.textContent = circuitActive ? 'ĐANG ĐIỆN PHÂN' : (weighingTarget ? 'ĐANG CÂN ĐIỆN CỰC' : 'TẠM DỪNG (GIỮ SỐ LIỆU)');
     }
 
     if (hudVolt) hudVolt.textContent = `${voltage.toFixed(1)} V`;
-    if (hudCurr) hudCurr.textContent = `${(isPowered ? currentAmps : 0).toFixed(2)} A`;
+    if (hudCurr) hudCurr.textContent = `${(circuitActive ? currentAmps : 0).toFixed(2)} A`;
+
+    // Cập nhật trạng thái các nút cân
+    const btnTopWeighCat = document.getElementById('btn-top-weigh-cat');
+    const btnTopWeighAn = document.getElementById('btn-top-weigh-an');
+    const btnTopReturn = document.getElementById('btn-top-return');
+
+    const btnCardWeighCat = document.getElementById('btn-card-weigh-cat');
+    const btnCardWeighAn = document.getElementById('btn-card-weigh-an');
+    const btnCardReturn = document.getElementById('btn-card-return');
+    const weighStatus = document.getElementById('weigh-status-text');
+
+    const isWeighCat = weighingTarget === 'cathode';
+    const isWeighAn = weighingTarget === 'anode';
+
+    [btnTopWeighCat, btnCardWeighCat].forEach(b => b && b.classList.toggle('active', isWeighCat));
+    [btnTopWeighAn, btnCardWeighAn].forEach(b => b && b.classList.toggle('active', isWeighAn));
+    [btnTopReturn, btnCardReturn].forEach(b => b && b.classList.toggle('active', weighingTarget !== null));
+
+    if (weighStatus) {
+      weighStatus.textContent = weighingTarget ? 'ĐANG CÂN' : 'SẴN SÀNG';
+      weighStatus.style.color = weighingTarget ? '#38bdf8' : '#10b981';
+    }
 
     // Cập nhật phương trình phản ứng
     const rxnCat = document.getElementById('text-rxn-cat');
@@ -1045,22 +1629,24 @@
     if (rxnAn) rxnAn.textContent = curPreset.anHalfRxn;
     if (rxnOver) rxnOver.textContent = curPreset.overallRxn;
 
-    // Cập nhật checkbox màng ngăn
     const chkDia = document.getElementById('check-diaphragm');
     if (chkDia) chkDia.checked = hasDiaphragm;
   }
 
   /* ─────────────────────────────────────────────────────────────
-     8. CÁC HÀM XỬ LÝ SỰ KIỆN GIAO DIỆN (INTERACTIONS)
+     9. CÁC HÀM XỬ LÝ SỰ KIỆN GIAO DIỆN (INTERACTIONS)
   ───────────────────────────────────────────────────────────── */
   window.electrolysisTogglePower = function () {
+    if (weighingTarget !== null && !isPowered) {
+      // Nếu đang cân mà bấm bật điện -> tự động đưa que về bình
+      weighingTarget = null;
+    }
     isPowered = !isPowered;
     updateUI();
   };
 
   window.electrolysisTogglePolarity = function () {
     polarityReversed = !polarityReversed;
-    // Xóa các bọt khí cũ khi đảo cực
     bubblesLeft = [];
     bubblesRight = [];
     updateUI();
@@ -1069,6 +1655,23 @@
   window.electrolysisResetTime = function () {
     elapsedSeconds = 0;
     updateFaradayCalculations();
+  };
+
+  window.electrolysisWeighElectrode = function (target) {
+    if (weighingTarget === target) {
+      // Bấm lần nữa thì đưa trở lại bình
+      electrolysisReturnElectrode();
+      return;
+    }
+    // Tự động ngắt nguồn DC an toàn để cân que
+    isPowered = false;
+    weighingTarget = target;
+    updateUI();
+  };
+
+  window.electrolysisReturnElectrode = function () {
+    weighingTarget = null;
+    updateUI();
   };
 
   window.electrolysisSelectPreset = function (presetId) {
@@ -1080,10 +1683,12 @@
     currentAmps = found.defaultI;
     hasDiaphragm = found.hasDiaphragm;
     elapsedSeconds = 0;
+    weighingTarget = null;
     bubblesLeft = [];
     bubblesRight = [];
 
-    // Cập nhật giá trị hiển thị trên slider
+    initIons();
+
     const sI = document.getElementById('slider-current');
     const sU = document.getElementById('slider-voltage');
     const vI = document.getElementById('val-slider-i');

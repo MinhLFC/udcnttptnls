@@ -445,3 +445,52 @@
   height: 100vh !important;
   box-sizing: border-box !important;
 }
+
+/* Khung điều khiển & nút Cân phân tích điện tử */
+.weigh-ctrl-box {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.weigh-btns-wrap {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.electrolysis-btn.btn-weigh {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.electrolysis-btn.btn-weigh:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: #0284c7;
+}
+
+.electrolysis-btn.btn-weigh.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.electrolysis-btn.btn-return {
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.electrolysis-btn.btn-return:hover {
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.electrolysis-btn.btn-return.active {
+  background: #059669;
+  color: #ffffff;
+}
+

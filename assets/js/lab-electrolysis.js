@@ -2,11 +2,12 @@
  * ==============================================================================
  * PHÒNG THÍ NGHIỆM HÓA HỌC ẢO: BÌNH ĐIỆN PHÂN DUNG DỊCH & NÓNG CHẢY (HÓA HỌC 12)
  * Tính năng chính:
- * 1. Phông chữ to rõ, độ tương phản cao, tối ưu tuyệt đối cho máy chiếu lớp học
- * 2. Lưu giữ nguyên kết quả khối lượng Catot & thể tích khí Anot khi tạm dừng
- * 3. Cân phân tích điện tử (0.0001 g) đặt trên bàn thí nghiệm: Cân Catot/Anot trước & sau pư
- * 4. Hệ thống hạt ion phát sáng lớn có nhãn rõ nét (Cu²⁺, SO₄²⁻, Na⁺, Cl⁻, H⁺, OH⁻...)
- * 5. Bọt khí, mạ kim loại dày lên, Anot tan, màng ngăn xốp & định luật Faraday
+ * 1. Danh mục 7 bài thí nghiệm chuẩn SGK (kèm điều chế NƯỚC JAVEL khi không có màng ngăn)
+ * 2. Phông chữ to rõ, độ tương phản cao, tối ưu tuyệt đối cho máy chiếu lớp học
+ * 3. Lưu giữ nguyên kết quả khối lượng Catot & thể tích khí Anot khi tạm dừng
+ * 4. Cân phân tích điện tử (0.0001 g) đặt trên bàn thí nghiệm: Cân Catot/Anot trước & sau pư
+ * 5. Hệ thống hạt ion phát sáng lớn có nhãn rõ nét (kèm ion ClO⁻ của nước Javel)
+ * 6. Bọt khí, mạ kim loại dày lên, Anot tan, màng ngăn xốp & định luật Faraday
  * ==============================================================================
  */
 
@@ -18,7 +19,7 @@
   const INITIAL_ELECTRODE_MASS = 10.0000; // m0 = 10.0000 g
 
   /* ─────────────────────────────────────────────────────────────
-     DANH MỤC 6 BÀI THÍ NGHIỆM ĐIỆN PHÂN CHUẨN SGK HÓA HỌC 12
+     DANH MỤC 7 BÀI THÍ NGHIỆM ĐIỆN PHÂN CHUẨN SGK HÓA HỌC 12
   ───────────────────────────────────────────────────────────── */
   const PRESETS = [
     {
@@ -72,7 +73,7 @@
       defaultI: 3.0,
       catHalfRxn: '2H₂O + 2e → H₂ ↑ + 2OH⁻ (Dung dịch hóa kiềm làm hồng phenolphthalein)',
       anHalfRxn: '2Cl⁻ → Cl₂ ↑ + 2e (Khí Clo màu vàng lục sủi bọt)',
-      overallRxn: '2NaCl + 2H₂O ➔ 2NaOH + H₂ ↑ + Cl₂ ↑ (Có màng ngăn)',
+      overallRxn: '2NaCl + 2H₂O ➔ 2NaOH + H₂ ↑ + Cl₂ ↑ (Có màng ngăn xốp)',
       desc: 'Sản xuất Xút (NaOH), khí Clo và Hydro trong công nghiệp. Màng ngăn xốp ngăn Cl₂ tiếp xúc với NaOH để tránh tạo nước Javel.',
       ions: [
         { s: 'Na⁺', q: 1, c: '#c084fc', r: 16, isTargetCat: false },
@@ -82,8 +83,39 @@
       ]
     },
     {
+      id: 'nacl_nodim_javel',
+      name: '3. ĐP dung dịch NaCl KHÔNG màng ngăn (Điều chế Nước Javel - Tẩy màu)',
+      shortTitle: 'NaCl (Không màng ngăn - Nước Javel)',
+      solName: 'Nước Javel (Hỗn hợp NaCl + NaClO - Tẩy màu)',
+      solColor: 'rgba(254, 240, 138, 0.35)', // Vàng rơm nhạt nước Javel, mất màu hồng phenolphthalein do NaClO tẩy trắng
+      hasDiaphragm: false,
+      cathodeMaterial: 'Sắt / Than chì',
+      anodeMaterial: 'Graphite / Titan',
+      cathodeDepositMetal: null,
+      cathodeGas: 'H₂', // Khí H2 sủi bọt
+      anodeGas: null,  // Cl2 tan và phản ứng ngay với NaOH trong dung dịch
+      anodeSoluble: false,
+      A_cat: 2,   // H2
+      n_cat: 2,
+      A_an: 74.5, // NaClO
+      n_an: 2,
+      defaultU: 5.0,
+      defaultI: 3.0,
+      catHalfRxn: '2H₂O + 2e → H₂ ↑ + 2OH⁻ (Khí H₂ sủi bọt ở Catot)',
+      anHalfRxn: '2Cl⁻ → Cl₂ + 2e, sau đó Cl₂ + 2OH⁻ → Cl⁻ + ClO⁻ + H₂O (Tạo nước Javel)',
+      overallRxn: 'NaCl + H₂O ➔ NaClO + H₂ ↑ (Không màng ngăn tạo Nước Javel tẩy màu)',
+      desc: 'Khi không có màng ngăn, khí Cl₂ vừa sinh ra ở Anot phản ứng ngay với dung dịch NaOH kiềm sinh ra ở Catot tạo thành Nước Javel (hỗn hợp NaCl và NaClO). Muối NaClO có tính oxi hóa cực mạnh làm mất màu (tẩy trắng) phenolphthalein!',
+      ions: [
+        { s: 'Na⁺', q: 1, c: '#c084fc', r: 16, isTargetCat: false },
+        { s: 'Cl⁻', q: -1, c: '#4ade80', r: 16, isTargetAn: true },
+        { s: 'ClO⁻', q: -1, c: '#f59e0b', r: 17, isTargetAn: false },
+        { s: 'H⁺', q: 1, c: '#f87171', r: 13, isTargetCat: true },
+        { s: 'OH⁻', q: -1, c: '#34d399', r: 14, isTargetAn: false }
+      ]
+    },
+    {
       id: 'cu_active',
-      name: '3. ĐP dung dịch CuSO₄ (Anot tan Cu - Mạ điện & Tinh luyện)',
+      name: '4. ĐP dung dịch CuSO₄ (Anot tan Cu - Mạ điện & Tinh luyện)',
       shortTitle: 'CuSO₄ (Anot tan Cu)',
       solName: 'Dung dịch CuSO₄ 1M + H₂SO₄',
       solColor: 'rgba(37, 99, 235, 0.55)',
@@ -112,7 +144,7 @@
     },
     {
       id: 'ag_electroplate',
-      name: '4. Mạ bạc (Dung dịch AgNO₃ - Anot bạc Ag)',
+      name: '5. Mạ bạc (Dung dịch AgNO₃ - Anot bạc Ag)',
       shortTitle: 'AgNO₃ (Mạ bạc)',
       solName: 'Dung dịch AgNO₃ 0.5M',
       solColor: 'rgba(241, 245, 249, 0.35)', // Trong suốt ánh bạc
@@ -142,7 +174,7 @@
     },
     {
       id: 'water_splitting',
-      name: '5. Điện phân nước (H₂O dung dịch H₂SO₄ loãng - Tỉ lệ 2:1)',
+      name: '6. Điện phân nước (H₂O dung dịch H₂SO₄ loãng - Tỉ lệ 2:1)',
       shortTitle: 'H₂O (Điện phân nước)',
       solName: 'Dung dịch H₂SO₄ 0.1M (Chất dẫn điện)',
       solColor: 'rgba(224, 242, 254, 0.35)',
@@ -171,7 +203,7 @@
     },
     {
       id: 'molten_nacl',
-      name: '6. Điện phân nóng chảy NaCl (Nhiệt độ cao ~800°C)',
+      name: '7. Điện phân nóng chảy NaCl (Nhiệt độ cao ~800°C)',
       shortTitle: 'NaCl nóng chảy (800°C)',
       solName: 'NaCl lỏng nóng chảy (800°C)',
       solColor: 'rgba(249, 115, 22, 0.65)', // Màu cam đỏ nóng rực
@@ -353,7 +385,9 @@
                   <input type="checkbox" id="check-diaphragm" ${hasDiaphragm ? 'checked' : ''} onchange="electrolysisToggleDiaphragm(this.checked)" style="width: 19px; height: 19px; cursor: pointer;">
                   <span>Gắn Màng Ngăn Xốp</span>
                 </label>
-                <small style="font-size: 0.78rem; color: var(--text-muted);">Cần thiết cho sản xuất NaOH/Cl₂</small>
+                <small id="text-diaphragm-hint" style="font-size: 0.78rem; color: ${hasDiaphragm ? 'var(--text-muted)' : '#f59e0b'};">
+                  ${hasDiaphragm ? 'Cần thiết cho sản xuất NaOH/Cl₂' : '⚠️ Bỏ màng ngăn: tạo NƯỚC JAVEL (NaClO)'}
+                </small>
               </div>
 
             </div>
@@ -396,11 +430,11 @@
                   <span id="faraday-sub-cat">Catot: <strong>...</strong></span>
                 </div>
                 <div class="faraday-eq-row" style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-color);">
-                  <span>Khối lượng Catot tăng (m):</span>
+                  <span id="label-faraday-cat">Khối lượng Catot tăng (m):</span>
                   <strong class="faraday-val" id="calc-mass-cat" style="font-size: 1.35rem;">+0.0000 g</strong>
                 </div>
                 <div class="faraday-eq-row" id="row-gas-anode" style="margin-top: 0.4rem;">
-                  <span>Thể tích khí Anot (V đkc, 25°C):</span>
+                  <span id="label-faraday-an">Thể tích khí Anot (V đkc, 25°C):</span>
                   <strong class="faraday-val" id="calc-vol-an" style="color: #f59e0b; font-size: 1.35rem;">+0.00 mL</strong>
                 </div>
               </div>
@@ -472,9 +506,10 @@
           <div class="e-k-card">
             <h4><span>🏭</span> Ứng Dụng Thực Tiễn Quan Trọng Của Điện Phân</h4>
             <ul>
+              <li><strong>Điều chế Nước Javel (Không màng ngăn):</strong> Điện phân dung dịch NaCl không màng ngăn để khí Cl₂ phản ứng trực tiếp với NaOH tạo hỗn hợp muối NaCl và NaClO (nước Javel) tẩy trắng, diệt khuẩn cực mạnh.</li>
+              <li><strong>Sản xuất Xút - Clo (Có màng ngăn):</strong> Màng ngăn xốp ngăn Cl₂ tiếp xúc NaOH, thu được hàng triệu tấn hóa chất công nghiệp cơ bản mỗi năm.</li>
               <li><strong>Mạ điện (Electroplating):</strong> Mạ vàng, bạc, crom, niken bảo vệ kim loại chống ăn mòn và làm tăng vẻ đẹp thẩm mỹ (Catot là vật cần mạ, Anot là kim loại mạ).</li>
               <li><strong>Tinh luyện kim loại:</strong> Tinh chế đồng kỹ thuật thô đạt độ tinh khiết cực cao (99.99%) để làm dây cáp điện cao thế.</li>
-              <li><strong>Sản xuất hóa chất cơ bản:</strong> Điện phân dung dịch NaCl có màng ngăn sản xuất hàng triệu tấn xút (NaOH), khí Clo và khí Hydro mỗi năm.</li>
               <li><strong>Luyện kim nhôm:</strong> Điện phân nóng chảy Al₂O₃ với xúc tác Criolit Na₃AlF₆ để sản xuất toàn bộ nhôm kim loại trên thế giới.</li>
             </ul>
           </div>
@@ -521,7 +556,7 @@
     const solH = 245 - 52;
 
     const templateIons = curPreset.ions;
-    const targetCount = 20; // Giảm số lượng để hạt to không bị chồng chéo
+    const targetCount = 20;
 
     for (let i = 0; i < targetCount; i++) {
       const tmpl = templateIons[i % templateIons.length];
@@ -598,11 +633,9 @@
         ion.vx += eForce * dt + (Math.random() - 0.5) * 25 * dt;
         ion.vy += (Math.random() - 0.5) * 25 * dt;
 
-        // Giới hạn vận tốc trôi dạt có hướng
         ion.vx = Math.max(-65, Math.min(65, ion.vx));
         ion.vy = Math.max(-30, Math.min(30, ion.vy));
 
-        // Kiểm tra chạm điện cực đích
         const distCat = Math.abs(ion.x - catX);
         const distAn = Math.abs(ion.x - anX);
 
@@ -634,11 +667,9 @@
         ion.vy *= 0.985;
       }
 
-      // Cập nhật tọa độ
       ion.x += ion.vx * dt;
       ion.y += ion.vy * dt;
 
-      // Va chạm biên dung dịch
       if (ion.x < solX + ion.r) {
         ion.x = solX + ion.r;
         ion.vx = Math.abs(ion.vx) * 0.8;
@@ -670,7 +701,6 @@
       }
     });
 
-    // Cập nhật tia lóe sáng (sparks) khi phản ứng bề mặt
     for (let i = ionSparks.length - 1; i >= 0; i--) {
       ionSparks[i].life -= dt * 2.5;
       if (ionSparks[i].life <= 0) {
@@ -689,7 +719,6 @@
       const dt = Math.min(0.05, (timestamp - lastFrameTime) * 0.001);
       lastFrameTime = timestamp;
 
-      // Nếu đang bật nguồn và không nhấc điện cực lên cân: tích lũy thời gian
       if (isPowered && weighingTarget === null) {
         elapsedSeconds += dt * speedMultiplier;
         spawnBubbles();
@@ -745,7 +774,7 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-     4. HỌA VẼ BÀN THÍ NGHIỆM & BỘ NGUỒN DC (PHÔNG CHỮ LỚN)
+     4. HỌA VẼ BÀN THÍ NGHIỆM & BỘ NGUỒN DC
   ───────────────────────────────────────────────────────────── */
   function drawTable(w, h) {
     const tableY = 460;
@@ -768,7 +797,6 @@
   function drawPowerSupply(x, y, w, h) {
     ctx.save();
 
-    // Vỏ kim loại bộ nguồn DC
     ctx.fillStyle = '#0f172a';
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(x, y, w, h, 10) : ctx.rect(x, y, w, h);
@@ -777,13 +805,11 @@
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // Tên thiết bị (TO RÕ NỔI BẬT)
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '900 13px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('DC POWER SUPPLY (NGUỒN 1 CHIỀU)', x + 14, y + 21);
 
-    // Màn hình LED kỹ thuật số V và A
     const dispX = x + 14;
     const dispY = y + 29;
     const dispW = 142;
@@ -798,16 +824,13 @@
 
     const circuitActive = isPowered && weighingTarget === null;
 
-    // Số LED đỏ hiển thị Volt (22px bold)
     ctx.font = '900 22px "Courier New", monospace';
     ctx.fillStyle = circuitActive ? '#ef4444' : '#52525b';
     ctx.fillText(`${voltage.toFixed(1)} V`, dispX + 10, dispY + 25);
 
-    // Số LED xanh hiển thị Ampe (22px bold)
     ctx.fillStyle = circuitActive ? '#10b981' : '#52525b';
     ctx.fillText(`${(circuitActive ? currentAmps : 0).toFixed(2)} A`, dispX + 10, dispY + 50);
 
-    // Nút công tắc nguồn tròn
     const switchX = x + 185;
     const switchY = y + 56;
     ctx.fillStyle = circuitActive ? '#10b981' : '#ef4444';
@@ -823,7 +846,6 @@
     ctx.textAlign = 'center';
     ctx.fillText(circuitActive ? 'BẬT' : 'TẮT', switchX, switchY + 25);
 
-    // 2 Cọc cắm đầu ra: ĐỎ (+) và ĐEN (−)
     const termLeftX = x + 228;
     const termRightX = x + 263;
     const termY = y + 56;
@@ -854,7 +876,7 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-     5. HỌA VẼ BÌNH ĐIỆN PHÂN DUNG DỊCH, ION & 2 ĐIỆN CỰC (PHÔNG LỚN)
+     5. HỌA VẼ BÌNH ĐIỆN PHÂN DUNG DỊCH, ION & 2 ĐIỆN CỰC
   ───────────────────────────────────────────────────────────── */
   function drawElectrolyticCell(x, y, w, h, leftIsCathode) {
     ctx.save();
@@ -871,7 +893,6 @@
     ctx.lineTo(x + w, y);
     ctx.stroke();
 
-    // Vành miệng cốc
     ctx.lineWidth = 4;
     ctx.strokeStyle = '#94a3b8';
     ctx.beginPath();
@@ -879,7 +900,6 @@
     ctx.lineTo(x + w + 8, y);
     ctx.stroke();
 
-    // Vạch chia độ ml
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.lineWidth = 1.5;
     for (let i = 1; i <= 6; i++) {
@@ -900,7 +920,6 @@
     ctx.fillStyle = solGrad;
     ctx.fillRect(x + 4, solY, w - 8, solH);
 
-    // Mặt thoáng dung dịch
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -923,15 +942,27 @@
         ctx.arc(midX, py, 2, 0, Math.PI * 2);
         ctx.fill();
       }
+    } else if (curPreset.id === 'nacl_nodim_javel') {
+      // Huy hiệu chú thích nước Javel trong bình
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+      ctx.fillRect(x + 10, y + 46, w - 20, 24);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 10, y + 46, w - 20, 24);
+
+      ctx.fillStyle = '#fef08a';
+      ctx.font = '900 11.5px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('✨ ĐANG ĐIỀU CHẾ NƯỚC JAVEL (NaCl + NaClO) • TẨY MÀU PHENOLPHTHALEIN', x + w / 2, y + 62);
     }
 
-    // 4. Họa vẽ các hạt ion đang bơi trong dung dịch (Hạt to, nhãn nét)
+    // 4. Họa vẽ các hạt ion đang bơi trong dung dịch
     drawIonsInSolution();
 
     // 5. Tia sáng phản ứng tại bề mặt
     drawIonSparks();
 
-    // 6. Nhãn tên dung dịch dưới đáy cốc (CHỮ TO RÕ NỔI BẬT)
+    // 6. Nhãn tên dung dịch dưới đáy cốc
     const labelY = y + h + 24;
     ctx.font = '900 15px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
@@ -940,8 +971,8 @@
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(x + w / 2 - textW / 2 - 14, labelY - 14, textW + 28, 28, 8) : ctx.rect(x + w / 2 - textW / 2 - 14, labelY - 14, textW + 28, 28);
     ctx.fill();
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = curPreset.id === 'nacl_nodim_javel' ? '#f59e0b' : '#38bdf8';
+    ctx.lineWidth = 1.6;
     ctx.stroke();
     ctx.fillStyle = '#ffffff';
     ctx.fillText(curPreset.solName, x + w / 2, labelY + 5);
@@ -957,7 +988,6 @@
     const depositThickness = Math.min(rodW * 0.45, (faradayMass / 5.0) * 8);
     const dissolvedThickness = curPreset.anodeSoluble ? Math.min(rodW * 0.5, (faradayMass / 5.0) * 8) : 0;
 
-    // Thanh Trái (Nếu không bị nhấc lên cân)
     const leftIsWeighed = (leftIsCathode && weighingTarget === 'cathode') || (!leftIsCathode && weighingTarget === 'anode');
     if (!leftIsWeighed) {
       drawElectrode(
@@ -972,7 +1002,6 @@
       drawEmptyElectrodeHolder(rodLeftX, rodY, rodW, leftIsCathode);
     }
 
-    // Thanh Phải (Nếu không bị nhấc lên cân)
     const rightIsWeighed = (!leftIsCathode && weighingTarget === 'cathode') || (leftIsCathode && weighingTarget === 'anode');
     if (!rightIsWeighed) {
       drawElectrode(
@@ -1016,14 +1045,12 @@
     else if (materialName.includes('Ag')) rodColor = '#cbd5e1';
     else if (materialName.includes('Pt')) rodColor = '#94a3b8';
 
-    // Vẽ thanh điện cực
     ctx.fillStyle = rodColor;
     ctx.fillRect(x + dissolveThick / 2, y, activeW, h);
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 2;
     ctx.strokeRect(x + dissolveThick / 2, y, activeW, h);
 
-    // Lớp kim loại mạ bám dày lên ở Catot
     if (depositThick > 0.4 && curPreset.cathodeDepositMetal) {
       const depColor = curPreset.cathodeDepositMetal === 'Cu' ? '#ea580c' : '#f8fafc';
       ctx.fillStyle = depColor;
@@ -1032,7 +1059,6 @@
       ctx.fillRect(x - depositThick / 2, y + h - depositThick / 2, w + depositThick, depositThick / 2);
     }
 
-    // Kẹp cá sấu ở đỉnh thanh
     const clipH = 18;
     const clipColor = isCathode ? '#1e293b' : '#dc2626';
     ctx.fillStyle = clipColor;
@@ -1041,25 +1067,21 @@
     ctx.lineWidth = 1.8;
     ctx.strokeRect(x - 5, y - clipH, w + 10, clipH);
 
-    // Dấu cực (CỰC - / CỰC +) (CHỮ TO RÕ)
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 12.5px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(isCathode ? 'CỰC (−)' : 'CỰC (+)', x + w / 2, y - 5);
 
-    // Nhãn danh tính Catot/Anot trên đầu thanh (16px EXTRA-BOLD)
     ctx.fillStyle = isCathode ? '#38bdf8' : '#f87171';
     ctx.font = '900 16px "Plus Jakarta Sans", sans-serif';
     ctx.fillText(isCathode ? 'CATOT (−)' : 'ANOT (+)', x + w / 2, y - 27);
 
-    // Tên chất liệu điện cực (13px BOLD)
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 13px "Plus Jakarta Sans", sans-serif';
     ctx.shadowColor = '#000000';
     ctx.shadowBlur = 4;
     ctx.fillText(materialName.split(' ')[0], x + w / 2, y + 55);
 
-    // Bọt khí
     drawBubbles(bubbleList);
 
     ctx.restore();
@@ -1113,7 +1135,6 @@
       ctx.lineWidth = 1.6;
       ctx.stroke();
 
-      // Ký hiệu hóa học ở giữa hạt ion (12.5px BOLD, CỰC KỲ DỄ ĐỌC TRÊN MÁY CHIẾU)
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 12.5px "Plus Jakarta Sans", sans-serif';
       ctx.textAlign = 'center';
@@ -1138,7 +1159,7 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-     6. HỌA VẼ CÂN PHÂN TÍCH ĐIỆN TỬ (PHÔNG SỐ LED 28px TO NỔI BẬT)
+     6. HỌA VẼ CÂN PHÂN TÍCH ĐIỆN TỬ (0.0001 g)
   ───────────────────────────────────────────────────────────── */
   function drawDigitalScale(scaleX, scaleY, scaleW, scaleH, leftIsCathode) {
     ctx.save();
@@ -1148,7 +1169,6 @@
     const baseW = scaleW;
     const baseH = 102;
 
-    // 1. Buồng kính chắn gió phân tích (Analytical Draft Shield)
     const shieldX = scaleX + 30;
     const shieldY = scaleY + 10;
     const shieldW = scaleW - 60;
@@ -1174,7 +1194,6 @@
     ctx.lineTo(shieldX + 45, shieldY + shieldH - 20);
     ctx.stroke();
 
-    // 2. Đĩa cân inox (Stainless Steel Weighing Pan)
     const panX = shieldX + shieldW / 2;
     const panY = baseY - 8;
     const panW = 86;
@@ -1196,12 +1215,10 @@
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // 3. Nếu đang cân điện cực: vẽ que điện cực đứng trên đĩa cân
     if (weighingTarget !== null) {
       drawElectrodeOnScale(panX, panY, leftIsCathode);
     }
 
-    // 4. Thân máy cân điện tử (Base)
     ctx.fillStyle = '#0f172a';
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(baseX, baseY, baseW, baseH, 8) : ctx.rect(baseX, baseY, baseW, baseH);
@@ -1214,13 +1231,11 @@
     ctx.fillRect(baseX + 16, baseY + baseH, 18, 5);
     ctx.fillRect(baseX + baseW - 34, baseY + baseH, 18, 5);
 
-    // Tên thương hiệu & Thông số cân (12.5px BOLD)
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '900 12.5px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('⚖️ METTLER TOLEDO • ANALYTICAL BALANCE (0.0001 g)', baseX + 14, baseY + 20);
 
-    // 5. Màn hình LED kỹ thuật số trên thân cân
     const dispX = baseX + 14;
     const dispY = baseY + 28;
     const dispW = baseW - 28;
@@ -1235,13 +1250,11 @@
 
     const scaleData = getScaleMeasurement(leftIsCathode);
 
-    // Chữ số LED phát sáng xanh ngọc (30px EXTRA-BOLD MONOSPACE - CỰC KỲ RÕ NÉT)
     ctx.font = '900 30px "Courier New", monospace';
     ctx.fillStyle = '#38bdf8';
     ctx.textAlign = 'right';
     ctx.fillText(`${scaleData.displayMass} g`, dispX + dispW - 14, dispY + 34);
 
-    // Biểu tượng STABLE ● (12px)
     ctx.font = '900 12px "Plus Jakarta Sans", monospace';
     ctx.fillStyle = '#10b981';
     ctx.textAlign = 'left';
@@ -1251,7 +1264,6 @@
     ctx.fillStyle = '#94a3b8';
     ctx.fillText(weighingTarget ? `[${weighingTarget.toUpperCase()}]` : '[TARE]', dispX + 10, dispY + 38);
 
-    // Dòng thông tin phụ bên dưới màn hình LED (13px BOLD)
     ctx.font = '900 13px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#f8fafc';
@@ -1313,14 +1325,12 @@
     else if (materialName.includes('Ag')) rodColor = '#cbd5e1';
     else if (materialName.includes('Pt')) rodColor = '#94a3b8';
 
-    // Vẽ thanh điện cực đứng trên đĩa cân
     ctx.fillStyle = rodColor;
     ctx.fillRect(rodX + dissolvedThickness / 2, rodY, activeW, rodH);
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(rodX + dissolvedThickness / 2, rodY, activeW, rodH);
 
-    // Lớp kim loại bám ngoài nếu là Catot
     if (depositThickness > 0.4 && curPreset.cathodeDepositMetal) {
       const depColor = curPreset.cathodeDepositMetal === 'Cu' ? '#ea580c' : '#f8fafc';
       ctx.fillStyle = depColor;
@@ -1329,7 +1339,6 @@
       ctx.fillRect(rodX - depositThickness / 2, rodY + rodH - depositThickness / 2, rodW + depositThickness, depositThickness / 2);
     }
 
-    // Nhãn nổi bật trên thanh đang cân (16px EXTRA-BOLD)
     ctx.fillStyle = isCathode ? '#38bdf8' : '#f87171';
     ctx.font = '900 16px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
@@ -1355,7 +1364,6 @@
     const leftIsWeighed = (leftIsCathode && weighingTarget === 'cathode') || (!leftIsCathode && weighingTarget === 'anode');
     const rightIsWeighed = (!leftIsCathode && weighingTarget === 'cathode') || (leftIsCathode && weighingTarget === 'anode');
 
-    // Đường dây 1 (Cọc trái sang Điện cực trái)
     const p0 = { x: termLeftX, y: termY };
     const p1 = { x: termLeftX, y: wireMidY };
     const p2 = { x: rodLeftTop.x, y: wireMidY };
@@ -1372,12 +1380,10 @@
     ctx.lineTo(p3.x, p3.y);
     ctx.stroke();
 
-    // Nếu que trái đang nhấc ra cân: vẽ kẹp cá sấu hở mạch
     if (leftIsWeighed) {
       drawOpenAlligatorClip(p3.x, p3.y, leftIsCathode ? '#1e293b' : '#dc2626');
     }
 
-    // Đường dây 2 (Cọc phải sang Điện cực phải)
     const q0 = { x: termRightX, y: termY };
     const q1 = { x: termRightX, y: wireMidY };
     const q2 = { x: rodRightTop.x, y: wireMidY };
@@ -1395,7 +1401,6 @@
       drawOpenAlligatorClip(q3.x, q3.y, !leftIsCathode ? '#1e293b' : '#dc2626');
     }
 
-    // Hạt electron chạy trên dây dẫn nếu nguồn điện bật và mạch kín
     if (isPowered && weighingTarget === null) {
       ctx.fillStyle = '#38bdf8';
       ctx.shadowColor = '#0284c7';
@@ -1512,17 +1517,21 @@
     // 2. Tính sản phẩm giải phóng ở Catot
     const massCatEl = document.getElementById('calc-mass-cat');
     const subCatEl = document.getElementById('faraday-sub-cat');
+    const labelCat = document.getElementById('label-faraday-cat');
 
     if (massCatEl) {
       if (curPreset.cathodeDepositMetal) {
+        if (labelCat) labelCat.textContent = 'Khối lượng Catot tăng (m):';
         const mass = getAccumulatedMass();
         massCatEl.textContent = `+${mass.toFixed(4)} g (${curPreset.cathodeDepositMetal})`;
         massCatEl.style.color = '#38bdf8';
       } else if (curPreset.cathodeGas) {
+        if (labelCat) labelCat.textContent = 'Thể tích khí Catot (V đkc):';
         const vCatMl = getGasVolumeCathode();
         massCatEl.textContent = `+${vCatMl.toFixed(2)} mL (${curPreset.cathodeGas} ↑)`;
         massCatEl.style.color = '#38bdf8';
       } else {
+        if (labelCat) labelCat.textContent = 'Sản phẩm ở Catot:';
         massCatEl.textContent = `+0.0000 g`;
         massCatEl.style.color = '#94a3b8';
       }
@@ -1536,18 +1545,27 @@
       }
     }
 
-    // 3. Tính sản phẩm giải phóng ở Anot
+    // 3. Tính sản phẩm giải phóng ở Anot (hoặc Nước Javel NaClO)
     const volAnEl = document.getElementById('calc-vol-an');
     const rowGasAnEl = document.getElementById('row-gas-anode');
+    const labelAn = document.getElementById('label-faraday-an');
 
     if (volAnEl && rowGasAnEl) {
-      if (curPreset.anodeSoluble) {
+      if (curPreset.id === 'nacl_nodim_javel') {
         rowGasAnEl.style.display = 'flex';
+        if (labelAn) labelAn.textContent = 'Khối lượng NaClO (Nước Javel):';
+        const massJavel = (74.5 * currentAmps * elapsedSeconds) / (2 * FARADAY);
+        volAnEl.textContent = `+${massJavel.toFixed(4)} g (NaClO)`;
+        volAnEl.style.color = '#f59e0b';
+      } else if (curPreset.anodeSoluble) {
+        rowGasAnEl.style.display = 'flex';
+        if (labelAn) labelAn.textContent = 'Khối lượng Anot giảm:';
         const massAn = (curPreset.A_an * currentAmps * elapsedSeconds) / (curPreset.n_an * FARADAY);
         volAnEl.textContent = `−${massAn.toFixed(4)} g (${curPreset.anodeMaterial.split(' ')[1] || 'Cu'} tan)`;
         volAnEl.style.color = '#ef4444';
       } else if (curPreset.anodeGas) {
         rowGasAnEl.style.display = 'flex';
+        if (labelAn) labelAn.textContent = 'Thể tích khí Anot (V đkc, 25°C):';
         const vMl = getGasVolumeAnode();
         volAnEl.textContent = `+${vMl.toFixed(2)} mL (${curPreset.anodeGas} ↑)`;
         volAnEl.style.color = '#f59e0b';
@@ -1618,6 +1636,22 @@
 
     const chkDia = document.getElementById('check-diaphragm');
     if (chkDia) chkDia.checked = hasDiaphragm;
+
+    const diaHint = document.getElementById('text-diaphragm-hint');
+    if (diaHint) {
+      if (curPreset.id === 'nacl_nodim_javel' || (curPreset.id === 'nacl_diaphragm' && !hasDiaphragm)) {
+        diaHint.textContent = '⚠️ Bỏ màng ngăn: tạo NƯỚC JAVEL (NaClO)';
+        diaHint.style.color = '#f59e0b';
+      } else {
+        diaHint.textContent = 'Cần thiết cho sản xuất NaOH/Cl₂';
+        diaHint.style.color = 'var(--text-muted)';
+      }
+    }
+
+    const sel = document.getElementById('select-preset');
+    if (sel && sel.value !== curPreset.id) {
+      sel.value = curPreset.id;
+    }
   }
 
   /* ─────────────────────────────────────────────────────────────
@@ -1708,6 +1742,17 @@
 
   window.electrolysisToggleDiaphragm = function (checked) {
     hasDiaphragm = checked;
+
+    // Tự động chuyển đổi giữa Sản xuất Xút/Clo (Có màng ngăn) và Nước Javel (Không màng ngăn)
+    if (curPreset.id === 'nacl_diaphragm' && !checked) {
+      electrolysisSelectPreset('nacl_nodim_javel');
+      return;
+    } else if (curPreset.id === 'nacl_nodim_javel' && checked) {
+      electrolysisSelectPreset('nacl_diaphragm');
+      return;
+    }
+
+    updateUI();
   };
 
   window.electrolysisToggleFullscreen = function () {

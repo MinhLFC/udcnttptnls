@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="assets/css/lab.css">
   <link rel="stylesheet" href="assets/css/lab-galvanic.css?v=20261011">
   <link rel="stylesheet" href="assets/css/lab-electrolysis.css?v=20261012_large_font">
+  <link rel="stylesheet" href="assets/css/lab-oxygen.css">
 </head>
 <body>
 
@@ -121,6 +122,9 @@
         </button>
         <button class="lab-tab-btn" data-tab="biology" onclick="switchTab('biology')">
           <span class="tab-icon">🧬</span> Hệ Cơ Quan
+        </button>
+        <button class="lab-tab-btn" data-tab="oxygen" onclick="switchTab('oxygen')">
+          <span class="tab-icon">🔥</span> Thành Phần Không Khí (O₂)
         </button>
       </div>
 
@@ -298,6 +302,15 @@
         </div>
       </div>
 
+      <!-- Experiment 7: Oxygen & Air Composition -->
+      <div class="experiment-panel" id="panel-oxygen">
+        <div class="experiment-container">
+          <div id="experiment-oxygen">
+            <!-- Nội dung sẽ được tạo bởi lab-oxygen.js -->
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -355,6 +368,7 @@
   <script src="assets/js/lab-circuit.js"></script>
   <script src="assets/js/lab-buoyancy.js?v=20261014_student"></script>
   <script src="assets/js/lab-biology.js?v=20261011_fix"></script>
+  <script src="assets/js/lab-oxygen.js?v=20261014"></script>
   
   <script>
     // Tự động chuyển hướng nếu người dùng bấm link cũ lab.html?tab=plickers hoặc chứa room
@@ -367,7 +381,7 @@
 
       // Hỗ trợ mở trực tiếp tab từ URL param hoặc hash (ví dụ: lab.html?tab=electrolysis hoặc #electrolysis)
       const initialTab = urlParams.get('tab') || window.location.hash.replace('#', '');
-      if (initialTab && ['acid-base', 'balance', 'molecule', 'galvanic', 'electrolysis', 'circuit', 'biology'].includes(initialTab)) {
+      if (initialTab && ['acid-base', 'balance', 'molecule', 'galvanic', 'electrolysis', 'circuit', 'biology', 'oxygen'].includes(initialTab)) {
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', () => switchTab(initialTab));
         } else {
